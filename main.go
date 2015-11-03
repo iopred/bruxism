@@ -16,11 +16,14 @@ import (
 
 var url bool
 var auth string
+
+var config string
 var token string
 
 func init() {
   flag.BoolVar(&url, "url", false, "Generates a URL that provides an auth code.")
   flag.StringVar(&auth, "auth", "", "Exchanges the provided auth code for an oauth2 token.")
+  flag.StringVar(&config, "config", "oauth2config.json", "The filename that contains the oauth2 config.")
   flag.StringVar(&token, "token", "token.json", "The filename to store the oauth2 token.")
   flag.Parse()
 }
@@ -125,15 +128,12 @@ func generate(conf *oauth2.Config) {
 }
 
 func main() {
-  conf := &oauth2.Config{
-    ClientID:     "",
-    ClientSecret: "",
-    RedirectURL:  "http://www.iopred.com/",
-    Scopes: []string{
-      "https://www.googleapis.com/auth/youtube",
-    },
-    Endpoint: google.Endpoint,
+  b, err := ioutil.ReadFile(config)
+  if err != nil {
+    log.Fatal(err)
   }
+
+  conf, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/youtube")
 
   if url {
     generate(conf)
@@ -142,22 +142,7 @@ func main() {
 
   var tok *oauth2.Token
 
-  b, err := ioutil.ReadFile(token)
-  if err == nil {
-    // A token was found, unmarshall it and use it.
-    tok = &oauth2.Token{}
-    err := json.Unmarshal(b, tok)
-    if err != nil {
-      log.Fatal(err)
-    }
-  } else {
-    // There was an error with the token, maybe it doesn't exist.
-    // If we haven't been given an auth code, we must generate one.
-    if auth == "" {
-      generate(conf)
-      return
-    }
-
+  if auth != "" {
     // Let's exchange our code
     tok, err = conf.Exchange(oauth2.NoContext, auth)
     if err != nil {
@@ -172,6 +157,21 @@ func main() {
       if err != nil {
         log.Println(err)
       }
+    }
+  } else {
+    b, err = ioutil.ReadFile(token)
+    if err == nil {
+      // A token was found, unmarshall it and use it.
+      tok = &oauth2.Token{}
+      err := json.Unmarshal(b, tok)
+      if err != nil {
+        log.Fatal(err)
+      }
+    } else {
+      // There was an error with the token, maybe it doesn't exist.
+      // If we haven't been given an auth code, we must generate one.
+      generate(conf)
+      return
     }
   }
 
