@@ -175,7 +175,7 @@ func pollMessages(client *http.Client, liveChatId string) {
         }
       case FAN_FUNDING_EVENT:
         fmt.Println(html.UnescapeString(message.Snippet.FallbackText))
-        addDonation(&liveChatMessageListResponse.Items[i])
+        addFanFundingMessage(&liveChatMessageListResponse.Items[i])
       }
     }
     pageToken = liveChatMessageListResponse.NextPageToken
@@ -216,13 +216,13 @@ func generate(conf *oauth2.Config) {
   clipboard.WriteAll(url)
 }
 
-func addDonation(message *LiveChatMessage) {
+func addFanFundingMessage(message *LiveChatMessage) {
   fanFunding.Lock()
   defer fanFunding.Unlock()
 
   if fanFunding.Messages[message.Id] == nil {
     fanFunding.Messages[message.Id] = message
-    writeDonation([]*LiveChatMessage{message}, "latest.txt")
+    writeMessagesToFile([]*LiveChatMessage{message}, "latest.txt")
   }
 
   largest := message
@@ -243,10 +243,10 @@ func addDonation(message *LiveChatMessage) {
     }
   }
 
-  writeDonation([]*LiveChatMessage{largest}, "largest.txt")
+  writeMessagesToFile([]*LiveChatMessage{largest}, "largest.txt")
 }
 
-func writeDonation(messages []*LiveChatMessage, filename string) {
+func writeMessagesToFile(messages []*LiveChatMessage, filename string) {
   output := ""
   for _, message := range messages {
     output += html.UnescapeString(message.Snippet.FallbackText) + "\n"
