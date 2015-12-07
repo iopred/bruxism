@@ -3,7 +3,6 @@ package main
 import (
   "encoding/json"
   "flag"
-  "fmt"
   "html"
   "io/ioutil"
   "log"
@@ -20,7 +19,7 @@ import (
   "golang.org/x/oauth2/google"
 )
 
-const TEXT_MESSAGE_EVENT string = "text"
+const TEXT_MESSAGE_EVENT string = "textMessageEvent"
 const FAN_FUNDING_EVENT string = "fanFundingEvent"
 
 var url bool
@@ -44,6 +43,16 @@ func init() {
   flag.Parse()
 
   fanFunding = FanFunding{Messages: make(map[string]*LiveChatMessage)}
+}
+
+type Error struct {
+  Errors []struct {
+    Domain  string `json:"domain"`
+    Reason  string `json:"reason"`
+    Message string `json:"message"`
+  }
+  Code    int    `json:"code"`
+  Message string `json:"message"`
 }
 
 type LiveBroadcast struct {
@@ -89,6 +98,7 @@ type LiveBroadcast struct {
 }
 
 type LiveBroadcasts struct {
+  Error         *Error `json:"error"`
   Kind          string `json:"kind"`
   Etag          string `json:"etag"`
   NextPageToken string `json:"nextPageToken"`
@@ -108,26 +118,32 @@ type LiveChatMessage struct {
     LiveChatId             string `json:"liveChatId"`
     AuthorChannelId        string `json:"authorChannelId"`
     PublishedAt            string `json:"publishedAt"`
-    FallbackText           string `json:"fallbackText"`
-    MessageText            string `json:"messageText"`
     HasDisplayContent      bool   `json:"hasDisplayContent"`
+    DisplayMessage         string `json:"displayMessage"`
     FanFundingEventDetails struct {
-      AmountMicros  string `json:"amountMicros"`
-      Currency      string `json:"currency"`
-      DisplayString string `json:"displayString"`
-    } `json:"FanFundingEventDetails"`
+      AmountMicros        string `json:"amountMicros"`
+      Currency            string `json:"currency"`
+      AmountDisplayString string `json:"amountDisplayString"`
+      UserComment         string `json:"userComment"`
+    } `json:"fanFundingEventDetails"`
+    TextMessageDetails struct {
+      MessageText string `json:"messageText"`
+    } `json:"textMessageDetails"`
   } `json:"snippet"`
   AuthorDetails struct {
     ChannelId       string `json:"channelId"`
+    ChannelUrl      string `json:"channelUrl"`
     DisplayName     string `json:"displayName"`
     ProfileImageUrl string `json:"profileImageUrl"`
     IsVerified      bool   `json:"isVerified"`
     IsChatOwner     bool   `json:"isChatOwner"`
+    IsChatSponser   bool   `json:"isChatSponser"`
     IsChatModerator bool   `json:"isChatModerator"`
   } `json:"authorDetails"`
 }
 
 type LiveChatMessageListResponse struct {
+  Error         *Error `json:"error"`
   Kind          string `json:"kind"`
   Etag          string `json:"etag"`
   NextPageToken string `json:"nextPageToken"`
@@ -158,29 +174,11 @@ func getBroadcasts(client *http.Client, params string) []LiveBroadcast {
     return nil
   }
 
-  return broadcasts.Items
-}
-
-func pollMessages(client *http.Client, liveChatId string) {
-  pageToken := ""
-  for {
-    liveChatMessageListResponse := getMessages(client, liveChatId, pageToken)
-    for i, message := range liveChatMessageListResponse.Items {
-      switch message.Snippet.Type {
-      case TEXT_MESSAGE_EVENT:
-        if message.Snippet.MessageText != "" {
-          fmt.Printf("%v: %v\n", message.AuthorDetails.DisplayName, html.UnescapeString(message.Snippet.MessageText))
-        } else {
-          fmt.Printf("%v: %v\n", message.AuthorDetails.DisplayName, html.UnescapeString(message.Snippet.FallbackText))
-        }
-      case FAN_FUNDING_EVENT:
-        fmt.Println(html.UnescapeString(message.Snippet.FallbackText))
-        addFanFundingMessage(&liveChatMessageListResponse.Items[i])
-      }
-    }
-    pageToken = liveChatMessageListResponse.NextPageToken
-    time.Sleep(5 + time.Second)
+  if broadcasts.Error != nil {
+    return []LiveBroadcast{}
   }
+
+  return broadcasts.Items
 }
 
 func getMessages(client *http.Client, liveChatId string, pageToken string) *LiveChatMessageListResponse {
@@ -208,12 +206,38 @@ func getMessages(client *http.Client, liveChatId string, pageToken string) *Live
   return liveChatMessageListResponse
 }
 
-func generate(conf *oauth2.Config) {
-  // Redirect user to Google's consent page to ask for permission
-  // for the scopes specified above.
-  url := conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
-  fmt.Printf("Visit the following URL to generate an auth code, then rerun with -auth=<code> (It has also been copied to your clipboard):\n%v\n", url)
-  clipboard.WriteAll(url)
+func pollMessages(client *http.Client, liveChatId string) {
+  pageToken := ""
+  for {
+    liveChatMessageListResponse := getMessages(client, liveChatId, pageToken)
+
+    if liveChatMessageListResponse.Error != nil {
+      log.Println("Error", liveChatMessageListResponse.Error.Message)
+    } else {
+      for i, message := range liveChatMessageListResponse.Items {
+        switch message.Snippet.Type {
+        case TEXT_MESSAGE_EVENT:
+          log.Printf("%v: %v\n", message.AuthorDetails.DisplayName, html.UnescapeString(message.Snippet.TextMessageDetails.MessageText))
+        case FAN_FUNDING_EVENT:
+          log.Println(html.UnescapeString(message.Snippet.DisplayMessage))
+          addFanFundingMessage(&liveChatMessageListResponse.Items[i])
+        }
+      }
+      pageToken = liveChatMessageListResponse.NextPageToken
+    }
+    time.Sleep(10 * time.Second)
+  }
+}
+
+func writeMessagesToFile(messages []*LiveChatMessage, filename string) {
+  output := ""
+  for _, message := range messages {
+    output += html.UnescapeString(message.Snippet.DisplayMessage) + "\n"
+  }
+  err := ioutil.WriteFile(filename, []byte(output), 0777)
+  if err != nil {
+    log.Println(err)
+  }
 }
 
 func addFanFundingMessage(message *LiveChatMessage) {
@@ -228,13 +252,13 @@ func addFanFundingMessage(message *LiveChatMessage) {
   largest := message
   largestValue, err := strconv.ParseFloat(message.Snippet.FanFundingEventDetails.AmountMicros, 64)
   if err != nil {
-    fmt.Println(err)
+    log.Println(err)
     return
   }
   for _, check := range fanFunding.Messages {
     checkValue, err := strconv.ParseFloat(check.Snippet.FanFundingEventDetails.AmountMicros, 64)
     if err != nil {
-      fmt.Println(err)
+      log.Println(err)
       continue
     }
     if checkValue > largestValue {
@@ -246,15 +270,12 @@ func addFanFundingMessage(message *LiveChatMessage) {
   writeMessagesToFile([]*LiveChatMessage{largest}, "largest.txt")
 }
 
-func writeMessagesToFile(messages []*LiveChatMessage, filename string) {
-  output := ""
-  for _, message := range messages {
-    output += html.UnescapeString(message.Snippet.FallbackText) + "\n"
-  }
-  err := ioutil.WriteFile(filename, []byte(output), 0777)
-  if err != nil {
-    log.Println(err)
-  }
+func generateOauthUrl(conf *oauth2.Config) {
+  // Redirect user to Google's consent page to ask for permission
+  // for the scopes specified above.
+  url := conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
+  log.Printf("Visit the following URL to generate an auth code, then rerun with -auth=<code> (It has also been copied to your clipboard):\n%v\n", url)
+  clipboard.WriteAll(url)
 }
 
 func main() {
@@ -266,7 +287,7 @@ func main() {
   conf, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/youtube")
 
   if url {
-    generate(conf)
+    generateOauthUrl(conf)
     return
   }
 
@@ -300,7 +321,7 @@ func main() {
     } else {
       // There was an error with the token, maybe it doesn't exist.
       // If we haven't been given an auth code, we must generate one.
-      generate(conf)
+      generateOauthUrl(conf)
       return
     }
   }
