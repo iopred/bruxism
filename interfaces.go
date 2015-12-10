@@ -8,6 +8,7 @@ type Message interface {
 
 type Service interface {
 	Name() string
-	Open() (chan Message, error)
+	MessageChannel() chan Message
+	Open() error
 	Send(channel, message string) error
 }

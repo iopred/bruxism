@@ -364,18 +364,22 @@ func (yt *YouTube) Name() string {
   return "YouTube"
 }
 
-func (yt *YouTube) Open() (chan Message, error) {
+func (yt *YouTube) MessageChannel() chan Message {
+  return yt.MessageChan
+}
+
+func (yt *YouTube) Open() error {
   if err := yt.createConfig(); err != nil {
-    return nil, err
+    return err
   }
 
   // An oauth URL was requested, error early.
   if url {
-    return nil, errors.New(yt.generateOauthUrl())
+    return errors.New(yt.generateOauthUrl())
   }
 
   if err := yt.createToken(); err != nil {
-    return nil, err
+    return err
   }
 
   yt.Client = yt.Config.Client(oauth2.NoContext, yt.Token)
@@ -383,7 +387,7 @@ func (yt *YouTube) Open() (chan Message, error) {
   yt.pollBroadcasts(yt.getBroadcasts("default=true"))
   yt.pollBroadcasts(yt.getBroadcasts("mine=true"))
 
-  return yt.MessageChan, nil
+  return nil
 }
 
 func (yt *YouTube) Send(channel, message string) error {

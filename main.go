@@ -9,25 +9,21 @@ import (
 var echo = false
 
 func registerService(service Service) error {
-  messageChan, err := service.Open()
+  go func() {
+    messageChan := service.MessageChannel()
+    for {
+      message := <-messageChan
+      log.Printf("<%s> %s: %s\n", message.Channel(), message.User(), message.Message())
 
-  if err != nil {
-    return err
-  } else {
-    go func() {
-      for {
-        message := <-messageChan
-        log.Printf("<%s> %s: %s\n", message.Channel(), message.User(), message.Message())
-
-        if echo {
-          if err := service.Send(message.Channel(), message.Message()); err != nil {
-            log.Println(err)
-          }
+      if echo {
+        if err := service.Send(message.Channel(), message.Message()); err != nil {
+          log.Println(err)
         }
       }
-    }()
-  }
-  return nil
+    }
+  }()
+
+  return service.Open()
 }
 
 func main() {

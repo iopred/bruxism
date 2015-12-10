@@ -43,17 +43,19 @@ func (d *Discord) Name() string {
 	return "Discord"
 }
 
-func (d *Discord) Open() (chan Message, error) {
+func (d *Discord) MessageChannel() chan Message {
+	return d.MessageChan
+}
+
+func (d *Discord) Open() error {
 
 	if err := d.Client.Login("iopred+bot@gmail.com", "dgmrthe1"); err != nil {
-		return nil, err
+		return err
 	}
 
 	d.Client.OnMessageCreate = d.onMessage
 
-	go d.Client.Listen()
-
-	return d.MessageChan, nil
+	return d.Client.Listen()
 }
 
 func (d *Discord) Send(channel, message string) error {
