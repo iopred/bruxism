@@ -1,10 +1,20 @@
 package main
 
 import (
+  "flag"
   "strconv"
 
   "github.com/Xackery/discord"
 )
+
+var discordEmail string
+var discordPassword string
+
+func init() {
+  flag.StringVar(&discordEmail, "discordemail", "", "Discord account email.")
+  flag.StringVar(&discordPassword, "youtubetoken", "", "Discord account password.")
+  flag.Parse()
+}
 
 type DiscordMessage discord.Message
 
@@ -49,7 +59,7 @@ func (d *Discord) MessageChannel() chan Message {
 
 func (d *Discord) Open() error {
 
-  if err := d.Client.Login("iopred+bot@gmail.com", "dgmrthe1"); err != nil {
+  if err := d.Client.Login(discordEmail, discordPassword); err != nil {
     return err
   }
 
