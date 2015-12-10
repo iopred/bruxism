@@ -12,7 +12,7 @@ var discordPassword string
 
 func init() {
   flag.StringVar(&discordEmail, "discordemail", "", "Discord account email.")
-  flag.StringVar(&discordPassword, "youtubetoken", "", "Discord account password.")
+  flag.StringVar(&discordPassword, "discordpassword", "", "Discord account password.")
   flag.Parse()
 }
 
