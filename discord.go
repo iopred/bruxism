@@ -44,6 +44,7 @@ func NewDiscord() *Discord {
 
 func (d *Discord) onMessage(event discord.Event, message discord.Message) {
   dm := DiscordMessage(message)
+  // Ignore messages from ourselves.
   if message.Author.ID != d.Client.User.ID {
     d.MessageChan <- &dm
   }

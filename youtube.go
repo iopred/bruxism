@@ -1,6 +1,7 @@
 package main
 
 import (
+  "bytes"
   "encoding/json"
   "errors"
   "flag"
@@ -17,9 +18,6 @@ import (
   "golang.org/x/oauth2"
   "golang.org/x/oauth2/google"
 )
-
-const TEXT_MESSAGE_EVENT string = "textMessageEvent"
-const FAN_FUNDING_EVENT string = "fanFundingEvent"
 
 var url bool
 var auth string
@@ -39,132 +37,6 @@ type FanFunding struct {
   Messages map[string]*LiveChatMessage
 }
 
-type Error struct {
-  Errors []struct {
-    Domain  string `json:"domain"`
-    Reason  string `json:"reason"`
-    Message string `json:"message"`
-  }
-  Code    int    `json:"code"`
-  Message string `json:"message"`
-}
-
-type LiveBroadcast struct {
-  Kind    string `json:"kind"`
-  Etag    string `json:"etag"`
-  Id      string `json:"id"`
-  Snippet struct {
-    PublishedAt string `json:"publishedAt"`
-    ChannelId   string `json:"channelId"`
-    Title       string `json:"title"`
-    Description string `json:"description"`
-    Thumbnails  map[string]struct {
-      Url    string `json:"url"`
-      Width  int    `json:"width"`
-      Height int    `json:"height"`
-    } `json:"thumbnails"`
-    ScheduledStartTime string `json:"scheduledStartTime"`
-    ScheduledEndTime   string `json:"scheduledEndTime"`
-    ActualStartTime    string `json:"actualStartTime"`
-    ActualEndTime      string `json:"actualEndTime"`
-    IsDefaultBroadcast bool   `json:"isDefaultBroadcast"`
-    LiveChatId         string `json:"liveChatId"`
-  } `json:"snippet"`
-  Status struct {
-    LifeCycleStatus string `json:"lifeCycleStatus"`
-    PrivacyStatus   string `json:"privacyStatus"`
-    RecordingStatus string `json:"recordingStatus"`
-  } `json:"status"`
-  ContentDetails struct {
-    BoundStreamId string `json:"boundStreamId"`
-    MonitorStream struct {
-      EnableMonitorStream    bool   `json:"enableMonitorStream"`
-      BroadcastStreamDelayMs uint   `json:"broadcastStreamDelayMs"`
-      EmbedHtml              string `json:"embedHtml"`
-    } `json:"monitorStream"`
-    EnableEmbed             bool `json:"enableEmbed"`
-    EnableDvr               bool `json:"enableDvr"`
-    EnableContentEncryption bool `json:"enableContentEncryption"`
-    StartWithSlate          bool `json:"startWithSlate"`
-    RecordFromStart         bool `json:"recordFromStart"`
-    EnableClosedCaptions    bool `json:"enableClosedCaptions"`
-  } `json:"contentDetails"`
-}
-
-type LiveBroadcasts struct {
-  Error         *Error `json:"error"`
-  Kind          string `json:"kind"`
-  Etag          string `json:"etag"`
-  NextPageToken string `json:"nextPageToken"`
-  PageInfo      struct {
-    TotalResults   int `json:"totalResults"`
-    ResultsPerPage int `json:"resultsPerPage"`
-  } `json:"pageInfo"`
-  Items []*LiveBroadcast `json:"items"`
-}
-
-type LiveChatMessage struct {
-  Kind    string `json:"kind"`
-  Etag    string `json:"etag"`
-  Id      string `json:"id"`
-  Snippet struct {
-    Type                   string `json:"type"`
-    LiveChatId             string `json:"liveChatId"`
-    AuthorChannelId        string `json:"authorChannelId"`
-    PublishedAt            string `json:"publishedAt"`
-    HasDisplayContent      bool   `json:"hasDisplayContent"`
-    DisplayMessage         string `json:"displayMessage"`
-    FanFundingEventDetails struct {
-      AmountMicros        int    `json:"amountMicros,string"`
-      Currency            string `json:"currency"`
-      AmountDisplayString string `json:"amountDisplayString"`
-      UserComment         string `json:"userComment"`
-    } `json:"fanFundingEventDetails"`
-    TextMessageDetails struct {
-      MessageText string `json:"messageText"`
-    } `json:"textMessageDetails"`
-  } `json:"snippet"`
-  AuthorDetails struct {
-    ChannelId       string `json:"channelId"`
-    ChannelUrl      string `json:"channelUrl"`
-    DisplayName     string `json:"displayName"`
-    ProfileImageUrl string `json:"profileImageUrl"`
-    IsVerified      bool   `json:"isVerified"`
-    IsChatOwner     bool   `json:"isChatOwner"`
-    IsChatSponsor   bool   `json:"isChatSponsor"`
-    IsChatModerator bool   `json:"isChatModerator"`
-  } `json:"authorDetails"`
-}
-
-func (m *LiveChatMessage) Channel() string {
-  return m.Snippet.LiveChatId
-}
-
-func (m *LiveChatMessage) User() string {
-  return m.AuthorDetails.DisplayName
-}
-
-func (m *LiveChatMessage) Message() string {
-  switch m.Snippet.Type {
-  case TEXT_MESSAGE_EVENT:
-    return html.UnescapeString(m.Snippet.TextMessageDetails.MessageText)
-  }
-  return html.UnescapeString(m.Snippet.DisplayMessage)
-}
-
-type LiveChatMessageListResponse struct {
-  Error                 *Error `json:"error"`
-  Kind                  string `json:"kind"`
-  Etag                  string `json:"etag"`
-  NextPageToken         string `json:"nextPageToken"`
-  PollingIntervalMillis int    `json:"pollingIntervalMillis"`
-  PageInfo              struct {
-    TotalResults   int `json:"totalResults"`
-    ResultsPerPage int `json:"resultsPerPage"`
-  } `json:"pageInfo"`
-  Items []*LiveChatMessage `json:"items"`
-}
-
 type YouTube struct {
   Config      *oauth2.Config
   Token       *oauth2.Token
@@ -172,6 +44,7 @@ type YouTube struct {
   MessageChan chan Message
   Broadcasts  []*LiveBroadcast
   FanFunding  FanFunding
+  Me          string
 }
 
 func NewYouTube() *YouTube {
@@ -182,11 +55,42 @@ func NewYouTube() *YouTube {
   }
 }
 
+func (yt *YouTube) getMe() error {
+  resp, err := yt.Client.Get("https://www.googleapis.com/youtube/v3/channels?part=id&mine=true")
+  if err != nil {
+    return err
+  }
+
+  defer resp.Body.Close()
+  body, err := ioutil.ReadAll(resp.Body)
+  if err != nil {
+    return err
+  }
+
+  type ChannelListResponse struct {
+    Items []struct {
+      Id string `json:"id"`
+    } `json:"items"`
+  }
+
+  channelList := &ChannelListResponse{}
+  err = json.Unmarshal(body, channelList)
+
+  if len(channelList.Items) != 1 {
+    return errors.New("Invalid response while requesting Me")
+  }
+
+  yt.Me = channelList.Items[0].Id
+
+  return nil
+}
+
 func (yt *YouTube) getBroadcasts(params string) ([]*LiveBroadcast, error) {
   resp, err := yt.Client.Get("https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet,status,contentDetails&" + params)
   if err != nil {
     return nil, err
   }
+
   defer resp.Body.Close()
   body, err := ioutil.ReadAll(resp.Body)
   if err != nil {
@@ -200,7 +104,7 @@ func (yt *YouTube) getBroadcasts(params string) ([]*LiveBroadcast, error) {
   }
 
   if broadcasts.Error != nil {
-    return nil, errors.New(broadcasts.Error.Message)
+    return nil, broadcasts.Error.NewError("getting broadcasts")
   }
 
   return broadcasts.Items, nil
@@ -208,7 +112,7 @@ func (yt *YouTube) getBroadcasts(params string) ([]*LiveBroadcast, error) {
 
 func (yt *YouTube) pollBroadcasts(broadcasts []*LiveBroadcast, err error) {
   if err != nil {
-    fmt.Println(err)
+    log.Println(err)
     return
   }
 
@@ -256,13 +160,20 @@ func (yt *YouTube) pollMessages(broadcast *LiveBroadcast) {
     if err != nil {
       log.Println(err)
     } else if liveChatMessageListResponse.Error != nil {
-      log.Println("Error", liveChatMessageListResponse.Error.Message)
+      log.Println(liveChatMessageListResponse.Error.NewError("polling messages"))
     } else {
-      for i, message := range liveChatMessageListResponse.Items {
-        yt.MessageChan <- message
-        switch message.Snippet.Type {
-        case FAN_FUNDING_EVENT:
-          yt.addFanFundingMessage(liveChatMessageListResponse.Items[i])
+      // Ignore the first results, we only want new chats.
+      if pageToken != "" {
+        for i, message := range liveChatMessageListResponse.Items {
+          // Ignore messages from ourselves.
+          if message.AuthorDetails.ChannelId == yt.Me {
+            continue
+          }
+          yt.MessageChan <- message
+          switch message.Snippet.Type {
+          case FAN_FUNDING_EVENT:
+            yt.addFanFundingMessage(liveChatMessageListResponse.Items[i])
+          }
         }
       }
       pageToken = liveChatMessageListResponse.NextPageToken
@@ -384,6 +295,10 @@ func (yt *YouTube) Open() error {
 
   yt.Client = yt.Config.Client(oauth2.NoContext, yt.Token)
 
+  if err := yt.getMe(); err != nil {
+    return err
+  }
+
   yt.pollBroadcasts(yt.getBroadcasts("default=true"))
   yt.pollBroadcasts(yt.getBroadcasts("mine=true"))
 
@@ -391,5 +306,42 @@ func (yt *YouTube) Open() error {
 }
 
 func (yt *YouTube) Send(channel, message string) error {
-  return errors.New("Sending not supported.")
+  liveChatMessage := &LiveChatMessage{
+    Kind: LIVE_CHAT_MESSAGE,
+    Snippet: &LiveChatMessageSnippet{
+      LiveChatId: channel,
+      Type:       TEXT_MESSAGE_EVENT,
+      TextMessageDetails: &LiveChatMessageSnippetTextMessageDetails{
+        MessageText: message,
+      },
+    },
+  }
+
+  jsonString, err := json.Marshal(liveChatMessage)
+  if err != nil {
+    return err
+  }
+
+  resp, err := yt.Client.Post("https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet", "application/json", bytes.NewBuffer(jsonString))
+  if err != nil {
+    return err
+  }
+
+  defer resp.Body.Close()
+  body, err := ioutil.ReadAll(resp.Body)
+  if err != nil {
+    return err
+  }
+
+  liveChatMessage = &LiveChatMessage{}
+  err = json.Unmarshal(body, liveChatMessage)
+  if err != nil {
+    return err
+  }
+
+  if liveChatMessage.Error != nil {
+    return liveChatMessage.Error.NewError("sending message")
+  }
+
+  return nil
 }
