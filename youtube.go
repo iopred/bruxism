@@ -171,7 +171,7 @@ func (yt *YouTube) pollMessages(broadcast *LiveBroadcast) {
           }
           yt.MessageChan <- message
           switch message.Snippet.Type {
-          case FAN_FUNDING_EVENT:
+          case LiveChatMessageSnippetTypeFanFunding:
             yt.addFanFundingMessage(liveChatMessageListResponse.Items[i])
           }
         }
@@ -307,10 +307,10 @@ func (yt *YouTube) Open() error {
 
 func (yt *YouTube) Send(channel, message string) error {
   liveChatMessage := &LiveChatMessage{
-    Kind: LIVE_CHAT_MESSAGE,
+    Kind: LiveChatMessageKind,
     Snippet: &LiveChatMessageSnippet{
       LiveChatId: channel,
-      Type:       TEXT_MESSAGE_EVENT,
+      Type:       LiveChatMessageSnippetTypeText,
       TextMessageDetails: &LiveChatMessageSnippetTextMessageDetails{
         MessageText: message,
       },

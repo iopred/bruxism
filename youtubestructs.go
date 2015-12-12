@@ -90,8 +90,8 @@ type LiveBroadcasts struct {
 type LiveChatMessageSnippetType string
 
 const (
-	TEXT_MESSAGE_EVENT LiveChatMessageSnippetType = "textMessageEvent"
-	FAN_FUNDING_EVENT  LiveChatMessageSnippetType = "fanFundingEvent"
+	LiveChatMessageSnippetTypeText       LiveChatMessageSnippetType = "textMessageEvent"
+	LiveChatMessageSnippetTypeFanFunding LiveChatMessageSnippetType = "fanFundingEvent"
 )
 
 type LiveChatMessageSnippetFanFundingEventDetails struct {
@@ -127,7 +127,7 @@ type LiveChatMessageAuthorDetails struct {
 	IsChatModerator bool   `json:"isChatModerator,omitempty"`
 }
 
-const LIVE_CHAT_MESSAGE string = "youtube#liveChatMessage"
+const LiveChatMessageKind string = "youtube#liveChatMessage"
 
 type LiveChatMessage struct {
 	Error         *Error                        `json:"error,omitempty"`
@@ -148,7 +148,7 @@ func (m *LiveChatMessage) User() string {
 
 func (m *LiveChatMessage) Message() string {
 	switch m.Snippet.Type {
-	case TEXT_MESSAGE_EVENT:
+	case LiveChatMessageSnippetTypeText:
 		return html.UnescapeString(m.Snippet.TextMessageDetails.MessageText)
 	}
 	return html.UnescapeString(m.Snippet.DisplayMessage)
