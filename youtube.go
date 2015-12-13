@@ -1,7 +1,6 @@
 package main
 
 import (
-  "bytes"
   "encoding/json"
   "errors"
   "flag"
@@ -9,7 +8,6 @@ import (
   "html"
   "io/ioutil"
   "log"
-  "net/http"
   "sync"
   "time"
 
@@ -40,7 +38,7 @@ type FanFunding struct {
 type YouTube struct {
   config      *oauth2.Config
   token       *oauth2.Token
-  Client      *http.Client
+  Client      *YouTubeClient
   MessageChan chan Message
   InsertChan  chan interface{}
   DeleteChan  chan interface{}
@@ -55,34 +53,6 @@ func NewYouTube() *YouTube {
     DeleteChan:  make(chan interface{}, 200),
     fanFunding:  FanFunding{Messages: make(map[string]*LiveChatMessage)},
   }
-}
-
-func (yt *YouTube) GetMe() (string, error) {
-  resp, err := yt.Client.Get("https://www.googleapis.com/youtube/v3/channels?part=id&mine=true")
-  if err != nil {
-    return "", err
-  }
-
-  defer resp.Body.Close()
-  body, err := ioutil.ReadAll(resp.Body)
-  if err != nil {
-    return "", err
-  }
-
-  type ChannelListResponse struct {
-    Items []struct {
-      Id string `json:"id"`
-    } `json:"items"`
-  }
-
-  channelList := &ChannelListResponse{}
-  err = json.Unmarshal(body, channelList)
-
-  if len(channelList.Items) != 1 {
-    return "", errors.New("Invalid response while requesting Me")
-  }
-
-  return channelList.Items[0].Id, nil
 }
 
 func (yt *YouTube) pollBroadcasts(broadcasts []*LiveBroadcast, err error) {
@@ -104,7 +74,7 @@ func (yt *YouTube) pollBroadcasts(broadcasts []*LiveBroadcast, err error) {
 func (yt *YouTube) pollMessages(broadcast *LiveBroadcast) {
   pageToken := ""
   for {
-    liveChatMessageListResponse, err := yt.ListLiveChatMessages(broadcast.Snippet.LiveChatId, pageToken)
+    liveChatMessageListResponse, err := yt.Client.ListLiveChatMessages(broadcast.Snippet.LiveChatId, pageToken)
 
     if err != nil {
       log.Println(err)
@@ -220,205 +190,6 @@ func (yt *YouTube) createToken() error {
   return nil
 }
 
-func (yt *YouTube) Delete(url string) (resp *http.Response, err error) {
-  req, err := http.NewRequest("DELETE", url, nil)
-  if err != nil {
-    return nil, err
-  }
-  return yt.Client.Do(req)
-}
-
-func (yt *YouTube) ListLiveBroadcasts(params string) ([]*LiveBroadcast, error) {
-  resp, err := yt.Client.Get("https://www.googleapis.com/youtube/v3/liveBroadcasts?part=id,snippet,status,contentDetails&" + params)
-  if err != nil {
-    return nil, err
-  }
-
-  defer resp.Body.Close()
-  body, err := ioutil.ReadAll(resp.Body)
-  if err != nil {
-    return nil, err
-  }
-
-  broadcasts := &LiveBroadcastListResponse{}
-  err = json.Unmarshal(body, broadcasts)
-  if err != nil {
-    return nil, err
-  }
-
-  if broadcasts.Error != nil {
-    return nil, broadcasts.Error.NewError("getting broadcasts")
-  }
-
-  return broadcasts.Items, nil
-}
-
-func (yt *YouTube) ListLiveChatMessages(liveChatId string, pageToken string) (*LiveChatMessageListResponse, error) {
-  pageTokenString := ""
-  if pageToken != "" {
-    pageTokenString = "&pageToken=" + pageToken
-  }
-
-  resp, err := yt.Client.Get("https://www.googleapis.com/youtube/v3/liveChat/messages?maxResults=50&part=id,snippet,authorDetails&liveChatId=" + liveChatId + pageTokenString)
-  if err != nil {
-    return nil, err
-  }
-
-  defer resp.Body.Close()
-  body, err := ioutil.ReadAll(resp.Body)
-  if err != nil {
-    return nil, err
-  }
-
-  liveChatMessageListResponse := &LiveChatMessageListResponse{}
-  err = json.Unmarshal(body, liveChatMessageListResponse)
-  if err != nil {
-    return nil, err
-  }
-
-  return liveChatMessageListResponse, nil
-}
-
-func (yt *YouTube) InsertLiveChatMessage(liveChatMessage *LiveChatMessage) error {
-  jsonString, err := json.Marshal(liveChatMessage)
-  if err != nil {
-    return err
-  }
-
-  resp, err := yt.Client.Post("https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet", "application/json", bytes.NewBuffer(jsonString))
-  if err != nil {
-    return err
-  }
-
-  defer resp.Body.Close()
-  body, err := ioutil.ReadAll(resp.Body)
-  if err != nil {
-    return err
-  }
-
-  liveChatMessage = &LiveChatMessage{}
-  err = json.Unmarshal(body, liveChatMessage)
-  if err != nil {
-    return err
-  }
-
-  if liveChatMessage.Error != nil {
-    return liveChatMessage.Error.NewError("inserting LiveChatMessage")
-  }
-
-  return nil
-}
-
-func (yt *YouTube) DeleteLiveChatMessage(liveChatMessage *LiveChatMessage) error {
-  resp, err := yt.Delete("https://www.googleapis.com/youtube/v3/liveChat/messages?id=" + liveChatMessage.Id)
-  if err != nil {
-    return err
-  }
-  return resp.Body.Close()
-}
-
-func (yt *YouTube) InsertLiveChatBan(liveChatBan *LiveChatBan) error {
-  jsonString, err := json.Marshal(liveChatBan)
-  if err != nil {
-    return err
-  }
-
-  resp, err := yt.Client.Post("https://www.googleapis.com/youtube/v3/liveChatBans?part=snippet", "application/json", bytes.NewBuffer(jsonString))
-  if err != nil {
-    return err
-  }
-
-  defer resp.Body.Close()
-  body, err := ioutil.ReadAll(resp.Body)
-  if err != nil {
-    return err
-  }
-
-  liveChatBan = &LiveChatBan{}
-  err = json.Unmarshal(body, liveChatBan)
-  if err != nil {
-    return err
-  }
-
-  if liveChatBan.Error != nil {
-    return liveChatBan.Error.NewError("inserting LiveChatBan")
-  }
-
-  return nil
-}
-
-func (yt *YouTube) DeleteLiveChatBan(liveChatBan *LiveChatBan) error {
-  resp, err := yt.Delete("https://www.googleapis.com/youtube/v3/liveChatBans?id=" + liveChatBan.Id)
-  if err != nil {
-    return err
-  }
-  return resp.Body.Close()
-}
-
-func (yt *YouTube) ListLiveChatModerators(liveChatId string, pageToken string) (*LiveChatModeratorListResponse, error) {
-  pageTokenString := ""
-  if pageToken != "" {
-    pageTokenString = "&pageToken=" + pageToken
-  }
-
-  resp, err := yt.Client.Get("https://www.googleapis.com/youtube/v3/liveChatModerators?maxResults=50&part=id,snippet&liveChatId=" + liveChatId + pageTokenString)
-  if err != nil {
-    return nil, err
-  }
-
-  defer resp.Body.Close()
-  body, err := ioutil.ReadAll(resp.Body)
-  if err != nil {
-    return nil, err
-  }
-
-  liveChatModeratorListResponse := &LiveChatModeratorListResponse{}
-  err = json.Unmarshal(body, liveChatModeratorListResponse)
-  if err != nil {
-    return nil, err
-  }
-
-  return liveChatModeratorListResponse, nil
-}
-
-func (yt *YouTube) InsertLiveChatModerator(liveChatModerator *LiveChatModerator) error {
-  jsonString, err := json.Marshal(liveChatModerator)
-  if err != nil {
-    return err
-  }
-
-  resp, err := yt.Client.Post("https://www.googleapis.com/youtube/v3/liveChatModerators?part=snippet", "application/json", bytes.NewBuffer(jsonString))
-  if err != nil {
-    return err
-  }
-
-  defer resp.Body.Close()
-  body, err := ioutil.ReadAll(resp.Body)
-  if err != nil {
-    return err
-  }
-
-  liveChatModerator = &LiveChatModerator{}
-  err = json.Unmarshal(body, liveChatModerator)
-  if err != nil {
-    return err
-  }
-
-  if liveChatModerator.Error != nil {
-    return liveChatModerator.Error.NewError("inserting LiveChatModerator")
-  }
-
-  return nil
-}
-
-func (yt *YouTube) DeleteLiveChatModerator(liveChatModerator *LiveChatModerator) error {
-  resp, err := yt.Delete("https://www.googleapis.com/youtube/v3/liveChatModerators?id=" + liveChatModerator.Id)
-  if err != nil {
-    return err
-  }
-  return resp.Body.Close()
-}
-
 func (yt *YouTube) Name() string {
   return "YouTube"
 }
@@ -441,16 +212,16 @@ func (yt *YouTube) Open() error {
     return err
   }
 
-  yt.Client = yt.config.Client(oauth2.NoContext, yt.token)
+  yt.Client = &YouTubeClient{yt.config.Client(oauth2.NoContext, yt.token)}
 
-  me, err := yt.GetMe()
+  me, err := yt.Client.GetMe()
   if err != nil {
     return err
   }
   yt.me = me
 
-  yt.pollBroadcasts(yt.ListLiveBroadcasts("default=true"))
-  yt.pollBroadcasts(yt.ListLiveBroadcasts("mine=true"))
+  yt.pollBroadcasts(yt.Client.ListLiveBroadcasts("default=true"))
+  yt.pollBroadcasts(yt.Client.ListLiveBroadcasts("mine=true"))
 
   // This is a map of channel id's to channels, it is used to send messages to a goroutine that is rate limiting each chatroom.
   channelInsertChans := make(map[string]chan *LiveChatMessage)
@@ -465,7 +236,7 @@ func (yt *YouTube) Open() error {
       // Start a goroutine to rate limit sends.
       go func() {
         for {
-          if err := yt.InsertLiveChatMessage(<-channelInsertChan); err != nil {
+          if err := yt.Client.InsertLiveChatMessage(<-channelInsertChan); err != nil {
             log.Println(err)
           }
           time.Sleep(1 * time.Second)
@@ -484,18 +255,18 @@ func (yt *YouTube) Open() error {
         case *LiveChatMessage:
           insertLiveChatMessageLimited(request)
         case *LiveChatBan:
-          yt.InsertLiveChatBan(request)
+          yt.Client.InsertLiveChatBan(request)
         case *LiveChatModerator:
-          yt.InsertLiveChatModerator(request)
+          yt.Client.InsertLiveChatModerator(request)
         }
       case request := <-yt.DeleteChan:
         switch request := request.(type) {
         case *LiveChatMessage:
-          yt.DeleteLiveChatMessage(request)
+          yt.Client.DeleteLiveChatMessage(request)
         case *LiveChatBan:
-          yt.DeleteLiveChatBan(request)
+          yt.Client.DeleteLiveChatBan(request)
         case *LiveChatModerator:
-          yt.DeleteLiveChatModerator(request)
+          yt.Client.DeleteLiveChatModerator(request)
         }
       }
 
