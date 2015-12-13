@@ -68,6 +68,8 @@ type LiveBroadcastContentDetails struct {
 	EnableClosedCaptions    bool                                      `json:"enableClosedCaptions,omitempty"`
 }
 
+const LiveBroadcastKind string = "youtube#liveBroadcast"
+
 type LiveBroadcast struct {
 	Error          *Error                       `json:"error,omitempty"`
 	Kind           string                       `json:"kind,omitempty"`
@@ -78,7 +80,9 @@ type LiveBroadcast struct {
 	ContentDetails *LiveBroadcastContentDetails `json:"contentDetails,omitempty"`
 }
 
-type LiveBroadcasts struct {
+const LiveBroadcastListResponseKind string = "youtube#liveBroadcastListResponse"
+
+type LiveBroadcastListResponse struct {
 	Error         *Error           `json:"error"`
 	Kind          string           `json:"kind"`
 	Etag          string           `json:"etag"`
@@ -138,12 +142,29 @@ type LiveChatMessage struct {
 	AuthorDetails *LiveChatMessageAuthorDetails `json:"authorDetails,omitempty"`
 }
 
+func NewLiveChatMessage(channel, message string) *LiveChatMessage {
+	return &LiveChatMessage{
+		Kind: LiveChatMessageKind,
+		Snippet: &LiveChatMessageSnippet{
+			LiveChatId: channel,
+			Type:       LiveChatMessageSnippetTypeText,
+			TextMessageDetails: &LiveChatMessageSnippetTextMessageDetails{
+				MessageText: message,
+			},
+		},
+	}
+}
+
 func (m *LiveChatMessage) Channel() string {
 	return m.Snippet.LiveChatId
 }
 
-func (m *LiveChatMessage) User() string {
+func (m *LiveChatMessage) UserName() string {
 	return m.AuthorDetails.DisplayName
+}
+
+func (m *LiveChatMessage) UserId() string {
+	return m.AuthorDetails.ChannelId
 }
 
 func (m *LiveChatMessage) Message() string {
@@ -154,6 +175,10 @@ func (m *LiveChatMessage) Message() string {
 	return html.UnescapeString(m.Snippet.DisplayMessage)
 }
 
+func (m *LiveChatMessage) MessageId() string {
+	return m.Id
+}
+
 type LiveChatMessageListResponse struct {
 	Error                 *Error `json:"error"`
 	Kind                  string `json:"kind"`
@@ -162,4 +187,92 @@ type LiveChatMessageListResponse struct {
 	PollingIntervalMillis int    `json:"pollingIntervalMillis"`
 	PageInfo              *PageInfo
 	Items                 []*LiveChatMessage `json:"items"`
+}
+
+const LiveChatBanKind string = "youtube#liveChatBan"
+
+type LiveChatBanSnippetBannedUserDetails struct {
+	ChannelId       string `json:"channelId"`
+	ChannelUrl      string `json:"channelUrl"`
+	DisplayName     string `json:"displayName"`
+	ProfileImageUrl string `json:"profileImageUrl"`
+}
+
+type LiveChatBanSnippetType string
+
+const (
+	LiveChatBanSnippetTypeTemporary = "temporary"
+	LiveChatBanSnippetTypePermanent = "permanent"
+)
+
+type LiveChatBanSnippet struct {
+	LiveChatId        string                               `json:"liveChatId"`
+	Type              string                               `json:"type"`
+	BanDurationS      uint32                               `json:"banDurationS"`
+	BannedUserDetails *LiveChatBanSnippetBannedUserDetails `json:"bannedUserDetails"`
+}
+
+type LiveChatBan struct {
+	Error   *Error              `json:"error"`
+	Kind    string              `json:"kind"`
+	Etag    string              `json:"etag"`
+	Id      string              `json:"id"`
+	Snippet *LiveChatBanSnippet `json:"snippet"`
+}
+
+func NewLiveChatBan(channel, user string, duration int) *LiveChatBan {
+	liveChatBan := &LiveChatBan{
+		Kind: LiveChatBanKind,
+		Snippet: &LiveChatBanSnippet{
+			LiveChatId: channel,
+			BannedUserDetails: &LiveChatBanSnippetBannedUserDetails{
+				ChannelId: user,
+			},
+		},
+	}
+
+	if duration == -1 {
+		liveChatBan.Snippet.Type = LiveChatBanSnippetTypePermanent
+	} else {
+		liveChatBan.Snippet.Type = LiveChatBanSnippetTypeTemporary
+		liveChatBan.Snippet.BanDurationS = uint32(duration)
+	}
+
+	return liveChatBan
+}
+
+type LiveChatModeratorSnippetModeratorDetails struct {
+	ChannelId       string `json:"channelId"`
+	ChannelUrl      string `json:"channelUrl"`
+	DisplayName     string `json:"displayName"`
+	ProfileImageUrl string `json:"profileImageUrl"`
+}
+
+type LiveChatModeratorSnippet struct {
+	ModeratorDetails *LiveChatModeratorSnippetModeratorDetails `json:"moderatorDetails"`
+	LiveChatId       string                                    `json:"liveChatId"`
+}
+
+const LiveChatModeratorKind string = "youtube#liveChatModerator"
+
+type LiveChatModerator struct {
+	Error   *Error                    `json:"error"`
+	Kind    string                    `json:"kind"`
+	Etag    string                    `json:"etag"`
+	Id      string                    `json:"id"`
+	Snippet *LiveChatModeratorSnippet `json:"snippet"`
+}
+
+const LiveChatModeratorListResponseKind string = "youtube#liveChatModeratorListResponse"
+
+type LiveChatModeratorListResponse struct {
+	Error          *Error               `json:"error"`
+	Kind           string               `json:"kind"`
+	Etag           string               `json:"etag"`
+	PrevPageToken  string               `json:"prevPageToken"`
+	NextPageToken  string               `json:"nextPageToken"`
+	PageInfo       *PageInfo            `json:"pageInfo"`
+	TotalResults   int                  `json:"totalResults"`
+	ResultsPerPage int                  `json:"resultsPerPage"`
+	Items          []*LiveChatModerator `json:"items"`
 }

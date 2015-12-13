@@ -1,6 +1,7 @@
 package main
 
 import (
+  "errors"
   "flag"
   "strconv"
 
@@ -22,12 +23,20 @@ func (m *DiscordMessage) Channel() string {
   return strconv.Itoa(m.ChannelID)
 }
 
-func (m *DiscordMessage) User() string {
+func (m *DiscordMessage) UserName() string {
   return m.Author.Username
+}
+
+func (m *DiscordMessage) UserId() string {
+  return strconv.Itoa(m.Author.ID)
 }
 
 func (m *DiscordMessage) Message() string {
   return m.Content
+}
+
+func (m *DiscordMessage) MessageId() string {
+  return strconv.Itoa(m.ID)
 }
 
 type Discord struct {
@@ -54,7 +63,7 @@ func (d *Discord) Name() string {
   return "Discord"
 }
 
-func (d *Discord) MessageChannel() chan Message {
+func (d *Discord) MessageChannel() <-chan Message {
   return d.MessageChan
 }
 
@@ -66,10 +75,14 @@ func (d *Discord) Open() error {
 
   d.Client.OnMessageCreate = d.onMessage
 
-  return d.Client.Listen()
+  go func() {
+    d.Client.Listen()
+  }()
+
+  return nil
 }
 
-func (d *Discord) Send(channel, message string) error {
+func (d *Discord) SendMessage(channel, message string) error {
   id, err := strconv.Atoi(channel)
   if err != nil {
     return err
@@ -81,4 +94,12 @@ func (d *Discord) Send(channel, message string) error {
   }
 
   return nil
+}
+
+func (d *Discord) DeleteMessage(messageId string) error {
+  return errors.New("Deleting not supported on Discord.")
+}
+
+func (d *Discord) BanUser(channel, user string, duration int) error {
+  return errors.New("Banning not supported on Discord.")
 }

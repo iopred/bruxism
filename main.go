@@ -6,17 +6,30 @@ import (
   "os/signal"
 )
 
+// Flip these to true to echo, delete or timeout every message.
 var echo = false
+var del = false
+var ban = false
 
 func registerService(service Service) error {
   go func() {
     messageChan := service.MessageChannel()
     for {
       message := <-messageChan
-      log.Printf("<%s> %s: %s\n", message.Channel(), message.User(), message.Message())
+      log.Printf("<%s> %s: %s\n", message.Channel(), message.UserName(), message.Message())
 
       if echo {
-        if err := service.Send(message.Channel(), message.Message()); err != nil {
+        if err := service.SendMessage(message.Channel(), message.Message()); err != nil {
+          log.Println(err)
+        }
+      }
+      if del {
+        if err := service.DeleteMessage(message.MessageId()); err != nil {
+          log.Println(err)
+        }
+      }
+      if ban {
+        if err := service.BanUser(message.Channel(), message.UserId(), 10); err != nil {
           log.Println(err)
         }
       }
