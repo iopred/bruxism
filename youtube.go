@@ -12,6 +12,7 @@ import (
   "time"
 
   "github.com/atotto/clipboard"
+  ytc "github.com/iopred/ytlivechatapi"
 
   "golang.org/x/oauth2"
   "golang.org/x/oauth2/google"
@@ -30,15 +31,41 @@ func init() {
   flag.Parse()
 }
 
+type LiveChatMessage ytc.LiveChatMessage
+
+func (m *LiveChatMessage) Channel() string {
+  return m.Snippet.LiveChatId
+}
+
+func (m *LiveChatMessage) UserName() string {
+  return m.AuthorDetails.DisplayName
+}
+
+func (m *LiveChatMessage) UserId() string {
+  return m.AuthorDetails.ChannelId
+}
+
+func (m *LiveChatMessage) Message() string {
+  switch m.Snippet.Type {
+  case ytc.LiveChatMessageSnippetTypeText:
+    return html.UnescapeString(m.Snippet.TextMessageDetails.MessageText)
+  }
+  return html.UnescapeString(m.Snippet.DisplayMessage)
+}
+
+func (m *LiveChatMessage) MessageId() string {
+  return m.Id
+}
+
 type FanFunding struct {
   sync.Mutex
-  Messages map[string]*LiveChatMessage
+  Messages map[string]*ytc.LiveChatMessage
 }
 
 type YouTube struct {
   config      *oauth2.Config
   token       *oauth2.Token
-  Client      *YouTubeClient
+  Client      *ytc.Client
   MessageChan chan Message
   InsertChan  chan interface{}
   DeleteChan  chan interface{}
@@ -51,17 +78,17 @@ func NewYouTube() *YouTube {
     MessageChan: make(chan Message, 200),
     InsertChan:  make(chan interface{}, 200),
     DeleteChan:  make(chan interface{}, 200),
-    fanFunding:  FanFunding{Messages: make(map[string]*LiveChatMessage)},
+    fanFunding:  FanFunding{Messages: make(map[string]*ytc.LiveChatMessage)},
   }
 }
 
-func (yt *YouTube) pollBroadcasts(broadcasts []*LiveBroadcast, err error) {
+func (yt *YouTube) pollBroadcasts(broadcasts *ytc.LiveBroadcastListResponse, err error) {
   if err != nil {
     log.Println(err)
     return
   }
 
-  for _, broadcast := range broadcasts {
+  for _, broadcast := range broadcasts.Items {
     // If the broadcast has ended, it can't have a valid chat.
     if broadcast.Status.LifeCycleStatus == "complete" {
       continue
@@ -71,7 +98,7 @@ func (yt *YouTube) pollBroadcasts(broadcasts []*LiveBroadcast, err error) {
   }
 }
 
-func (yt *YouTube) pollMessages(broadcast *LiveBroadcast) {
+func (yt *YouTube) pollMessages(broadcast *ytc.LiveBroadcast) {
   pageToken := ""
   for {
     liveChatMessageListResponse, err := yt.Client.ListLiveChatMessages(broadcast.Snippet.LiveChatId, pageToken)
@@ -83,15 +110,18 @@ func (yt *YouTube) pollMessages(broadcast *LiveBroadcast) {
     } else {
       // Ignore the first results, we only want new chats.
       if pageToken != "" {
-        for i, message := range liveChatMessageListResponse.Items {
+        for _, message := range liveChatMessageListResponse.Items {
           // Ignore messages from ourselves.
           if message.AuthorDetails.ChannelId == yt.me {
             continue
           }
-          yt.MessageChan <- message
+
+          liveChatMessage := LiveChatMessage(*message)
+          yt.MessageChan <- &liveChatMessage
+
           switch message.Snippet.Type {
-          case LiveChatMessageSnippetTypeFanFunding:
-            yt.addFanFundingMessage(liveChatMessageListResponse.Items[i])
+          case ytc.LiveChatMessageSnippetTypeFanFunding:
+            yt.addFanFundingMessage(message)
           }
         }
       }
@@ -106,7 +136,7 @@ func (yt *YouTube) pollMessages(broadcast *LiveBroadcast) {
   }
 }
 
-func (yt *YouTube) writeMessagesToFile(messages []*LiveChatMessage, filename string) {
+func (yt *YouTube) writeMessagesToFile(messages []*ytc.LiveChatMessage, filename string) {
   output := ""
   for _, message := range messages {
     output += html.UnescapeString(message.Snippet.DisplayMessage) + "\n"
@@ -117,13 +147,13 @@ func (yt *YouTube) writeMessagesToFile(messages []*LiveChatMessage, filename str
   }
 }
 
-func (yt *YouTube) addFanFundingMessage(message *LiveChatMessage) {
+func (yt *YouTube) addFanFundingMessage(message *ytc.LiveChatMessage) {
   yt.fanFunding.Lock()
   defer yt.fanFunding.Unlock()
 
   if yt.fanFunding.Messages[message.Id] == nil {
     yt.fanFunding.Messages[message.Id] = message
-    yt.writeMessagesToFile([]*LiveChatMessage{message}, "youtubelatest.txt")
+    yt.writeMessagesToFile([]*ytc.LiveChatMessage{message}, "youtubelatest.txt")
   }
 
   largest := message
@@ -133,7 +163,7 @@ func (yt *YouTube) addFanFundingMessage(message *LiveChatMessage) {
     }
   }
 
-  yt.writeMessagesToFile([]*LiveChatMessage{largest}, "youtubelargest.txt")
+  yt.writeMessagesToFile([]*ytc.LiveChatMessage{largest}, "youtubelargest.txt")
 }
 
 func (yt *YouTube) generateOauthUrl() string {
@@ -212,7 +242,7 @@ func (yt *YouTube) Open() error {
     return err
   }
 
-  yt.Client = &YouTubeClient{yt.config.Client(oauth2.NoContext, yt.token)}
+  yt.Client = ytc.NewClient(yt.config.Client(oauth2.NoContext, yt.token))
 
   me, err := yt.Client.GetMe()
   if err != nil {
@@ -224,14 +254,14 @@ func (yt *YouTube) Open() error {
   yt.pollBroadcasts(yt.Client.ListLiveBroadcasts("mine=true"))
 
   // This is a map of channel id's to channels, it is used to send messages to a goroutine that is rate limiting each chatroom.
-  channelInsertChans := make(map[string]chan *LiveChatMessage)
+  channelInsertChans := make(map[string]chan *ytc.LiveChatMessage)
 
   // Chat messages need to be separated by one second, they must be handled by a separate goroutine.
-  insertLiveChatMessageLimited := func(liveChatMessage *LiveChatMessage) {
-    channelInsertChan := channelInsertChans[liveChatMessage.Channel()]
+  insertLiveChatMessageLimited := func(liveChatMessage *ytc.LiveChatMessage) {
+    channelInsertChan := channelInsertChans[liveChatMessage.Snippet.LiveChatId]
     if channelInsertChan == nil {
-      channelInsertChan = make(chan *LiveChatMessage, 200)
-      channelInsertChans[liveChatMessage.Channel()] = channelInsertChan
+      channelInsertChan = make(chan *ytc.LiveChatMessage, 200)
+      channelInsertChans[liveChatMessage.Snippet.LiveChatId] = channelInsertChan
 
       // Start a goroutine to rate limit sends.
       go func() {
@@ -252,20 +282,20 @@ func (yt *YouTube) Open() error {
       select {
       case request := <-yt.InsertChan:
         switch request := request.(type) {
-        case *LiveChatMessage:
+        case *ytc.LiveChatMessage:
           insertLiveChatMessageLimited(request)
-        case *LiveChatBan:
+        case *ytc.LiveChatBan:
           yt.Client.InsertLiveChatBan(request)
-        case *LiveChatModerator:
+        case *ytc.LiveChatModerator:
           yt.Client.InsertLiveChatModerator(request)
         }
       case request := <-yt.DeleteChan:
         switch request := request.(type) {
-        case *LiveChatMessage:
+        case *ytc.LiveChatMessage:
           yt.Client.DeleteLiveChatMessage(request)
-        case *LiveChatBan:
+        case *ytc.LiveChatBan:
           yt.Client.DeleteLiveChatBan(request)
-        case *LiveChatModerator:
+        case *ytc.LiveChatModerator:
           yt.Client.DeleteLiveChatModerator(request)
         }
       }
@@ -279,16 +309,16 @@ func (yt *YouTube) Open() error {
 }
 
 func (yt *YouTube) SendMessage(channel, message string) error {
-  yt.InsertChan <- NewLiveChatMessage(channel, message)
+  yt.InsertChan <- ytc.NewLiveChatMessage(channel, message)
   return nil
 }
 
 func (yt *YouTube) DeleteMessage(messageId string) error {
-  yt.DeleteChan <- &LiveChatMessage{Id: messageId}
+  yt.DeleteChan <- &ytc.LiveChatMessage{Id: messageId}
   return nil
 }
 
 func (yt *YouTube) BanUser(channel, user string, duration int) error {
-  yt.InsertChan <- NewLiveChatBan(channel, user, duration)
+  yt.InsertChan <- ytc.NewLiveChatBan(channel, user, duration)
   return nil
 }
