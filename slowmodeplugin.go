@@ -51,9 +51,6 @@ func (e *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error 
 }
 
 func (e *SlowModePlugin) Save() []byte {
-  if len(e.Enabled) == 0 {
-    return nil
-  }
   if data, err := json.Marshal(e); err == nil {
     return data
   }
