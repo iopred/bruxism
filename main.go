@@ -1,54 +1,56 @@
 package main
 
 import (
-  "log"
+  "flag"
   "os"
   "os/signal"
+  "time"
 )
 
-// Flip these to true to echo, delete or timeout every message.
-var echo = false
-var del = false
-var ban = false
+var youtubeUrl bool
+var youtubeAuth string
+var youtubeConfigFilename string
+var youtubeTokenFilename string
+var youtubeLiveChatIds string
+var discordEmail string
+var discordPassword string
 
-func registerService(service Service) error {
-  go func() {
-    messageChan := service.MessageChannel()
-    for {
-      message := <-messageChan
-      log.Printf("<%s> %s: %s\n", message.Channel(), message.UserName(), message.Message())
-
-      if echo {
-        if err := service.SendMessage(message.Channel(), message.Message()); err != nil {
-          log.Println(err)
-        }
-      }
-      if del {
-        if err := service.DeleteMessage(message.MessageId()); err != nil {
-          log.Println(err)
-        }
-      }
-      if ban {
-        if err := service.BanUser(message.Channel(), message.UserId(), 10); err != nil {
-          log.Println(err)
-        }
-      }
-    }
-  }()
-
-  return service.Open()
+func init() {
+  flag.BoolVar(&youtubeUrl, "youtubeurl", false, "Generates a URL that provides an auth code.")
+  flag.StringVar(&youtubeAuth, "youtubeauth", "", "Exchanges the provided auth code for an oauth2 token.")
+  flag.StringVar(&youtubeConfigFilename, "youtubeconfig", "youtubeoauth2config.json", "The filename that contains the oauth2 config.")
+  flag.StringVar(&youtubeTokenFilename, "youtubetoken", "youtubeoauth2token.json", "The filename to store the oauth2 token.")
+  flag.StringVar(&youtubeLiveChatIds, "youtubelivechatids", "", "Additional chat id's to poll.")
+  flag.StringVar(&discordEmail, "discordemail", "", "Discord account email.")
+  flag.StringVar(&discordPassword, "discordpassword", "", "Discord account password.")
+  flag.Parse()
 }
 
 func main() {
-  if err := registerService(NewYouTube()); err != nil {
-    log.Println(err)
-  }
+  bot := NewBot()
+  youtube := NewYouTube(youtubeUrl, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIds)
+  discord := NewDiscord(discordEmail, discordPassword)
+  bot.RegisterService(youtube)
+  bot.RegisterService(discord)
+  bot.RegisterPlugin(youtube, NewSlowModePlugin())
+  bot.Open()
 
-  if err := registerService(NewDiscord()); err != nil {
-    log.Println(err)
-  }
+  defer func() {
+    recover()
+    bot.Save()
+  }()
 
   c := make(chan os.Signal, 1)
   signal.Notify(c, os.Interrupt, os.Kill)
-  <-c
+
+  t := time.Tick(1 * time.Minute)
+
+  for {
+    select {
+    case <-c:
+      return
+    case <-t:
+      bot.Save()
+    }
+  }
 }

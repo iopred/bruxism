@@ -2,12 +2,10 @@ package main
 
 import (
   "encoding/json"
-  "errors"
-  "flag"
-  "fmt"
   "html"
   "io/ioutil"
   "log"
+  "strings"
   "sync"
   "time"
 
@@ -18,18 +16,7 @@ import (
   "golang.org/x/oauth2/google"
 )
 
-var url bool
-var auth string
-var config string
-var token string
-
-func init() {
-  flag.BoolVar(&url, "youtubeurl", false, "Generates a URL that provides an auth code.")
-  flag.StringVar(&auth, "youtubeauth", "", "Exchanges the provided auth code for an oauth2 token.")
-  flag.StringVar(&config, "youtubeconfig", "youtubeoauth2config.json", "The filename that contains the oauth2 config.")
-  flag.StringVar(&token, "youtubetoken", "youtubeoauth2token.json", "The filename to store the oauth2 token.")
-  flag.Parse()
-}
+const YouTubeServiceName string = "YouTube"
 
 type LiveChatMessage ytc.LiveChatMessage
 
@@ -57,28 +44,42 @@ func (m *LiveChatMessage) MessageId() string {
   return m.Id
 }
 
+func (m *LiveChatMessage) IsModerator() bool {
+  return m.AuthorDetails.IsChatOwner || m.AuthorDetails.IsChatModerator
+}
+
 type FanFunding struct {
   sync.Mutex
   Messages map[string]*ytc.LiveChatMessage
 }
 
 type YouTube struct {
-  config      *oauth2.Config
-  token       *oauth2.Token
-  Client      *ytc.Client
-  MessageChan chan Message
-  InsertChan  chan interface{}
-  DeleteChan  chan interface{}
-  fanFunding  FanFunding
-  me          string
+  url            bool
+  auth           string
+  configFilename string
+  tokenFilename  string
+  liveChatIds    string
+  config         *oauth2.Config
+  token          *oauth2.Token
+  Client         *ytc.Client
+  messageChan    chan Message
+  InsertChan     chan interface{}
+  DeleteChan     chan interface{}
+  fanFunding     FanFunding
+  me             string
 }
 
-func NewYouTube() *YouTube {
+func NewYouTube(url bool, auth, configFilename, tokenFilename, liveChatIds string) *YouTube {
   return &YouTube{
-    MessageChan: make(chan Message, 200),
-    InsertChan:  make(chan interface{}, 200),
-    DeleteChan:  make(chan interface{}, 200),
-    fanFunding:  FanFunding{Messages: make(map[string]*ytc.LiveChatMessage)},
+    url:            url,
+    auth:           auth,
+    configFilename: configFilename,
+    tokenFilename:  tokenFilename,
+    liveChatIds:    liveChatIds,
+    messageChan:    make(chan Message, 200),
+    InsertChan:     make(chan interface{}, 200),
+    DeleteChan:     make(chan interface{}, 200),
+    fanFunding:     FanFunding{Messages: make(map[string]*ytc.LiveChatMessage)},
   }
 }
 
@@ -90,7 +91,7 @@ func (yt *YouTube) pollBroadcasts(broadcasts *ytc.LiveBroadcastListResponse, err
 
   for _, broadcast := range broadcasts.Items {
     // If the broadcast has ended, it can't have a valid chat.
-    if broadcast.Status.LifeCycleStatus == "complete" {
+    if broadcast.Status != nil && broadcast.Status.LifeCycleStatus == "complete" {
       continue
     }
 
@@ -117,7 +118,7 @@ func (yt *YouTube) pollMessages(broadcast *ytc.LiveBroadcast) {
           }
 
           liveChatMessage := LiveChatMessage(*message)
-          yt.MessageChan <- &liveChatMessage
+          yt.messageChan <- &liveChatMessage
 
           switch message.Snippet.Type {
           case ytc.LiveChatMessageSnippetTypeFanFunding:
@@ -166,16 +167,16 @@ func (yt *YouTube) addFanFundingMessage(message *ytc.LiveChatMessage) {
   yt.writeMessagesToFile([]*ytc.LiveChatMessage{largest}, "youtubelargest.txt")
 }
 
-func (yt *YouTube) generateOauthUrl() string {
+func (yt *YouTube) generateOauthUrlAndExit() {
   // Redirect user to Google's consent page to ask for permission
   // for the scopes specified above.
   url := yt.config.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
   clipboard.WriteAll(url)
-  return fmt.Sprintf("Visit the following URL to generate an auth code, then rerun with -auth=<code> (It has also been copied to your clipboard):\n%v", url)
+  log.Fatalln("Visit the following URL to generate an auth code, then rerun with -auth=<code> (It has also been copied to your clipboard):\n%v", url)
 }
 
 func (yt *YouTube) createConfig() error {
-  b, err := ioutil.ReadFile(config)
+  b, err := ioutil.ReadFile(yt.configFilename)
   if err != nil {
     return err
   }
@@ -185,9 +186,9 @@ func (yt *YouTube) createConfig() error {
 }
 
 func (yt *YouTube) createToken() error {
-  if auth != "" {
+  if yt.auth != "" {
     // Let's exchange our code
-    tok, err := yt.config.Exchange(oauth2.NoContext, auth)
+    tok, err := yt.config.Exchange(oauth2.NoContext, yt.auth)
     if err != nil {
       return err
     }
@@ -197,13 +198,13 @@ func (yt *YouTube) createToken() error {
     if err != nil {
       return err
     } else {
-      err := ioutil.WriteFile(token, b, 0777)
+      err := ioutil.WriteFile(yt.tokenFilename, b, 0777)
       if err != nil {
         return err
       }
     }
   } else {
-    b, err := ioutil.ReadFile(token)
+    b, err := ioutil.ReadFile(yt.tokenFilename)
     if err == nil {
       yt.token = &oauth2.Token{}
       // A token was found, unmarshall it and use it.
@@ -214,44 +215,57 @@ func (yt *YouTube) createToken() error {
     } else {
       // There was an error with the token, maybe it doesn't exist.
       // If we haven't been given an auth code, we must generate one.
-      return errors.New(yt.generateOauthUrl())
+      yt.generateOauthUrlAndExit()
     }
   }
   return nil
 }
 
 func (yt *YouTube) Name() string {
-  return "YouTube"
+  return YouTubeServiceName
 }
 
-func (yt *YouTube) MessageChannel() <-chan Message {
-  return yt.MessageChan
-}
-
-func (yt *YouTube) Open() error {
+func (yt *YouTube) Open() (<-chan Message, error) {
   if err := yt.createConfig(); err != nil {
-    return err
+    return nil, err
   }
 
   // An oauth URL was requested, error early.
-  if url {
-    return errors.New(yt.generateOauthUrl())
+  if yt.url {
+    yt.generateOauthUrlAndExit()
   }
 
   if err := yt.createToken(); err != nil {
-    return err
+    return nil, err
   }
 
   yt.Client = ytc.NewClient(yt.config.Client(oauth2.NoContext, yt.token))
 
   me, err := yt.Client.GetMe()
   if err != nil {
-    return err
+    return nil, err
   }
   yt.me = me
 
   yt.pollBroadcasts(yt.Client.ListLiveBroadcasts("default=true"))
   yt.pollBroadcasts(yt.Client.ListLiveBroadcasts("mine=true"))
+  if yt.liveChatIds != "" {
+    liveChatIdsArray := strings.Split(yt.liveChatIds, ",")
+
+    additionalBroadcasts := &ytc.LiveBroadcastListResponse{
+      Items: make([]*ytc.LiveBroadcast, 0),
+    }
+
+    for _, liveChatId := range liveChatIdsArray {
+      additionalBroadcasts.Items = append(additionalBroadcasts.Items, &ytc.LiveBroadcast{
+        Snippet: &ytc.LiveBroadcastSnippet{
+          LiveChatId: liveChatId,
+        },
+      })
+    }
+
+    yt.pollBroadcasts(additionalBroadcasts, nil)
+  }
 
   // This is a map of channel id's to channels, it is used to send messages to a goroutine that is rate limiting each chatroom.
   channelInsertChans := make(map[string]chan *ytc.LiveChatMessage)
@@ -305,7 +319,7 @@ func (yt *YouTube) Open() error {
     }
   }()
 
-  return nil
+  return yt.messageChan, nil
 }
 
 func (yt *YouTube) SendMessage(channel, message string) error {

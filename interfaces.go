@@ -6,13 +6,19 @@ type Message interface {
   UserId() string
   Message() string
   MessageId() string
+  IsModerator() bool
 }
 
 type Service interface {
   Name() string
-  MessageChannel() <-chan Message
-  Open() error
+  Open() (<-chan Message, error)
   SendMessage(channel, message string) error
   DeleteMessage(messageId string) error
   BanUser(channel, user string, duration int) error
+}
+
+type Plugin interface {
+  Name() string
+  Register(*Bot, Service, []byte) error
+  Save() []byte
 }

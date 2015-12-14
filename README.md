@@ -1,2 +1,2 @@
 # Bruxism
-Playing around with YouTube live chat APIs.
+A chat bot for YouTube and Discord.

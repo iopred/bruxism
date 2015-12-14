@@ -2,20 +2,12 @@ package main
 
 import (
   "errors"
-  "flag"
   "strconv"
 
   "github.com/Xackery/discord"
 )
 
-var discordEmail string
-var discordPassword string
-
-func init() {
-  flag.StringVar(&discordEmail, "discordemail", "", "Discord account email.")
-  flag.StringVar(&discordPassword, "discordpassword", "", "Discord account password.")
-  flag.Parse()
-}
+const DiscordServiceName string = "Discord"
 
 type DiscordMessage discord.Message
 
@@ -39,15 +31,23 @@ func (m *DiscordMessage) MessageId() string {
   return strconv.Itoa(m.ID)
 }
 
-type Discord struct {
-  Client      *discord.Client
-  MessageChan chan Message
+func (m *DiscordMessage) IsModerator() bool {
+  return false
 }
 
-func NewDiscord() *Discord {
+type Discord struct {
+  email       string
+  password    string
+  Client      *discord.Client
+  messageChan chan Message
+}
+
+func NewDiscord(email, password string) *Discord {
   return &Discord{
+    email:       email,
+    password:    password,
     Client:      &discord.Client{},
-    MessageChan: make(chan Message, 200),
+    messageChan: make(chan Message, 200),
   }
 }
 
@@ -55,22 +55,18 @@ func (d *Discord) onMessage(event discord.Event, message discord.Message) {
   // Ignore messages from ourselves.
   if message.Author.ID != d.Client.User.ID {
     dm := DiscordMessage(message)
-    d.MessageChan <- &dm
+    d.messageChan <- &dm
   }
 }
 
 func (d *Discord) Name() string {
-  return "Discord"
+  return DiscordServiceName
 }
 
-func (d *Discord) MessageChannel() <-chan Message {
-  return d.MessageChan
-}
+func (d *Discord) Open() (<-chan Message, error) {
 
-func (d *Discord) Open() error {
-
-  if err := d.Client.Login(discordEmail, discordPassword); err != nil {
-    return err
+  if err := d.Client.Login(d.email, d.password); err != nil {
+    return nil, err
   }
 
   d.Client.OnMessageCreate = d.onMessage
@@ -79,7 +75,7 @@ func (d *Discord) Open() error {
     d.Client.Listen()
   }()
 
-  return nil
+  return d.messageChan, nil
 }
 
 func (d *Discord) SendMessage(channel, message string) error {
