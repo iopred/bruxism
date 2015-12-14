@@ -2,6 +2,7 @@ package main
 
 import (
   "encoding/json"
+  "fmt"
   "log"
   "strings"
 )
@@ -29,26 +30,33 @@ func (e *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error 
       messageChannel := message.Channel()
       messageModerator := message.IsModerator()
 
-      // TODO: Refactor this to use commands, once they exist.
-      if messageMessage == "!slowmodeon" && messageModerator {
-        if e.Enabled[messageChannel] {
-          service.SendMessage(messageChannel, "Slow mode is on (You will be temporarily banned for 30 seconds when you chat).")
-        } else {
-          e.Enabled[messageChannel] = true
-          service.SendMessage(messageChannel, "Slow mode is now on (You will be temporarily banned for 30 seconds when you chat).")
+      if strings.HasPrefix(messageMessage, "!slowmode") {
+        enabled := e.Enabled[messageChannel]
+        if messageMessage == "!slowmodeon" {
+          enabled = true
+        } else if messageMessage == "!slowmodeoff" {
+          enabled = false
         }
-      } else if messageMessage == "!slowmodeoff" && messageModerator {
-        if e.Enabled[messageChannel] {
-          e.Enabled[messageChannel] = false
-          service.SendMessage(messageChannel, "Slow mode is now off.")
-        } else {
-          service.SendMessage(messageChannel, "Slow mode is off.")
+
+        changed := enabled != e.Enabled[messageChannel]
+        if changed {
+          e.Enabled[messageChannel] = enabled
         }
-      } else if messageMessage == "!slowmode" && messageModerator {
-        if e.Enabled[messageChannel] {
-          service.SendMessage(messageChannel, "Slow mode is on (You will be temporarily banned for 30 seconds when you chat).")
+
+        var label string
+        var hint string
+        if enabled {
+          label = "on"
+          hint = " (You will be temporarily banned for 30 seconds when you chat)"
         } else {
-          service.SendMessage(messageChannel, "Slow mode is off.")
+          label = "off"
+          hint = ""
+        }
+
+        if changed {
+          service.SendMessage(messageChannel, fmt.Sprintf("Slow mode is now %v%v.", label, hint))
+        } else {
+          service.SendMessage(messageChannel, fmt.Sprintf("Slow mode is %v%v.", label, hint))
         }
       } else if e.Enabled[messageChannel] && !messageModerator {
         if err := service.BanUser(messageChannel, message.UserId(), 30); err != nil {
