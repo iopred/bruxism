@@ -2,7 +2,6 @@ package main
 
 import (
   "encoding/json"
-  "fmt"
   "log"
   "strings"
 )
@@ -45,15 +44,15 @@ func (e *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error 
 
         if enabled {
           if changed {
-            service.SendMessage(messageChannel, fmt.Sprintf("Slow mode is now on (You will be temporarily banned for 30 seconds when you chat).", label, hint))
+            service.SendMessage(messageChannel, "Slow mode is now on (You will be temporarily banned for 30 seconds when you chat).")
           } else {
-            service.SendMessage(messageChannel, fmt.Sprintf("Slow mode is on (You will be temporarily banned for 30 seconds when you chat).", label, hint))
+            service.SendMessage(messageChannel, "Slow mode is on (You will be temporarily banned for 30 seconds when you chat).")
           }
         } else {
           if changed {
-            service.SendMessage(messageChannel, fmt.Sprintf("Slow mode is now off.", label, hint))
+            service.SendMessage(messageChannel, "Slow mode is now off.")
           } else {
-            service.SendMessage(messageChannel, fmt.Sprintf("Slow mode is off.", label, hint))
+            service.SendMessage(messageChannel, "Slow mode is off.")
           }
         }
       } else if e.Enabled[messageChannel] && !messageModerator {
