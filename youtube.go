@@ -112,11 +112,6 @@ func (yt *YouTube) pollMessages(broadcast *ytc.LiveBroadcast) {
       // Ignore the first results, we only want new chats.
       if pageToken != "" {
         for _, message := range liveChatMessageListResponse.Items {
-          // Ignore messages from ourselves.
-          if message.AuthorDetails.ChannelId == yt.me {
-            continue
-          }
-
           liveChatMessage := LiveChatMessage(*message)
           yt.messageChan <- &liveChatMessage
 
@@ -320,6 +315,10 @@ func (yt *YouTube) Open() (<-chan Message, error) {
   }()
 
   return yt.messageChan, nil
+}
+
+func (yt *YouTube) IsMe(message Message) bool {
+  return message.UserId() == yt.me
 }
 
 func (yt *YouTube) SendMessage(channel, message string) error {

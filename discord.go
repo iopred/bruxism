@@ -52,11 +52,8 @@ func NewDiscord(email, password string) *Discord {
 }
 
 func (d *Discord) onMessage(event discord.Event, message discord.Message) {
-  // Ignore messages from ourselves.
-  if message.Author.ID != d.Client.User.ID {
-    dm := DiscordMessage(message)
-    d.messageChan <- &dm
-  }
+  dm := DiscordMessage(message)
+  d.messageChan <- &dm
 }
 
 func (d *Discord) Name() string {
@@ -76,6 +73,10 @@ func (d *Discord) Open() (<-chan Message, error) {
   }()
 
   return d.messageChan, nil
+}
+
+func (d *Discord) IsMe(message Message) bool {
+  return message.UserId() == strconv.Itoa(d.Client.User.ID)
 }
 
 func (d *Discord) SendMessage(channel, message string) error {

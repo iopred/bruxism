@@ -13,8 +13,10 @@ func (e *EchoPlugin) Register(bot *Bot, service Service, data []byte) error {
 	go func() {
 		for {
 			message := <-messageChannel
-			if err := service.SendMessage(message.Channel(), message.Message()); err != nil {
-				log.Println(err)
+			if !service.IsMe(message) {
+				if err := service.SendMessage(message.Channel(), message.Message()); err != nil {
+					log.Println(err)
+				}
 			}
 		}
 	}()
@@ -40,8 +42,10 @@ func (e *BanPlugin) Register(bot *Bot, service Service, data []byte) error {
 	go func() {
 		for {
 			message := <-messageChannel
-			if err := service.BanUser(message.Channel(), message.UserId(), 10); err != nil {
-				log.Println(err)
+			if !service.IsMe(message) {
+				if err := service.BanUser(message.Channel(), message.UserId(), 10); err != nil {
+					log.Println(err)
+				}
 			}
 		}
 	}()
@@ -67,8 +71,10 @@ func (e *DeletePlugin) Register(bot *Bot, service Service, data []byte) error {
 	go func() {
 		for {
 			message := <-messageChannel
-			if err := service.DeleteMessage(message.MessageId()); err != nil {
-				log.Println(err)
+			if !service.IsMe(message) {
+				if err := service.DeleteMessage(message.MessageId()); err != nil {
+					log.Println(err)
+				}
 			}
 		}
 	}()
