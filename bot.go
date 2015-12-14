@@ -43,7 +43,7 @@ func (b *Bot) RegisterPlugin(service Service, plugin Plugin) {
 	plugin.Register(b, service, b.getData(service, plugin))
 }
 
-func (b *Bot) MessageChannel(service Service) <-chan Message {
+func (b *Bot) NewMessageChannel(service Service) <-chan Message {
 	messageChannel := make(chan Message, 200)
 	serviceName := service.Name()
 	b.services[serviceName].messageChannels = append(b.services[serviceName].messageChannels, messageChannel)

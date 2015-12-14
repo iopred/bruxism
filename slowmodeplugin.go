@@ -21,7 +21,7 @@ func (e *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error 
 		}
 	}
 
-	messageChannel := bot.MessageChannel(service)
+	messageChannel := bot.NewMessageChannel(service)
 	go func() {
 		for {
 			message := <-messageChannel

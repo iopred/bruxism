@@ -9,7 +9,7 @@ func (e *EchoPlugin) Name() string {
 }
 
 func (e *EchoPlugin) Register(bot *Bot, service Service, data []byte) error {
-	messageChannel := bot.MessageChannel(service)
+	messageChannel := bot.NewMessageChannel(service)
 	go func() {
 		for {
 			message := <-messageChannel
@@ -38,7 +38,7 @@ func (e *BanPlugin) Name() string {
 }
 
 func (e *BanPlugin) Register(bot *Bot, service Service, data []byte) error {
-	messageChannel := bot.MessageChannel(service)
+	messageChannel := bot.NewMessageChannel(service)
 	go func() {
 		for {
 			message := <-messageChannel
@@ -67,7 +67,7 @@ func (e *DeletePlugin) Name() string {
 }
 
 func (e *DeletePlugin) Register(bot *Bot, service Service, data []byte) error {
-	messageChannel := bot.MessageChannel(service)
+	messageChannel := bot.NewMessageChannel(service)
 	go func() {
 		for {
 			message := <-messageChannel
