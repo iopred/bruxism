@@ -29,15 +29,24 @@ func (e *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error 
       messageChannel := message.Channel()
       messageModerator := message.IsModerator()
 
+      // TODO: Refactor this to use commands, once they exist.
       if messageMessage == "!slowmodeon" && messageModerator {
-        e.Enabled[messageChannel] = true
-        service.SendMessage(messageChannel, "Slow mode is now on (You will be temporarily banned for 30 seconds when you chat).")
+        if e.Enabled[messageChannel] {
+          service.SendMessage(messageChannel, "Slow mode is on (You will be temporarily banned for 30 seconds when you chat).")
+        } else {
+          e.Enabled[messageChannel] = true
+          service.SendMessage(messageChannel, "Slow mode is now on (You will be temporarily banned for 30 seconds when you chat).")
+        }
       } else if messageMessage == "!slowmodeoff" && messageModerator {
-        e.Enabled[messageChannel] = false
-        service.SendMessage(messageChannel, "Slow mode is now off.")
+        if e.Enabled[messageChannel] {
+          e.Enabled[messageChannel] = false
+          service.SendMessage(messageChannel, "Slow mode is now off.")
+        } else {
+          service.SendMessage(messageChannel, "Slow mode is off.")
+        }
       } else if messageMessage == "!slowmode" && messageModerator {
         if e.Enabled[messageChannel] {
-          service.SendMessage(messageChannel, "Slow mode is on.")
+          service.SendMessage(messageChannel, "Slow mode is on (You will be temporarily banned for 30 seconds when you chat).")
         } else {
           service.SendMessage(messageChannel, "Slow mode is off.")
         }
