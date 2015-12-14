@@ -7,7 +7,7 @@ import (
 )
 
 type BotService struct {
-	service         Service
+	Service
 	plugins         map[string]Plugin
 	messageChannels []chan Message
 }
@@ -32,7 +32,7 @@ func (b *Bot) getData(service Service, plugin Plugin) []byte {
 func (b *Bot) RegisterService(service Service) {
 	serviceName := service.Name()
 	b.services[serviceName] = &BotService{
-		service:         service,
+		Service:         service,
 		plugins:         make(map[string]Plugin, 0),
 		messageChannels: make([]chan Message, 0),
 	}
@@ -64,10 +64,10 @@ func (b *Bot) listen(service Service, serviceMessageChannel <-chan Message) {
 
 func (b *Bot) Open() {
 	for _, service := range b.services {
-		if messageChan, err := service.service.Open(); err == nil {
-			go b.listen(service.service, messageChan)
+		if messageChan, err := service.Open(); err == nil {
+			go b.listen(service, messageChan)
 		} else {
-			log.Println("Error creating service %v: %v", service.service.Name(), err)
+			log.Println("Error creating service %v: %v", service.Name(), err)
 		}
 
 	}
@@ -75,7 +75,7 @@ func (b *Bot) Open() {
 
 func (b *Bot) Save() {
 	for _, service := range b.services {
-		serviceName := service.service.Name()
+		serviceName := service.Name()
 		if err := os.Mkdir(serviceName, os.ModePerm); err != nil {
 			if !os.IsExist(err) {
 				log.Println("Error creating service directory.")

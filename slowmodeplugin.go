@@ -30,10 +30,10 @@ func (e *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error 
 
 			if messageMessage == "!slowmodeon" && message.IsModerator() {
 				e.Enabled[messageChannel] = true
-				service.SendMessage(messageChannel, "Slow mode on (You will be temporarily banned for 30 seconds when you chat).")
+				service.SendMessage(messageChannel, "Slow mode is now on (You will be temporarily banned for 30 seconds when you chat).")
 			} else if messageMessage == "!slowmodeoff" && message.IsModerator() {
 				e.Enabled[messageChannel] = false
-				service.SendMessage(messageChannel, "Slow mode off.")
+				service.SendMessage(messageChannel, "Slow mode is now off.")
 			} else if messageMessage == "!slowmode" && message.IsModerator() {
 				if e.Enabled[messageChannel] {
 					service.SendMessage(messageChannel, "Slow mode is on.")
