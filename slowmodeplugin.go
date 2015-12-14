@@ -43,20 +43,18 @@ func (e *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error 
           e.Enabled[messageChannel] = enabled
         }
 
-        var label string
-        var hint string
         if enabled {
-          label = "on"
-          hint = " (You will be temporarily banned for 30 seconds when you chat)"
+          if changed {
+            service.SendMessage(messageChannel, fmt.Sprintf("Slow mode is now on (You will be temporarily banned for 30 seconds when you chat).", label, hint))
+          } else {
+            service.SendMessage(messageChannel, fmt.Sprintf("Slow mode is on (You will be temporarily banned for 30 seconds when you chat).", label, hint))
+          }
         } else {
-          label = "off"
-          hint = ""
-        }
-
-        if changed {
-          service.SendMessage(messageChannel, fmt.Sprintf("Slow mode is now %v%v.", label, hint))
-        } else {
-          service.SendMessage(messageChannel, fmt.Sprintf("Slow mode is %v%v.", label, hint))
+          if changed {
+            service.SendMessage(messageChannel, fmt.Sprintf("Slow mode is now off.", label, hint))
+          } else {
+            service.SendMessage(messageChannel, fmt.Sprintf("Slow mode is off.", label, hint))
+          }
         }
       } else if e.Enabled[messageChannel] && !messageModerator {
         if err := service.BanUser(messageChannel, message.UserId(), 30); err != nil {
