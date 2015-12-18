@@ -3,8 +3,11 @@ package main
 import (
   "fmt"
   "log"
+  "strconv"
   "strings"
   "time"
+
+  "github.com/dustin/go-humanize"
 )
 
 type TopStreamersPlugin struct {
@@ -68,7 +71,13 @@ func (p *TopStreamersPlugin) TopStreamers() (string, error) {
   channels := make([]string, 0)
 
   for _, video := range videos {
-    channels = append(channels, fmt.Sprintf("%v (%v)", video.Snippet.ChannelTitle, video.LiveStreamingDetails.ConcurrentViewers))
+    i, err := strconv.Atoi(video.LiveStreamingDetails.ConcurrentViewers)
+
+    if err != nil {
+      continue
+    }
+
+    channels = append(channels, fmt.Sprintf("%v (%v)", video.Snippet.ChannelTitle, humanize.FormatInteger("#,###.", i)))
   }
 
   return fmt.Sprintf("Current top streamers: %v", strings.Join(channels, ", ")), nil
