@@ -3,7 +3,6 @@ package main
 import (
   "fmt"
   "log"
-  "strconv"
   "strings"
   "time"
 
@@ -47,7 +46,7 @@ func (p *TopStreamersPlugin) Register(bot *Bot, service Service, data []byte) er
 
         p.lastUpdate = n
 
-        m, err := p.TopStreamers()
+        m, err := p.TopStreamers(5)
         p.lastMessage = m
 
         if err != nil {
@@ -62,22 +61,19 @@ func (p *TopStreamersPlugin) Register(bot *Bot, service Service, data []byte) er
   return nil
 }
 
-func (p *TopStreamersPlugin) TopStreamers() (string, error) {
-  videos, err := p.youTube.GetTopLivestreams(5)
+func (p *TopStreamersPlugin) TopStreamers(count int) (string, error) {
+  videoList, err := p.youTube.GetTopLivestreams(200)
   if err != nil {
     return "", err
   }
 
   channels := make([]string, 0)
 
-  for _, video := range videos {
-    i, err := strconv.Atoi(video.LiveStreamingDetails.ConcurrentViewers)
-
-    if err != nil {
-      continue
+  for i, video := range videoList {
+    channels = append(channels, fmt.Sprintf("%v (%v)", video.Snippet.ChannelTitle, humanize.Comma(int64(video.LiveStreamingDetails.ConcurrentViewersInteger))))
+    if i >= count {
+      break
     }
-
-    channels = append(channels, fmt.Sprintf("%v (%v)", video.Snippet.ChannelTitle, humanize.Comma(int64(i))))
   }
 
   return fmt.Sprintf("Current top streamers: %v.", strings.Join(channels, ", ")), nil

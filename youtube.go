@@ -6,6 +6,8 @@ import (
   "html"
   "io/ioutil"
   "log"
+  "sort"
+  "strconv"
   "strings"
   "sync"
   "time"
@@ -414,11 +416,12 @@ type VideoSnippet struct {
 }
 
 type VideoLiveStreamingDetails struct {
-  ActualStartTime    string `json="actualStartTime,omitempty"`
-  ActualEndTime      string `json="actualEndTime,omitempty"`
-  ScheduledStartTime string `json="scheduledStartTime,omitempty"`
-  ScheduledEndTime   string `json="scheduledEndTime,omitempty"`
-  ConcurrentViewers  string `json="concurrentViewers,omitempty"`
+  ActualStartTime          string `json="actualStartTime,omitempty"`
+  ActualEndTime            string `json="actualEndTime,omitempty"`
+  ScheduledStartTime       string `json="scheduledStartTime,omitempty"`
+  ScheduledEndTime         string `json="scheduledEndTime,omitempty"`
+  ConcurrentViewers        string `json="concurrentViewers,omitempty"`
+  ConcurrentViewersInteger int
 }
 
 const VideoKind string = "youtube#video"
@@ -443,43 +446,109 @@ type VideoListResponse struct {
   Items         []*Video      `json="items,omitempty"`
 }
 
-func (yt *YouTube) GetTopLivestreams(count int) ([]*Video, error) {
-  resp, err := yt.Client.Get(fmt.Sprintf("https://www.googleapis.com/youtube/v3/playlistItems?maxResults=%v&part=id,contentDetails&playlistId=PLiCvVJzBupKmEehQ3hnNbbfBjLUyvGlqx", count))
-  if err != nil {
-    return nil, err
-  }
+type VideoList []*Video
 
-  defer resp.Body.Close()
-  body, err := ioutil.ReadAll(resp.Body)
-  if err != nil {
-    return nil, err
-  }
+func (v VideoList) Len() int {
+  return len(v)
+}
 
-  playlistItemListResponse := &PlaylistItemListResponse{}
-  err = json.Unmarshal(body, playlistItemListResponse)
-  if err != nil {
-    return nil, err
-  }
+func (v VideoList) Swap(i, j int) {
+  v[i], v[j] = v[j], v[i]
+}
 
+func (v VideoList) Less(i, j int) bool {
+  return v[i].LiveStreamingDetails.ConcurrentViewersInteger > v[j].LiveStreamingDetails.ConcurrentViewersInteger
+}
+
+func (yt *YouTube) GetTopLivestreamIds(count int) ([]string, error) {
   ids := make([]string, 0)
-  for _, playlistItem := range playlistItemListResponse.Items {
-    ids = append(ids, playlistItem.ContentDetails.VideoId)
+
+  pageTokenString := ""
+
+  for {
+    resp, err := yt.Client.Get(fmt.Sprintf("https://www.googleapis.com/youtube/v3/playlistItems?maxResults=50&part=id,contentDetails&playlistId=PLiCvVJzBupKmEehQ3hnNbbfBjLUyvGlqx%v", pageTokenString))
+    if err != nil {
+      return nil, err
+    }
+
+    defer resp.Body.Close()
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+      return nil, err
+    }
+
+    playlistItemListResponse := &PlaylistItemListResponse{}
+    err = json.Unmarshal(body, playlistItemListResponse)
+    if err != nil {
+      return nil, err
+    }
+
+    for _, playlistItem := range playlistItemListResponse.Items {
+      ids = append(ids, playlistItem.ContentDetails.VideoId)
+    }
+
+    if len(ids) >= count || playlistItemListResponse.NextPageToken == "" {
+      break
+    }
+
+    pageTokenString = "&pageToken=" + playlistItemListResponse.NextPageToken
   }
 
-  resp, err = yt.Client.Get(fmt.Sprintf("https://www.googleapis.com/youtube/v3/videos?maxResults=%v&part=id,snippet,liveStreamingDetails&id=%v", count, strings.Join(ids, ",")))
+  return ids, nil
+}
 
-  defer resp.Body.Close()
-  body, err = ioutil.ReadAll(resp.Body)
+func (yt *YouTube) GetVideosByIdList(ids []string) ([]*Video, error) {
+  videos := make([]*Video, 0)
+
+  i := 0
+  for i < len(ids) {
+    next := i + 50
+    if next >= len(ids) {
+      next = len(ids)
+    }
+    resp, err := yt.Client.Get(fmt.Sprintf("https://www.googleapis.com/youtube/v3/videos?maxResults=50&part=id,snippet,liveStreamingDetails&id=%v", strings.Join(ids[i:next], ",")))
+
+    defer resp.Body.Close()
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+      return nil, err
+    }
+
+    videoListResponse := &VideoListResponse{}
+    err = json.Unmarshal(body, videoListResponse)
+    if err != nil {
+      return nil, err
+    }
+
+    for _, video := range videoListResponse.Items {
+      if i, err := strconv.Atoi(video.LiveStreamingDetails.ConcurrentViewers); err == nil {
+        video.LiveStreamingDetails.ConcurrentViewersInteger = i
+      }
+    }
+
+    videos = append(videos, videoListResponse.Items...)
+
+    if len(videos) != len(ids) || videoListResponse.NextPageToken == "" {
+      break
+    }
+  }
+
+  return videos, nil
+}
+
+func (yt *YouTube) GetTopLivestreams(count int) ([]*Video, error) {
+  ids, err := yt.GetTopLivestreamIds(count)
   if err != nil {
-    return nil, err
+    return nil, nil
   }
 
-  videoListResponse := &VideoListResponse{}
-  err = json.Unmarshal(body, videoListResponse)
+  videos, err := yt.GetVideosByIdList(ids)
   if err != nil {
-    return nil, err
+    return nil, nil
   }
 
-  return videoListResponse.Items, nil
+  videoList := VideoList(videos)
+  sort.Sort(videoList)
 
+  return videoList, nil
 }
