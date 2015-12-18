@@ -9,37 +9,6 @@ type Message interface {
   IsModerator() bool
 }
 
-type SimpleMessage struct {
-  channel string
-  message string
-}
-
-func NewSimpleMessage(channel, message string) *SimpleMessage {
-  return &SimpleMessage{
-    channel: channel,
-    message: message,
-  }
-}
-
-func (s *SimpleMessage) Channel() string {
-  return s.channel
-}
-func (s *SimpleMessage) UserName() string {
-  return ""
-}
-func (s *SimpleMessage) UserId() string {
-  return ""
-}
-func (s *SimpleMessage) Message() string {
-  return s.message
-}
-func (s *SimpleMessage) MessageId() string {
-  return ""
-}
-func (s *SimpleMessage) IsModerator() bool {
-  return false
-}
-
 type Service interface {
   Name() string
   Open() (<-chan Message, error)
