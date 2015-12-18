@@ -77,7 +77,7 @@ func (p *TopStreamersPlugin) TopStreamers() (string, error) {
       continue
     }
 
-    channels = append(channels, fmt.Sprintf("%v (%v)", video.Snippet.ChannelTitle, humanize.FormatInteger("#,###.", i)))
+    channels = append(channels, fmt.Sprintf("%v (%v)", video.Snippet.ChannelTitle, humanize.Comma(int64(i))))
   }
 
   return fmt.Sprintf("Current top streamers: %v.", strings.Join(channels, ", ")), nil
