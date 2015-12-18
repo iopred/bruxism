@@ -15,7 +15,7 @@ func (p *SlowModePlugin) Name() string {
 }
 
 func (p *SlowModePlugin) Help() string {
-  return "!slowmode (on/off) - Controls slow mode."
+  return "!slowmode [on|off] - Controls slow mode."
 }
 
 func (p *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error {

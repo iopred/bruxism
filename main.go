@@ -31,14 +31,13 @@ func main() {
   youtube := NewYouTube(youtubeUrl, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIds)
   discord := NewDiscord(discordEmail, discordPassword)
 
-  help := NewHelpPlugin()
-
   bot.RegisterService(youtube)
-  bot.RegisterPlugin(youtube, help)
+  bot.RegisterPlugin(youtube, NewHelpPlugin())
   bot.RegisterPlugin(youtube, NewSlowModePlugin())
+  bot.RegisterPlugin(youtube, NewTopStreamersPlugin(youtube))
 
   bot.RegisterService(discord)
-  bot.RegisterPlugin(discord, help)
+  bot.RegisterPlugin(discord, NewHelpPlugin())
   bot.RegisterPlugin(discord, NewTopStreamersPlugin(youtube))
   bot.Open()
 
