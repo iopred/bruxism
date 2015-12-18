@@ -8,17 +8,17 @@ import (
 
 type BotService struct {
   Service
-  plugins         map[string]Plugin
+  Plugins         map[string]Plugin
   messageChannels []chan Message
 }
 
 type Bot struct {
-  services map[string]*BotService
+  Services map[string]*BotService
 }
 
 func NewBot() *Bot {
   return &Bot{
-    services: make(map[string]*BotService, 0),
+    Services: make(map[string]*BotService, 0),
   }
 }
 
@@ -31,22 +31,22 @@ func (b *Bot) getData(service Service, plugin Plugin) []byte {
 
 func (b *Bot) RegisterService(service Service) {
   serviceName := service.Name()
-  b.services[serviceName] = &BotService{
+  b.Services[serviceName] = &BotService{
     Service:         service,
-    plugins:         make(map[string]Plugin, 0),
+    Plugins:         make(map[string]Plugin, 0),
     messageChannels: make([]chan Message, 0),
   }
 }
 
 func (b *Bot) RegisterPlugin(service Service, plugin Plugin) {
-  b.services[service.Name()].plugins[plugin.Name()] = plugin
+  b.Services[service.Name()].Plugins[plugin.Name()] = plugin
   plugin.Register(b, service, b.getData(service, plugin))
 }
 
 func (b *Bot) NewMessageChannel(service Service) <-chan Message {
   messageChannel := make(chan Message, 200)
   serviceName := service.Name()
-  b.services[serviceName].messageChannels = append(b.services[serviceName].messageChannels, messageChannel)
+  b.Services[serviceName].messageChannels = append(b.Services[serviceName].messageChannels, messageChannel)
   return messageChannel
 }
 
@@ -55,7 +55,7 @@ func (b *Bot) listen(service Service, serviceMessageChannel <-chan Message) {
   for {
     message := <-serviceMessageChannel
     log.Printf("<%s> %s: %s\n", message.Channel(), message.UserName(), message.Message())
-    messageChannels := b.services[serviceName].messageChannels
+    messageChannels := b.Services[serviceName].messageChannels
     for _, messageChannel := range messageChannels {
       messageChannel <- message
     }
@@ -63,7 +63,7 @@ func (b *Bot) listen(service Service, serviceMessageChannel <-chan Message) {
 }
 
 func (b *Bot) Open() {
-  for _, service := range b.services {
+  for _, service := range b.Services {
     if messageChan, err := service.Open(); err == nil {
       go b.listen(service, messageChan)
     } else {
@@ -74,14 +74,14 @@ func (b *Bot) Open() {
 }
 
 func (b *Bot) Save() {
-  for _, service := range b.services {
+  for _, service := range b.Services {
     serviceName := service.Name()
     if err := os.Mkdir(serviceName, os.ModePerm); err != nil {
       if !os.IsExist(err) {
         log.Println("Error creating service directory.")
       }
     }
-    for _, plugin := range service.plugins {
+    for _, plugin := range service.Plugins {
       data := plugin.Save()
       if data != nil {
         if err := ioutil.WriteFile(serviceName+"/"+plugin.Name(), data, os.ModePerm); err != nil {

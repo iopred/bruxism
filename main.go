@@ -30,9 +30,16 @@ func main() {
   bot := NewBot()
   youtube := NewYouTube(youtubeUrl, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIds)
   discord := NewDiscord(discordEmail, discordPassword)
+
+  help := NewHelpPlugin()
+
   bot.RegisterService(youtube)
-  bot.RegisterService(discord)
+  bot.RegisterPlugin(youtube, help)
   bot.RegisterPlugin(youtube, NewSlowModePlugin())
+
+  bot.RegisterService(discord)
+  bot.RegisterPlugin(discord, help)
+  bot.RegisterPlugin(discord, NewTopStreamersPlugin(youtube))
   bot.Open()
 
   defer func() {

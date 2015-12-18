@@ -2,6 +2,7 @@ package main
 
 import (
   "encoding/json"
+  "fmt"
   "html"
   "io/ioutil"
   "log"
@@ -330,4 +331,141 @@ func (yt *YouTube) DeleteMessage(messageId string) error {
 func (yt *YouTube) BanUser(channel, user string, duration int) error {
   yt.InsertChan <- ytc.NewLiveChatBan(channel, user, duration)
   return nil
+}
+
+type PlaylistItemSnippetThumbnails struct {
+  Url    string `json:"url,omitempty"`
+  Width  int    `json:"width,omitempty"`
+  Height int    `json:"height,omitempty"`
+}
+
+type PlaylistItemSnippetResourceId struct {
+  Kind    string `json="kind,omitempty"`
+  VideoId string `json="videoId,omitempty"`
+}
+
+type PlaylistItemSnippet struct {
+  PublishedAt  string                                    `json="publishedAt,omitempty"`
+  ChannelId    string                                    `json="channelId,omitempty"`
+  Title        string                                    `json="title,omitempty"`
+  Description  string                                    `json="description,omitempty"`
+  Thumbnails   map[string]*PlaylistItemSnippetThumbnails `json:"thumbnails,omitempty,omitempty"`
+  ChannelTitle string                                    `json="channelTitle,omitempty"`
+  PlaylistId   string                                    `json="playlistId,omitempty"`
+  Position     int                                       `json="position,omitempty"`
+  ResourceId   *PlaylistItemSnippetResourceId            `json="resourceId,omitempty"`
+}
+
+type PlaylistItemContentDetails struct {
+  VideoId string `json="videoId,omitempty"`
+  StartAt string `json="startAt,omitempty"`
+  EndAt   string `json="endAt,omitempty"`
+  Note    string `json="note,omitempty"`
+}
+
+type PlaylistItemStatus struct {
+  PrivacyStatus string `json="privacyStatus,omitempty"`
+}
+
+const PlaylistItemKind string = "youtube#playlistItem"
+
+type PlaylistItem struct {
+  Error          *ytc.Error                  `json="error,omitempty"`
+  Kind           string                      `json="kind,omitempty"`
+  Etag           string                      `json="etag,omitempty"`
+  Id             string                      `json="id,omitempty"`
+  Snippet        *PlaylistItemSnippet        `json="snippet,omitempty"`
+  ContentDetails *PlaylistItemContentDetails `json="contentDetails,omitempty"`
+  Status         *PlaylistItemStatus         `json="status,omitempty"`
+}
+
+const PlaylistItemListResponseKing string = "youtube#playlistItemListResponse"
+
+type PlaylistItemListResponse struct {
+  Error         *ytc.Error      `json="error,omitempty"`
+  Kind          string          `json="kind,omitempty"`
+  Etag          string          `json="etag,omitempty"`
+  NextPageToken string          `json="nextPageToken,omitempty"`
+  PrevPageToken string          `json="prevPageToken,omitempty"`
+  PageInfo      *ytc.PageInfo   `json="pageInfo,omitempty"`
+  Items         []*PlaylistItem `json="items,omitempty"`
+}
+
+type VideoSnippet struct {
+  PublishedAt  string `json="publishedAt,omitempty"`
+  ChannelId    string `json="channelId,omitempty"`
+  Title        string `json="title,omitempty"`
+  Description  string `json="description,omitempty"`
+  ChannelTitle string `json="channelTitle,omitempty"`
+}
+
+type VideoLiveStreamingDetails struct {
+  ActualStartTime    string `json="actualStartTime,omitempty"`
+  ActualEndTime      string `json="actualEndTime,omitempty"`
+  ScheduledStartTime string `json="scheduledStartTime,omitempty"`
+  ScheduledEndTime   string `json="scheduledEndTime,omitempty"`
+  ConcurrentViewers  string `json="concurrentViewers,omitempty"`
+}
+
+const VideoKind string = "youtube#video"
+
+type Video struct {
+  Error                *ytc.Error                 `json="error,omitempty"`
+  Kind                 string                     `json="kind,omitempty"`
+  Etag                 string                     `json="etag,omitempty"`
+  Id                   string                     `json="id,omitempty"`
+  Snippet              *VideoSnippet              `json="snippet,omitempty"`
+  LiveStreamingDetails *VideoLiveStreamingDetails `json="liveStreamingDetails,omitempty"`
+}
+
+const VideoListResponseKind string = "youtube#videoListResponse"
+
+type VideoListResponse struct {
+  Kind          string        `json="kind,omitempty"`
+  Etag          string        `json="etag,omitempty"`
+  NextPageToken string        `json="nextPageToken,omitempty"`
+  PrevPageToken string        `json="prevPageToken,omitempty"`
+  PageInfo      *ytc.PageInfo `json="pageInfo,omitempty"`
+  Items         []*Video      `json="items,omitempty"`
+}
+
+func (yt *YouTube) GetTopLivestreams(count int) ([]*Video, error) {
+  resp, err := yt.Client.Get(fmt.Sprintf("https://www.googleapis.com/youtube/v3/playlistItems?maxResults=%v&part=id,contentDetails&playlistId=PLiCvVJzBupKmEehQ3hnNbbfBjLUyvGlqx", count))
+  if err != nil {
+    return nil, err
+  }
+
+  defer resp.Body.Close()
+  body, err := ioutil.ReadAll(resp.Body)
+  if err != nil {
+    return nil, err
+  }
+
+  playlistItemListResponse := &PlaylistItemListResponse{}
+  err = json.Unmarshal(body, playlistItemListResponse)
+  if err != nil {
+    return nil, err
+  }
+
+  ids := make([]string, 0)
+  for _, playlistItem := range playlistItemListResponse.Items {
+    ids = append(ids, playlistItem.ContentDetails.VideoId)
+  }
+
+  resp, err = yt.Client.Get(fmt.Sprintf("https://www.googleapis.com/youtube/v3/videos?maxResults=%v&part=id,snippet,liveStreamingDetails&id=%v", count, strings.Join(ids, ",")))
+
+  defer resp.Body.Close()
+  body, err = ioutil.ReadAll(resp.Body)
+  if err != nil {
+    return nil, err
+  }
+
+  videoListResponse := &VideoListResponse{}
+  err = json.Unmarshal(body, videoListResponse)
+  if err != nil {
+    return nil, err
+  }
+
+  return videoListResponse.Items, nil
+
 }

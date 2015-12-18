@@ -4,11 +4,15 @@ import "log"
 
 type EchoPlugin struct{}
 
-func (e *EchoPlugin) Name() string {
+func (p *EchoPlugin) Name() string {
   return "Echo"
 }
 
-func (e *EchoPlugin) Register(bot *Bot, service Service, data []byte) error {
+func (p *EchoPlugin) Help() string {
+  return ""
+}
+
+func (p *EchoPlugin) Register(bot *Bot, service Service, data []byte) error {
   messageChannel := bot.NewMessageChannel(service)
   go func() {
     for {
@@ -23,7 +27,7 @@ func (e *EchoPlugin) Register(bot *Bot, service Service, data []byte) error {
   return nil
 }
 
-func (e *EchoPlugin) Save() []byte {
+func (p *EchoPlugin) Save() []byte {
   return nil
 }
 
@@ -33,11 +37,15 @@ func NewEchoPlugin() *EchoPlugin {
 
 type BanPlugin struct{}
 
-func (e *BanPlugin) Name() string {
-  return "Echo"
+func (p *BanPlugin) Name() string {
+  return "Ban"
 }
 
-func (e *BanPlugin) Register(bot *Bot, service Service, data []byte) error {
+func (p *BanPlugin) Help() string {
+  return ""
+}
+
+func (p *BanPlugin) Register(bot *Bot, service Service, data []byte) error {
   messageChannel := bot.NewMessageChannel(service)
   go func() {
     for {
@@ -52,7 +60,7 @@ func (e *BanPlugin) Register(bot *Bot, service Service, data []byte) error {
   return nil
 }
 
-func (e *BanPlugin) Save() []byte {
+func (p *BanPlugin) Save() []byte {
   return nil
 }
 
@@ -62,11 +70,15 @@ func NewBanPlugin() *BanPlugin {
 
 type DeletePlugin struct{}
 
-func (e *DeletePlugin) Name() string {
-  return "Echo"
+func (p *DeletePlugin) Name() string {
+  return "Delete"
 }
 
-func (e *DeletePlugin) Register(bot *Bot, service Service, data []byte) error {
+func (p *DeletePlugin) Help() string {
+  return ""
+}
+
+func (p *DeletePlugin) Register(bot *Bot, service Service, data []byte) error {
   messageChannel := bot.NewMessageChannel(service)
   go func() {
     for {
@@ -81,7 +93,7 @@ func (e *DeletePlugin) Register(bot *Bot, service Service, data []byte) error {
   return nil
 }
 
-func (e *DeletePlugin) Save() []byte {
+func (p *DeletePlugin) Save() []byte {
   return nil
 }
 

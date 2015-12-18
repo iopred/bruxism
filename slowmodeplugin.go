@@ -10,13 +10,17 @@ type SlowModePlugin struct {
   Enabled map[string]bool
 }
 
-func (e *SlowModePlugin) Name() string {
+func (p *SlowModePlugin) Name() string {
   return "SlowMode"
 }
 
-func (e *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error {
+func (p *SlowModePlugin) Help() string {
+  return "!slowmode (on/off) - Controls slow mode."
+}
+
+func (p *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error {
   if data != nil {
-    if err := json.Unmarshal(data, e); err != nil {
+    if err := json.Unmarshal(data, p); err != nil {
       log.Println("Error loading data", err)
     }
   }
@@ -25,21 +29,26 @@ func (e *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error 
   go func() {
     for {
       message := <-messageChannel
-      messageMessage := strings.Replace(message.Message(), " ", "", -1)
+
+      if service.IsMe(message) {
+        continue
+      }
+
       messageChannel := message.Channel()
+      messageMessage := strings.Replace(message.Message(), " ", "", -1)
       messageModerator := message.IsModerator()
 
       if strings.HasPrefix(messageMessage, "!slowmode") {
-        enabled := e.Enabled[messageChannel]
+        enabled := p.Enabled[messageChannel]
         if messageMessage == "!slowmodeon" {
           enabled = true
         } else if messageMessage == "!slowmodeoff" {
           enabled = false
         }
 
-        changed := enabled != e.Enabled[messageChannel]
+        changed := enabled != p.Enabled[messageChannel]
         if changed {
-          e.Enabled[messageChannel] = enabled
+          p.Enabled[messageChannel] = enabled
         }
 
         if enabled {
@@ -55,7 +64,7 @@ func (e *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error 
             service.SendMessage(messageChannel, "Slow mode is off.")
           }
         }
-      } else if e.Enabled[messageChannel] && !messageModerator {
+      } else if p.Enabled[messageChannel] && !messageModerator {
         if err := service.BanUser(messageChannel, message.UserId(), 30); err != nil {
           log.Println(err)
         }
@@ -65,8 +74,8 @@ func (e *SlowModePlugin) Register(bot *Bot, service Service, data []byte) error 
   return nil
 }
 
-func (e *SlowModePlugin) Save() []byte {
-  if data, err := json.Marshal(e); err == nil {
+func (p *SlowModePlugin) Save() []byte {
+  if data, err := json.Marshal(p); err == nil {
     return data
   }
   return nil
