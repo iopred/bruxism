@@ -2,6 +2,7 @@ package main
 
 import (
   "errors"
+  "log"
   "strconv"
 
   "github.com/Xackery/discord"
@@ -82,11 +83,13 @@ func (d *Discord) IsMe(message Message) bool {
 func (d *Discord) SendMessage(channel, message string) error {
   id, err := strconv.Atoi(channel)
   if err != nil {
+    log.Println("Error converting channel id: ", err)
     return err
   }
 
   _, err = d.Client.ChannelMessageSend(id, message)
   if err != nil {
+    log.Println("Error sending discord message: ", err)
     return err
   }
 

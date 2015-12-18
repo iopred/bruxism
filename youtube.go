@@ -295,18 +295,28 @@ func (yt *YouTube) Open() (<-chan Message, error) {
         case *ytc.LiveChatMessage:
           insertLiveChatMessageLimited(request)
         case *ytc.LiveChatBan:
-          yt.Client.InsertLiveChatBan(request)
+          if err := yt.Client.InsertLiveChatBan(request); err != nil {
+            log.Println(err)
+          }
         case *ytc.LiveChatModerator:
-          yt.Client.InsertLiveChatModerator(request)
+          if err := yt.Client.InsertLiveChatModerator(request); err != nil {
+            log.Println(err)
+          }
         }
       case request := <-yt.DeleteChan:
         switch request := request.(type) {
         case *ytc.LiveChatMessage:
-          yt.Client.DeleteLiveChatMessage(request)
+          if err := yt.Client.DeleteLiveChatMessage(request); err != nil {
+            log.Println(err)
+          }
         case *ytc.LiveChatBan:
-          yt.Client.DeleteLiveChatBan(request)
+          if err := yt.Client.DeleteLiveChatBan(request); err != nil {
+            log.Println(err)
+          }
         case *ytc.LiveChatModerator:
-          yt.Client.DeleteLiveChatModerator(request)
+          if err := yt.Client.DeleteLiveChatModerator(request); err != nil {
+            log.Println(err)
+          }
         }
       }
 

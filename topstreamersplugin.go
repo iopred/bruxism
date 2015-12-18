@@ -36,19 +36,23 @@ func (p *TopStreamersPlugin) Register(bot *Bot, service Service, data []byte) er
       if strings.HasPrefix(message.Message(), "!topstreamers") {
         n := time.Now()
         if !n.After(p.lastUpdate.Add(1 * time.Minute)) {
-          service.SendMessage(messageChannel, fmt.Sprintf("%v. *Last updated %v seconds ago.*", p.lastMessage, int(n.Sub(p.lastUpdate)/time.Second)))
+          if p.lastMessage != "" {
+            service.SendMessage(messageChannel, fmt.Sprintf("%v. *Last updated %v seconds ago.*", p.lastMessage, int(n.Sub(p.lastUpdate)/time.Second)))
+          }
           continue
         }
+
         p.lastUpdate = n
 
-        if m, err := p.TopStreamers(); err != nil {
+        m, err := p.TopStreamers()
+        p.lastMessage = m
+
+        if err != nil {
           log.Println(err)
-        } else {
-          p.lastMessage = m
-          if err := service.SendMessage(messageChannel, m); err != nil {
-            log.Println(err)
-          }
+          continue
         }
+
+        service.SendMessage(messageChannel, p.lastMessage)
       }
     }
   }()
