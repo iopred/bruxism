@@ -296,6 +296,8 @@ func (yt *YouTube) Open() (<-chan Message, error) {
           insertLiveChatMessageLimited(request)
         case *ytc.LiveChatBan:
           yt.Client.InsertLiveChatBan(request)
+        case *ytc.LiveChatModerator:
+          yt.Client.InsertLiveChatModerator(request)
         }
       case request := <-yt.DeleteChan:
         switch request := request.(type) {
@@ -303,6 +305,8 @@ func (yt *YouTube) Open() (<-chan Message, error) {
           yt.Client.DeleteLiveChatMessage(request)
         case *ytc.LiveChatBan:
           yt.Client.DeleteLiveChatBan(request)
+        case *ytc.LiveChatModerator:
+          yt.Client.DeleteLiveChatModerator(request)
         }
       }
 
