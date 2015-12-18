@@ -40,7 +40,7 @@ func (p *TopStreamersPlugin) Register(bot *Bot, service Service, data []byte) er
         n := time.Now()
         if !n.After(p.lastUpdate.Add(1 * time.Minute)) {
           if p.lastMessage != "" {
-            service.SendMessage(messageChannel, fmt.Sprintf("%v. *Last updated %v seconds ago.*", p.lastMessage, int(n.Sub(p.lastUpdate)/time.Second)))
+            service.SendMessage(messageChannel, fmt.Sprintf("%v. *Last updated %v.*", p.lastMessage, humanize.Time(p.lastUpdate)))
           }
           continue
         }
