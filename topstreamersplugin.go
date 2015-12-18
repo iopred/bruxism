@@ -21,7 +21,7 @@ func (p *TopStreamersPlugin) Name() string {
 }
 
 func (p *TopStreamersPlugin) Help() string {
-  return "!topstreamers - Returns a list of the current top streamers."
+  return "!topstreamers - List the current top streamers."
 }
 
 func (p *TopStreamersPlugin) Register(bot *Bot, service Service, data []byte) error {
