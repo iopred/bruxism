@@ -1,8 +1,8 @@
 package main
 
 import (
+  "errors"
   "fmt"
-  "log"
   "strings"
   "time"
 
@@ -47,14 +47,13 @@ func (p *TopStreamersPlugin) Register(bot *Bot, service Service, data []byte) er
         p.lastUpdate = n
 
         m, err := p.TopStreamers(5)
-        p.lastMessage = m
-
         if err != nil {
-          log.Println(err)
+          service.SendMessage(messageChannel, "There was an error while requesting the top streamers, please try again later.")
           continue
         }
 
-        service.SendMessage(messageChannel, p.lastMessage)
+        service.SendMessage(messageChannel, m)
+        p.lastMessage = m
       }
     }
   }()
@@ -65,6 +64,10 @@ func (p *TopStreamersPlugin) TopStreamers(count int) (string, error) {
   videoList, err := p.youTube.GetTopLivestreams(200)
   if err != nil {
     return "", err
+  }
+
+  if len(videoList) == 0 {
+    return "", errors.New("No videos returned.")
   }
 
   channels := make([]string, 0)
