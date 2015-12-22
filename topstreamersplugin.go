@@ -73,7 +73,7 @@ func (p *TopStreamersPlugin) TopStreamers(count int) (string, error) {
   channels := make([]string, 0)
 
   for i, video := range videoList {
-    channels = append(channels, fmt.Sprintf("%v (%v)", video.Snippet.ChannelTitle, humanize.Comma(int64(video.LiveStreamingDetails.ConcurrentViewersInteger))))
+    channels = append(channels, fmt.Sprintf("%v (%v)", video.Snippet.ChannelTitle, humanize.Comma(int64(video.LiveStreamingDetails.ConcurrentViewers))))
     if i >= count {
       break
     }

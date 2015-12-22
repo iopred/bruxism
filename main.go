@@ -35,10 +35,12 @@ func main() {
   bot.RegisterPlugin(youtube, NewHelpPlugin())
   bot.RegisterPlugin(youtube, NewSlowModePlugin())
   bot.RegisterPlugin(youtube, NewTopStreamersPlugin(youtube))
+  bot.RegisterPlugin(youtube, NewStreamerPlugin(youtube))
 
   bot.RegisterService(discord)
   bot.RegisterPlugin(discord, NewHelpPlugin())
   bot.RegisterPlugin(discord, NewTopStreamersPlugin(youtube))
+  bot.RegisterPlugin(discord, NewStreamerPlugin(youtube))
   bot.Open()
 
   defer func() {
