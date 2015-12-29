@@ -21,9 +21,13 @@ type Service interface {
   Join(join string) error
 }
 
+type HelpFunc func(*Bot, Service) []string
+type MessageFunc func(*Bot, Service, Message)
+
 type Plugin interface {
   Name() string
-  Help() string
-  Register(*Bot, Service, []byte) error
-  Save() []byte
+  Load(*Bot, Service, []byte) error
+  Save() ([]byte, error)
+  Help(*Bot, Service) []string
+  Message(*Bot, Service, Message)
 }

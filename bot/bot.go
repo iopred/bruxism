@@ -32,22 +32,14 @@ func (b *Bot) getData(service Service, plugin Plugin) []byte {
 func (b *Bot) RegisterService(service Service) {
   serviceName := service.Name()
   b.Services[serviceName] = &BotService{
-    Service:         service,
-    Plugins:         make(map[string]Plugin, 0),
-    messageChannels: make([]chan Message, 0),
+    Service: service,
+    Plugins: make(map[string]Plugin, 0),
   }
 }
 
 func (b *Bot) RegisterPlugin(service Service, plugin Plugin) {
   b.Services[service.Name()].Plugins[plugin.Name()] = plugin
-  plugin.Register(b, service, b.getData(service, plugin))
-}
-
-func (b *Bot) NewMessageChannel(service Service) <-chan Message {
-  messageChannel := make(chan Message, 200)
-  serviceName := service.Name()
-  b.Services[serviceName].messageChannels = append(b.Services[serviceName].messageChannels, messageChannel)
-  return messageChannel
+  plugin.Load(b, service, b.getData(service, plugin))
 }
 
 func (b *Bot) listen(service Service, serviceMessageChannel <-chan Message) {
@@ -55,9 +47,9 @@ func (b *Bot) listen(service Service, serviceMessageChannel <-chan Message) {
   for {
     message := <-serviceMessageChannel
     log.Printf("<%s> %s: %s\n", message.Channel(), message.UserName(), message.Message())
-    messageChannels := b.Services[serviceName].messageChannels
-    for _, messageChannel := range messageChannels {
-      messageChannel <- message
+    plugins := b.Services[serviceName].Plugins
+    for _, plugin := range plugins {
+      go plugin.Message(b, service, message)
     }
   }
 }
@@ -82,8 +74,9 @@ func (b *Bot) Save() {
       }
     }
     for _, plugin := range service.Plugins {
-      data := plugin.Save()
-      if data != nil {
+      if data, err := plugin.Save(); err != nil {
+        log.Printf("Error saving plugin %v %v. %v", serviceName, plugin.Name(), err)
+      } else if data != nil {
         if err := ioutil.WriteFile(serviceName+"/"+plugin.Name(), data, os.ModePerm); err != nil {
           log.Printf("Error saving plugin %v %v. %v", serviceName, plugin.Name(), err)
         }

@@ -38,13 +38,18 @@ func main() {
   b.RegisterService(discord)
   b.Open()
 
-  b.RegisterPlugin(youtube, bot.NewHelpPlugin())
+  cp := bot.NewCommandPlugin()
+  cp.AddCommand("help", bot.HelpCommand, nil)
+  cp.AddCommand("command", bot.HelpCommand, nil)
+  cp.AddCommand("commands", bot.HelpCommand, nil)
+
+  b.RegisterPlugin(youtube, cp)
   b.RegisterPlugin(youtube, bot.NewSlowModePlugin())
   b.RegisterPlugin(youtube, bot.NewTopStreamersPlugin(youtube))
   b.RegisterPlugin(youtube, bot.NewStreamerPlugin(youtube))
   b.RegisterPlugin(youtube, bot.NewInvitePlugin())
 
-  b.RegisterPlugin(discord, bot.NewHelpPlugin())
+  b.RegisterPlugin(discord, cp)
   b.RegisterPlugin(discord, bot.NewTopStreamersPlugin(youtube))
   b.RegisterPlugin(discord, bot.NewStreamerPlugin(youtube))
   b.RegisterPlugin(discord, bot.NewPlayingPlugin())

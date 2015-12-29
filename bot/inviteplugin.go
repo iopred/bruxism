@@ -13,54 +13,42 @@ func (p *InvitePlugin) Name() string {
 	return "Invite"
 }
 
-func (p *InvitePlugin) Help() string {
-	return p.help
-}
-
-func (p *InvitePlugin) Register(bot *Bot, service Service, data []byte) error {
-	conversion := func(str string) string {
-		return str
-	}
-
+func (p *InvitePlugin) Help(bot *Bot, service Service) []string {
+	help := ""
 	switch service.Name() {
 	case DiscordServiceName:
-		p.help = "!invite [discordinvite] - Joins the provided Discord server."
-		conversion = func(str string) string {
-			str = strings.Replace(str, "https://discord.gg/", "", -1)
-			str = strings.Replace(str, "http://discord.gg/", "", -1)
-			return str
-		}
+		help = "!invite [discordinvite] - Joins the provided Discord server."
 	case YouTubeServiceName:
-		p.help = "!invite [livechatid] - Joins the provided YouTube chat by id (this may be hard to find)."
+		help = "!invite [livechatid] - Joins the provided YouTube chat by id (this may be hard to find)."
 	default:
-		p.help = "!invite [channel] - Joins the provided channel."
+		help = "!invite [channel] - Joins the provided channel."
 	}
+	return []string{help}
+}
 
-	messageChannel := bot.NewMessageChannel(service)
-	go func() {
-		for {
-			message := <-messageChannel
-
-			messageMessage := message.Message()
-
-			if strings.HasPrefix(messageMessage, "!invite") {
-				splits := strings.Split(messageMessage, "!invite ")
-
-				if len(splits) != 2 {
-					continue
-				}
-
-				if err := service.Join(conversion(splits[1])); err != nil {
-					fmt.Println("Error joining", service, err)
-				}
-			}
-		}
-	}()
+func (p *InvitePlugin) Load(bot *Bot, service Service, data []byte) error {
 	return nil
 }
 
-func (p *InvitePlugin) Save() []byte {
-	return nil
+func (p *InvitePlugin) Save() ([]byte, error) {
+	return nil, nil
+}
+
+func (p *InvitePlugin) Message(bot *Bot, service Service, message Message) {
+	if matchesCommand("invite", message) {
+		_, parts := parseCommand(message)
+		if len(parts) == 1 {
+			join := parts[0]
+			if service.Name() == DiscordServiceName {
+				join = strings.Replace(join, "https://discord.gg/", "", -1)
+				join = strings.Replace(join, "http://discord.gg/", "", -1)
+			}
+			if err := service.Join(join); err != nil {
+				fmt.Printf("Error joining %v %v", service.Name(), err)
+			}
+		}
+	}
+
 }
 
 func NewInvitePlugin() *InvitePlugin {

@@ -2,7 +2,6 @@ package bot
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -22,59 +21,53 @@ func (p *StreamerPlugin) Name() string {
 	return "Streamer"
 }
 
-func (p *StreamerPlugin) Help() string {
-	return "!streamer [streamername|streamerid] - Grabs details about a streamer."
+func (p *StreamerPlugin) Load(bot *Bot, service Service, data []byte) error {
+	return nil
 }
 
-func (p *StreamerPlugin) Register(bot *Bot, service Service, data []byte) error {
-	messageChannel := bot.NewMessageChannel(service)
-	go func() {
-		for {
-			message := <-messageChannel
+func (p *StreamerPlugin) Save() ([]byte, error) {
+	return nil, nil
+}
 
-			if service.IsMe(message) {
-				continue
+func (p *StreamerPlugin) Help(bot *Bot, service Service) []string {
+	return []string{"!streamer [streamername|streamerid] - Grabs details about a streamer."}
+}
+
+func (p *StreamerPlugin) Message(bot *Bot, service Service, message Message) {
+	if !service.IsMe(message) {
+		if matchesCommand("streamer", message) {
+			query, parts := parseCommand(message)
+
+			if len(parts) == 0 {
+				return
 			}
 
-			messageChannel := message.Channel()
-			messageMessage := message.Message()
-
-			if strings.HasPrefix(messageMessage, "!streamer") {
-				splits := strings.Split(messageMessage, "!streamer ")
-				if len(splits) != 2 {
-					continue
-				}
-
-				query := string(splits[1])
-
-				r, _ := p.requests[query]
-				if r == nil {
-					r = &StreamerPluginRequest{}
-					p.requests[query] = r
-				}
-
-				n := time.Now()
-				if !n.After(r.lastUpdate.Add(60 * time.Minute)) {
-					if r.lastMessage != "" {
-						service.SendMessage(messageChannel, fmt.Sprintf("%v *Last updated %v.*", r.lastMessage, humanize.Time(r.lastUpdate)))
-					}
-					continue
-				}
-
-				r.lastUpdate = n
-
-				m, err := p.Streamer(query)
-				if err != nil {
-					service.SendMessage(messageChannel, "There was an error while requesting the streamer, please try again later.")
-					continue
-				}
-
-				service.SendMessage(messageChannel, m)
-				r.lastMessage = m
+			r, _ := p.requests[query]
+			if r == nil {
+				r = &StreamerPluginRequest{}
+				p.requests[query] = r
 			}
+
+			n := time.Now()
+			if !n.After(r.lastUpdate.Add(60 * time.Minute)) {
+				if r.lastMessage != "" {
+					service.SendMessage(message.Channel(), fmt.Sprintf("%v *Last updated %v.*", r.lastMessage, humanize.Time(r.lastUpdate)))
+				}
+				return
+			}
+
+			r.lastUpdate = n
+
+			m, err := p.Streamer(query)
+			if err != nil {
+				service.SendMessage(message.Channel(), "There was an error while requesting the streamer, please try again later.")
+				return
+			}
+
+			service.SendMessage(message.Channel(), m)
+			r.lastMessage = m
 		}
-	}()
-	return nil
+	}
 }
 
 func (p *StreamerPlugin) Streamer(search string) (string, error) {
@@ -112,10 +105,6 @@ func (p *StreamerPlugin) Streamer(search string) (string, error) {
 		subscriberCount = fmt.Sprintf("%v subscribers, ", humanize.Comma(int64(channelList.Items[0].Statistics.SubscriberCount)))
 	}
 	return fmt.Sprintf("%v: %v%v videos, %v views.", channelList.Items[0].Snippet.Title, subscriberCount, humanize.Comma(int64(channelList.Items[0].Statistics.VideoCount)), humanize.Comma(int64(channelList.Items[0].Statistics.ViewCount))), nil
-}
-
-func (p *StreamerPlugin) Save() []byte {
-	return nil
 }
 
 func NewStreamerPlugin(yt *YouTube) *StreamerPlugin {
