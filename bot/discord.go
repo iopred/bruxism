@@ -4,7 +4,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/iopred/discordgo"
 )
 
 const DiscordServiceName string = "Discord"
