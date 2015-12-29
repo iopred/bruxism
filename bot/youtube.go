@@ -249,35 +249,29 @@ func (yt *YouTube) handleRequests() {
 	}
 
 	for {
+		var err error
 		select {
 		case request := <-yt.InsertChan:
 			switch request := request.(type) {
 			case *ytc.LiveChatMessage:
 				insertLiveChatMessageLimited(request)
 			case *ytc.LiveChatBan:
-				if err := yt.Client.InsertLiveChatBan(request); err != nil {
-					log.Println(err)
-				}
+				err = yt.Client.InsertLiveChatBan(request)
 			case *ytc.LiveChatModerator:
-				if err := yt.Client.InsertLiveChatModerator(request); err != nil {
-					log.Println(err)
-				}
+				err = yt.Client.InsertLiveChatModerator(request)
 			}
 		case request := <-yt.DeleteChan:
 			switch request := request.(type) {
 			case *ytc.LiveChatMessage:
-				if err := yt.Client.DeleteLiveChatMessage(request); err != nil {
-					log.Println(err)
-				}
+				err = yt.Client.DeleteLiveChatMessage(request)
 			case *ytc.LiveChatBan:
-				if err := yt.Client.DeleteLiveChatBan(request); err != nil {
-					log.Println(err)
-				}
+				err = yt.Client.DeleteLiveChatBan(request)
 			case *ytc.LiveChatModerator:
-				if err := yt.Client.DeleteLiveChatModerator(request); err != nil {
-					log.Println(err)
-				}
+				err = yt.Client.DeleteLiveChatModerator(request)
 			}
+		}
+		if err != nil {
+			log.Println(err)
 		}
 
 		// Sleep for a millisecond, this will guarantee a maximum QPS of 1000.
