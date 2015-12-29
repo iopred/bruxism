@@ -1,4 +1,4 @@
-package main
+package bot
 
 import (
   "encoding/json"
@@ -70,7 +70,7 @@ type YouTube struct {
   InsertChan     chan interface{}
   DeleteChan     chan interface{}
   fanFunding     FanFunding
-  me             string
+  me             *youtube.Channel
 }
 
 func NewYouTube(url bool, auth, configFilename, tokenFilename, liveChatIds string) *YouTube {
@@ -87,7 +87,7 @@ func NewYouTube(url bool, auth, configFilename, tokenFilename, liveChatIds strin
   }
 }
 
-func (yt *YouTube) pollBroadcasts(broadcasts *ytc.LiveBroadcastListResponse, err error) {
+func (yt *YouTube) PollBroadcasts(broadcasts *ytc.LiveBroadcastListResponse, err error) {
   if err != nil {
     log.Println(err)
     return
@@ -253,8 +253,8 @@ func (yt *YouTube) Open() (<-chan Message, error) {
   }
   yt.me = me
 
-  yt.pollBroadcasts(yt.Client.ListLiveBroadcasts("default=true"))
-  yt.pollBroadcasts(yt.Client.ListLiveBroadcasts("mine=true"))
+  // yt.PollBroadcasts(yt.Client.ListLiveBroadcasts("default=true"))
+  // yt.PollBroadcasts(yt.Client.ListLiveBroadcasts("mine=true"))
   if yt.liveChatIds != "" {
     liveChatIdsArray := strings.Split(yt.liveChatIds, ",")
 
@@ -270,7 +270,7 @@ func (yt *YouTube) Open() (<-chan Message, error) {
       })
     }
 
-    yt.pollBroadcasts(additionalBroadcasts, nil)
+    yt.PollBroadcasts(additionalBroadcasts, nil)
   }
 
   // This is a map of channel id's to channels, it is used to send messages to a goroutine that is rate limiting each chatroom.
@@ -339,7 +339,7 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 }
 
 func (yt *YouTube) IsMe(message Message) bool {
-  return message.UserId() == yt.me
+  return message.UserId() == yt.me.Id
 }
 
 func (yt *YouTube) SendMessage(channel, message string) error {
@@ -357,6 +357,14 @@ func (yt *YouTube) BanUser(channel, user string, duration int) error {
   return nil
 }
 
+func (yt *YouTube) UserName() string {
+  return yt.me.Snippet.Title
+}
+
+func (yt *YouTube) SetPlaying(game string) error {
+  return errors.New("Set playing not supported on YouTube.")
+}
+
 type VideoList []*youtube.Video
 
 func (v VideoList) Len() int {
@@ -371,18 +379,18 @@ func (v VideoList) Less(i, j int) bool {
   return v[i].LiveStreamingDetails.ConcurrentViewers > v[j].LiveStreamingDetails.ConcurrentViewers
 }
 
-func (yt *YouTube) GetMe() (string, error) {
-  channelList, err := yt.Service.Channels.List("id").Mine(true).Do()
+func (yt *YouTube) GetMe() (*youtube.Channel, error) {
+  channelList, err := yt.Service.Channels.List("id,snippet").Mine(true).Do()
 
   if err != nil {
-    return "", err
+    return nil, err
   }
 
   if len(channelList.Items) != 1 {
-    return "", errors.New("Invalid response while requesting Me")
+    return nil, errors.New("Invalid response while requesting Me")
   }
 
-  return channelList.Items[0].Id, nil
+  return channelList.Items[0], nil
 }
 
 func (yt *YouTube) GetTopLivestreamIds(count int) ([]string, error) {

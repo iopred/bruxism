@@ -1,19 +1,18 @@
-package main
+package bot
 
 import (
   "errors"
   "log"
-  "strconv"
 
-  "github.com/Xackery/discord"
+  "github.com/bwmarrin/discordgo"
 )
 
 const DiscordServiceName string = "Discord"
 
-type DiscordMessage discord.Message
+type DiscordMessage discordgo.Message
 
 func (m *DiscordMessage) Channel() string {
-  return strconv.Itoa(m.ChannelID)
+  return m.ChannelID
 }
 
 func (m *DiscordMessage) UserName() string {
@@ -21,7 +20,7 @@ func (m *DiscordMessage) UserName() string {
 }
 
 func (m *DiscordMessage) UserId() string {
-  return strconv.Itoa(m.Author.ID)
+  return m.Author.ID
 }
 
 func (m *DiscordMessage) Message() string {
@@ -29,7 +28,7 @@ func (m *DiscordMessage) Message() string {
 }
 
 func (m *DiscordMessage) MessageId() string {
-  return strconv.Itoa(m.ID)
+  return m.ID
 }
 
 func (m *DiscordMessage) IsModerator() bool {
@@ -39,20 +38,20 @@ func (m *DiscordMessage) IsModerator() bool {
 type Discord struct {
   email       string
   password    string
-  Client      *discord.Client
+  Session     *discordgo.Session
   messageChan chan Message
+  Me          *discordgo.User
 }
 
 func NewDiscord(email, password string) *Discord {
   return &Discord{
     email:       email,
     password:    password,
-    Client:      &discord.Client{},
     messageChan: make(chan Message, 200),
   }
 }
 
-func (d *Discord) onMessage(event discord.Event, message discord.Message) {
+func (d *Discord) onMessage(s *discordgo.Session, message discordgo.Message) {
   dm := DiscordMessage(message)
   d.messageChan <- &dm
 }
@@ -62,33 +61,46 @@ func (d *Discord) Name() string {
 }
 
 func (d *Discord) Open() (<-chan Message, error) {
+  var err error
 
-  if err := d.Client.Login(d.email, d.password); err != nil {
+  d.Session = &discordgo.Session{
+    OnMessageCreate: d.onMessage,
+  }
+
+  d.Session.Token, err = d.Session.Login(d.email, d.password)
+  if err != nil {
     return nil, err
   }
 
-  d.Client.OnMessageCreate = d.onMessage
+  err = d.Session.Open()
+  if err != nil {
+    return nil, err
+  }
 
-  go func() {
-    d.Client.Listen()
-  }()
+  err = d.Session.Handshake()
+  if err != nil {
+    return nil, err
+  }
+
+  u, err := d.Session.User("@me")
+  if err != nil {
+    return nil, err
+  }
+
+  d.Me = &u
+
+  // Listen for events.
+  go d.Session.Listen()
 
   return d.messageChan, nil
 }
 
 func (d *Discord) IsMe(message Message) bool {
-  return message.UserId() == strconv.Itoa(d.Client.User.ID)
+  return message.UserId() == d.Me.ID
 }
 
 func (d *Discord) SendMessage(channel, message string) error {
-  id, err := strconv.Atoi(channel)
-  if err != nil {
-    log.Println("Error converting channel id: ", err)
-    return err
-  }
-
-  _, err = d.Client.ChannelMessageSend(id, message)
-  if err != nil {
+  if _, err := d.Session.ChannelMessageSend(channel, message); err != nil {
     log.Println("Error sending discord message: ", err)
     return err
   }
@@ -102,4 +114,12 @@ func (d *Discord) DeleteMessage(messageId string) error {
 
 func (d *Discord) BanUser(channel, user string, duration int) error {
   return errors.New("Banning not supported on Discord.")
+}
+
+func (d *Discord) UserName() string {
+  return d.Me.Username
+}
+
+func (d *Discord) SetPlaying(game string) error {
+  return d.Session.UpdateStatus(0, game)
 }

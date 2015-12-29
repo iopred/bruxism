@@ -1,4 +1,4 @@
-package main
+package bot
 
 type Message interface {
   Channel() string
@@ -11,11 +11,13 @@ type Message interface {
 
 type Service interface {
   Name() string
+  UserName() string
   Open() (<-chan Message, error)
   IsMe(message Message) bool
   SendMessage(channel, message string) error
   DeleteMessage(messageId string) error
   BanUser(channel, user string, duration int) error
+  SetPlaying(game string) error
 }
 
 type Plugin interface {

@@ -2,9 +2,12 @@ package main
 
 import (
   "flag"
+  "fmt"
   "os"
   "os/signal"
   "time"
+
+  "github.com/iopred/bruxism/bot"
 )
 
 var youtubeUrl bool
@@ -27,25 +30,29 @@ func init() {
 }
 
 func main() {
-  bot := NewBot()
-  youtube := NewYouTube(youtubeUrl, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIds)
-  discord := NewDiscord(discordEmail, discordPassword)
+  b := bot.NewBot()
+  youtube := bot.NewYouTube(youtubeUrl, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIds)
+  discord := bot.NewDiscord(discordEmail, discordPassword)
 
-  bot.RegisterService(youtube)
-  bot.RegisterPlugin(youtube, NewHelpPlugin())
-  bot.RegisterPlugin(youtube, NewSlowModePlugin())
-  bot.RegisterPlugin(youtube, NewTopStreamersPlugin(youtube))
-  bot.RegisterPlugin(youtube, NewStreamerPlugin(youtube))
+  b.RegisterService(youtube)
+  b.RegisterService(discord)
+  b.Open()
 
-  bot.RegisterService(discord)
-  bot.RegisterPlugin(discord, NewHelpPlugin())
-  bot.RegisterPlugin(discord, NewTopStreamersPlugin(youtube))
-  bot.RegisterPlugin(discord, NewStreamerPlugin(youtube))
-  bot.Open()
+  b.RegisterPlugin(youtube, bot.NewHelpPlugin())
+  b.RegisterPlugin(youtube, bot.NewSlowModePlugin())
+  b.RegisterPlugin(youtube, bot.NewTopStreamersPlugin(youtube))
+  b.RegisterPlugin(youtube, bot.NewStreamerPlugin(youtube))
+
+  b.RegisterPlugin(discord, bot.NewHelpPlugin())
+  b.RegisterPlugin(discord, bot.NewTopStreamersPlugin(youtube))
+  b.RegisterPlugin(discord, bot.NewStreamerPlugin(youtube))
+  b.RegisterPlugin(discord, bot.NewPlayingPlugin())
 
   defer func() {
-    recover()
-    bot.Save()
+    if r := recover(); r != nil {
+      fmt.Println("Recovered in f", r)
+    }
+    b.Save()
   }()
 
   c := make(chan os.Signal, 1)
@@ -58,7 +65,7 @@ func main() {
     case <-c:
       return
     case <-t:
-      bot.Save()
+      b.Save()
     }
   }
 }
