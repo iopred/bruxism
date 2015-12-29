@@ -5,15 +5,7 @@ import (
 	"strings"
 )
 
-type InvitePlugin struct {
-	help string
-}
-
-func (p *InvitePlugin) Name() string {
-	return "Invite"
-}
-
-func (p *InvitePlugin) Help(bot *Bot, service Service) []string {
+func inviteHelpFunc(bot *Bot, service Service) []string {
 	help := ""
 	switch service.Name() {
 	case DiscordServiceName:
@@ -26,15 +18,7 @@ func (p *InvitePlugin) Help(bot *Bot, service Service) []string {
 	return []string{help}
 }
 
-func (p *InvitePlugin) Load(bot *Bot, service Service, data []byte) error {
-	return nil
-}
-
-func (p *InvitePlugin) Save() ([]byte, error) {
-	return nil, nil
-}
-
-func (p *InvitePlugin) Message(bot *Bot, service Service, message Message) {
+func inviteMessageFunc(bot *Bot, service Service, message Message) {
 	if matchesCommand("invite", message) {
 		_, parts := parseCommand(message)
 		if len(parts) == 1 {
@@ -48,9 +32,11 @@ func (p *InvitePlugin) Message(bot *Bot, service Service, message Message) {
 			}
 		}
 	}
-
 }
 
-func NewInvitePlugin() *InvitePlugin {
-	return &InvitePlugin{}
+func NewInvitePlugin() *SimplePlugin {
+	p := NewSimplePlugin("Invite")
+	p.message = inviteMessageFunc
+	p.help = inviteHelpFunc
+	return p
 }

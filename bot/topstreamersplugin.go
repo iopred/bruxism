@@ -10,28 +10,17 @@ import (
 )
 
 type TopStreamersPlugin struct {
+  SimplePlugin
   youTube     *YouTube
   lastUpdate  time.Time
   lastMessage string
 }
 
-func (p *TopStreamersPlugin) Name() string {
-  return "TopStreamers"
-}
-
-func (p *TopStreamersPlugin) Load(bot *Bot, service Service, data []byte) error {
-  return nil
-}
-
-func (p *TopStreamersPlugin) Save() ([]byte, error) {
-  return nil, nil
-}
-
-func (p *TopStreamersPlugin) Help(bot *Bot, service Service) []string {
+func (p *TopStreamersPlugin) help(bot *Bot, service Service) []string {
   return []string{"!topstreamers - List the current top streamers."}
 }
 
-func (p *TopStreamersPlugin) Message(bot *Bot, service Service, message Message) {
+func (p *TopStreamersPlugin) messageFunc(bot *Bot, service Service, message Message) {
   if !service.IsMe(message) {
     if matchesCommand("topstreamers", message) {
       n := time.Now()
@@ -79,7 +68,10 @@ func (p *TopStreamersPlugin) TopStreamers(count int) (string, error) {
 }
 
 func NewTopStreamersPlugin(yt *YouTube) *TopStreamersPlugin {
-  return &TopStreamersPlugin{
-    youTube: yt,
+  ts := &TopStreamersPlugin{
+    SimplePlugin: *NewSimplePlugin("TopStreamers"),
+    youTube:      yt,
   }
+  ts.message = ts.messageFunc
+  return ts
 }

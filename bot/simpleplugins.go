@@ -11,7 +11,9 @@ func echoMessageFunc(bot *Bot, service Service, message Message) {
 }
 
 func NewEchoPlugin() *SimplePlugin {
-  return NewSimplePlugin("Echo", echoMessageFunc, nil)
+  p := NewSimplePlugin("Echo")
+  p.message = echoMessageFunc
+  return p
 }
 
 func banMessageFunc(bot *Bot, service Service, message Message) {
@@ -23,7 +25,9 @@ func banMessageFunc(bot *Bot, service Service, message Message) {
 }
 
 func NewBanPlugin() *SimplePlugin {
-  return NewSimplePlugin("Ban", banMessageFunc, nil)
+  p := NewSimplePlugin("Ban")
+  p.message = banMessageFunc
+  return p
 }
 
 func deleteMessageFunc(bot *Bot, service Service, message Message) {
@@ -32,4 +36,10 @@ func deleteMessageFunc(bot *Bot, service Service, message Message) {
       log.Println(err)
     }
   }
+}
+
+func NewDeletePlugin() *SimplePlugin {
+  p := NewSimplePlugin("Delete")
+  p.message = deleteMessageFunc
+  return p
 }

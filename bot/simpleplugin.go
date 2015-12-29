@@ -2,6 +2,8 @@ package bot
 
 type SimplePlugin struct {
 	name    string
+	load    LoadFunc
+	save    SaveFunc
 	message MessageFunc
 	help    HelpFunc
 }
@@ -29,10 +31,6 @@ func (p *SimplePlugin) Message(bot *Bot, service Service, message Message) {
 	p.message(bot, service, message)
 }
 
-func NewSimplePlugin(name string, message MessageFunc, help HelpFunc) *SimplePlugin {
-	return &SimplePlugin{
-		name:    name,
-		message: message,
-		help:    help,
-	}
+func NewSimplePlugin(name string) *SimplePlugin {
+	return &SimplePlugin{name: name}
 }

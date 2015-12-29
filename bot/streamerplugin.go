@@ -13,27 +13,16 @@ type StreamerPluginRequest struct {
 }
 
 type StreamerPlugin struct {
+	SimplePlugin
 	youTube  *YouTube
 	requests map[string]*StreamerPluginRequest
 }
 
-func (p *StreamerPlugin) Name() string {
-	return "Streamer"
-}
-
-func (p *StreamerPlugin) Load(bot *Bot, service Service, data []byte) error {
-	return nil
-}
-
-func (p *StreamerPlugin) Save() ([]byte, error) {
-	return nil, nil
-}
-
-func (p *StreamerPlugin) Help(bot *Bot, service Service) []string {
+func (p *StreamerPlugin) helpFunc(bot *Bot, service Service) []string {
 	return []string{"!streamer [streamername|streamerid] - Grabs details about a streamer."}
 }
 
-func (p *StreamerPlugin) Message(bot *Bot, service Service, message Message) {
+func (p *StreamerPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
 		if matchesCommand("streamer", message) {
 			query, parts := parseCommand(message)
@@ -108,8 +97,13 @@ func (p *StreamerPlugin) Streamer(search string) (string, error) {
 }
 
 func NewStreamerPlugin(yt *YouTube) *StreamerPlugin {
-	return &StreamerPlugin{
-		youTube:  yt,
-		requests: make(map[string]*StreamerPluginRequest),
+	s := &StreamerPlugin{
+		SimplePlugin: *NewSimplePlugin("Streamer"),
+		youTube:      yt,
+		requests:     make(map[string]*StreamerPluginRequest),
 	}
+	s.message = s.messageFunc
+	s.help = s.helpFunc
+
+	return s
 }

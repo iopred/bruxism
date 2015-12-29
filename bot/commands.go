@@ -5,7 +5,7 @@ import (
 	"sort"
 )
 
-func HelpCommand(bot *Bot, service Service, message Message) error {
+func HelpCommand(bot *Bot, service Service, message Message) {
 	help := make([]string, 0)
 
 	for _, plugin := range bot.Services[service.Name()].Plugins {
@@ -24,6 +24,4 @@ func HelpCommand(bot *Bot, service Service, message Message) error {
 			log.Println(err)
 		}
 	}
-
-	return nil
 }

@@ -21,6 +21,8 @@ type Service interface {
   Join(join string) error
 }
 
+type LoadFunc func(*Bot, Service, []byte) error
+type SaveFunc func() ([]byte, error)
 type HelpFunc func(*Bot, Service) []string
 type MessageFunc func(*Bot, Service, Message)
 
