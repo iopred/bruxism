@@ -48,7 +48,7 @@ func (p *playingPlugin) Message(bot *Bot, service Service, message Message) {
 	}
 }
 
-// Create will create a new playing plugin.
+// NewPlayingPlugin will create a new playing plugin.
 func NewPlayingPlugin() Plugin {
 	return &playingPlugin{}
 }

@@ -80,7 +80,7 @@ func (p *slowModePlugin) Message(bot *Bot, service Service, message Message) {
 }
 
 // NewSlowModePlugin will create a new slow mode plugin.
-func NewslowModePlugin() Plugin {
+func NewSlowModePlugin() Plugin {
 	return &slowModePlugin{
 		Enabled: make(map[string]bool),
 	}
