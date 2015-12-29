@@ -96,7 +96,7 @@ func (p *streamerPlugin) streamer(search string) (string, error) {
 	return fmt.Sprintf("%v: %v%v videos, %v views.", channelList.Items[0].Snippet.Title, subscriberCount, humanize.Comma(int64(channelList.Items[0].Statistics.VideoCount)), humanize.Comma(int64(channelList.Items[0].Statistics.ViewCount))), nil
 }
 
-// Create will create a new streamer plugin.
+// NewStreamerPlugin will create a new streamer plugin.
 func NewStreamerPlugin(yt *YouTube) Plugin {
 	s := &streamerPlugin{
 		SimplePlugin: *NewSimplePlugin("Streamer"),

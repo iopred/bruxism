@@ -72,14 +72,14 @@ func (p *SlowModePlugin) Message(bot *Bot, service Service, message Message) {
 				}
 			}
 		} else if p.Enabled[messageChannel] && !message.IsModerator() {
-			if err := service.BanUser(messageChannel, message.UserId(), 30); err != nil {
+			if err := service.BanUser(messageChannel, message.UserID(), 30); err != nil {
 				log.Println(err)
 			}
 		}
 	}
 }
 
-// Create will create a new slow mode plugin.
+// NewSlowModePlugin will create a new slow mode plugin.
 func NewSlowModePlugin() *SlowModePlugin {
 	return &SlowModePlugin{
 		Enabled: make(map[string]bool),

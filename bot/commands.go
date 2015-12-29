@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// HelpCommand is a command for returning help text for all registered plugins on a service.
 func HelpCommand(bot *Bot, service Service, message Message) {
 	help := []string{}
 
@@ -26,6 +27,7 @@ func HelpCommand(bot *Bot, service Service, message Message) {
 	}
 }
 
+// InviteHelp will return the help text for the invite command.
 func InviteHelp(bot *Bot, service Service) (string, string) {
 	switch service.Name() {
 	case DiscordServiceName:
@@ -36,6 +38,7 @@ func InviteHelp(bot *Bot, service Service) (string, string) {
 	return "<channel>", "Joins the provided channel."
 }
 
+// InviteCommand is a command for accepting an invite to a channel.
 func InviteCommand(bot *Bot, service Service, message Message) {
 	_, parts := parseCommand(message)
 	if len(parts) == 1 {

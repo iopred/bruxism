@@ -19,22 +19,28 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
+// YouTubeServiceName is the service name for the YouTube service.
 const YouTubeServiceName string = "YouTube"
 
+// LiveChatMessage is a MessageWrapper around ytc.LiveChatMessage.
 type LiveChatMessage ytc.LiveChatMessage
 
+// Channel returns the channel id for this message.
 func (m *LiveChatMessage) Channel() string {
 	return m.Snippet.LiveChatId
 }
 
+// UserName returns the user name for this message.
 func (m *LiveChatMessage) UserName() string {
 	return m.AuthorDetails.DisplayName
 }
 
-func (m *LiveChatMessage) UserId() string {
+// UserID returns the user id for this message.
+func (m *LiveChatMessage) UserID() string {
 	return m.AuthorDetails.ChannelId
 }
 
+// Message returns the message content for this message.
 func (m *LiveChatMessage) Message() string {
 	switch m.Snippet.Type {
 	case ytc.LiveChatMessageSnippetTypeText:
@@ -43,19 +49,22 @@ func (m *LiveChatMessage) Message() string {
 	return html.UnescapeString(m.Snippet.DisplayMessage)
 }
 
-func (m *LiveChatMessage) MessageId() string {
+// MessageID returns the message ID for this message.
+func (m *LiveChatMessage) MessageID() string {
 	return m.Id
 }
 
+// IsModerator returns whether or not the sender of this message is a moderator.
 func (m *LiveChatMessage) IsModerator() bool {
 	return m.AuthorDetails.IsChatOwner || m.AuthorDetails.IsChatModerator
 }
 
-type FanFunding struct {
+type fanFunding struct {
 	sync.Mutex
 	Messages map[string]*ytc.LiveChatMessage
 }
 
+// YouTube is a Service provider for YouTube.
 type YouTube struct {
 	url            bool
 	auth           string
@@ -69,10 +78,11 @@ type YouTube struct {
 	messageChan    chan Message
 	InsertChan     chan interface{}
 	DeleteChan     chan interface{}
-	fanFunding     FanFunding
+	fanFunding     fanFunding
 	me             *youtube.Channel
 }
 
+// NewYouTube creates a new YouTube service.
 func NewYouTube(url bool, auth, configFilename, tokenFilename, liveChatIds string) *YouTube {
 	return &YouTube{
 		url:            url,
@@ -83,7 +93,7 @@ func NewYouTube(url bool, auth, configFilename, tokenFilename, liveChatIds strin
 		messageChan:    make(chan Message, 200),
 		InsertChan:     make(chan interface{}, 200),
 		DeleteChan:     make(chan interface{}, 200),
-		fanFunding:     FanFunding{Messages: make(map[string]*ytc.LiveChatMessage)},
+		fanFunding:     fanFunding{Messages: make(map[string]*ytc.LiveChatMessage)},
 	}
 }
 
@@ -220,6 +230,7 @@ func (yt *YouTube) createToken() error {
 	return nil
 }
 
+// Name returns the name of the service.
 func (yt *YouTube) Name() string {
 	return YouTubeServiceName
 }
@@ -279,6 +290,7 @@ func (yt *YouTube) handleRequests() {
 	}
 }
 
+// Open opens the service and returns a channel which all messages will be sent on.
 func (yt *YouTube) Open() (<-chan Message, error) {
 	if err := yt.createConfig(); err != nil {
 		return nil, err
@@ -324,33 +336,40 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 	return yt.messageChan, nil
 }
 
+// IsMe returns whether or not a message was sent by the bot.
 func (yt *YouTube) IsMe(message Message) bool {
-	return message.UserId() == yt.me.Id
+	return message.UserID() == yt.me.Id
 }
 
+// SendMessage sends a message.
 func (yt *YouTube) SendMessage(channel, message string) error {
 	yt.InsertChan <- ytc.NewLiveChatMessage(channel, message)
 	return nil
 }
 
-func (yt *YouTube) DeleteMessage(messageId string) error {
-	yt.DeleteChan <- &ytc.LiveChatMessage{Id: messageId}
+// DeleteMessage deletes a message.
+func (yt *YouTube) DeleteMessage(messageID string) error {
+	yt.DeleteChan <- &ytc.LiveChatMessage{Id: messageID}
 	return nil
 }
 
+// BanUser bans a user.
 func (yt *YouTube) BanUser(channel, user string, duration int) error {
 	yt.InsertChan <- ytc.NewLiveChatBan(channel, user, duration)
 	return nil
 }
 
+// UserName returns the bots name.
 func (yt *YouTube) UserName() string {
 	return yt.me.Snippet.Title
 }
 
+// SetPlaying will set the current game being played by the bot.
 func (yt *YouTube) SetPlaying(game string) error {
 	return errors.New("Set playing not supported on YouTube.")
 }
 
+// Join will join a channel.
 func (yt *YouTube) Join(join string) error {
 	liveChatMessageListResponse, err := yt.Client.ListLiveChatMessages(join, "")
 	if err != nil {

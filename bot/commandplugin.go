@@ -7,13 +7,13 @@ import (
 
 const commandDelimeter = "!"
 
-// The function signature for command help methods.
+// CommandHelpFunc is the function signature for command help methods.
 type CommandHelpFunc func(bot *Bot, service Service) (string, string)
 
-// The function signature for bot message commands.
+// CommandMessageFunc is the function signature for bot message commands.
 type CommandMessageFunc func(joined string, parts []string) string
 
-// Given a CommandMessageFunc, returns a MessageFunc that can be used by SimplePlugin.
+// NewCommandMessageFunc will returns a MessageFunc that can be used by SimplePlugin, given a CommandMessageFunc.
 func NewCommandMessageFunc(commandMessageFunc CommandMessageFunc) MessageFunc {
 	return func(bot *Bot, service Service, message Message) {
 		if response := commandMessageFunc(parseCommand(message)); response != "" {
@@ -47,7 +47,7 @@ type command struct {
 	help    CommandHelpFunc
 }
 
-// Command plugin is a plugin that can have commands registered and will handle messages matching that command by calling functions.
+// CommandPlugin is a plugin that can have commands registered and will handle messages matching that command by calling functions.
 type CommandPlugin struct {
 	commands map[string]*command
 }
@@ -71,7 +71,7 @@ func (p *CommandPlugin) Save() ([]byte, error) {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *CommandPlugin) Help(bot *Bot, service Service) []string {
-	help := make([]string, 0)
+	help := []string{}
 	for commandString, command := range p.commands {
 		if command.help != nil {
 			arguments, h := command.help(bot, service)
@@ -108,7 +108,7 @@ func (p *CommandPlugin) AddSimpleCommand(commandString string, message CommandMe
 	})
 }
 
-// Create will create a new command plugin.
+// NewCommandPlugin will create a new command plugin.
 func NewCommandPlugin() *CommandPlugin {
 	return &CommandPlugin{make(map[string]*command)}
 }

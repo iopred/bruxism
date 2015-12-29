@@ -1,5 +1,6 @@
 package bot
 
+// SimplePlugin is a simple wrapper around a Plugin that can implement handlers by function reference.
 type SimplePlugin struct {
 	name    string
 	load    LoadFunc

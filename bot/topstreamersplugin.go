@@ -55,7 +55,7 @@ func (p *topStreamersPlugin) topStreamers(count int) (string, error) {
 		return "", errors.New("No videos returned.")
 	}
 
-	channels := make([]string, 0)
+	channels := []string{}
 
 	for i, video := range videoList {
 		channels = append(channels, fmt.Sprintf("%v (%v)", video.Snippet.ChannelTitle, humanize.Comma(int64(video.LiveStreamingDetails.ConcurrentViewers))))
@@ -67,7 +67,7 @@ func (p *topStreamersPlugin) topStreamers(count int) (string, error) {
 	return fmt.Sprintf("Current top streamers: %v.", strings.Join(channels, ", ")), nil
 }
 
-// Create will create a new top streamers plugin.
+// NewTopStreamersPlugin will create a new top streamers plugin.
 func NewTopStreamersPlugin(yt *YouTube) Plugin {
 	ts := &topStreamersPlugin{
 		SimplePlugin: *NewSimplePlugin("TopStreamers"),

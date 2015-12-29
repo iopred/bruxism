@@ -10,7 +10,7 @@ import (
 	"github.com/iopred/bruxism/bot"
 )
 
-var youtubeUrl bool
+var youtubeURL bool
 var youtubeAuth string
 var youtubeConfigFilename string
 var youtubeTokenFilename string
@@ -19,7 +19,7 @@ var discordEmail string
 var discordPassword string
 
 func init() {
-	flag.BoolVar(&youtubeUrl, "youtubeurl", false, "Generates a URL that provides an auth code.")
+	flag.BoolVar(&youtubeURL, "youtubeuRL", false, "Generates a URL that provides an auth code.")
 	flag.StringVar(&youtubeAuth, "youtubeauth", "", "Exchanges the provided auth code for an oauth2 token.")
 	flag.StringVar(&youtubeConfigFilename, "youtubeconfig", "youtubeoauth2config.json", "The filename that contains the oauth2 config.")
 	flag.StringVar(&youtubeTokenFilename, "youtubetoken", "youtubeoauth2token.json", "The filename to store the oauth2 token.")
@@ -31,7 +31,7 @@ func init() {
 
 func main() {
 	b := bot.NewBot()
-	youtube := bot.NewYouTube(youtubeUrl, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIds)
+	youtube := bot.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIds)
 	discord := bot.NewDiscord(discordEmail, discordPassword)
 
 	b.RegisterService(youtube)

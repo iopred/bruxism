@@ -4,9 +4,9 @@ package bot
 type Message interface {
 	Channel() string
 	UserName() string
-	UserId() string
+	UserID() string
 	Message() string
-	MessageId() string
+	MessageID() string
 	IsModerator() bool
 }
 
