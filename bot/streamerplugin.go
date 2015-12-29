@@ -7,22 +7,22 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
-type StreamerPluginRequest struct {
+type streamerPluginRequest struct {
 	lastUpdate  time.Time
 	lastMessage string
 }
 
-type StreamerPlugin struct {
+type streamerPlugin struct {
 	SimplePlugin
 	youTube  *YouTube
-	requests map[string]*StreamerPluginRequest
+	requests map[string]*streamerPluginRequest
 }
 
-func (p *StreamerPlugin) helpFunc(bot *Bot, service Service) []string {
+func (p *streamerPlugin) helpFunc(bot *Bot, service Service) []string {
 	return commandHelp("streamer", "<streamername|streamerid>", "Grabs details about a streamer.")
 }
 
-func (p *StreamerPlugin) messageFunc(bot *Bot, service Service, message Message) {
+func (p *streamerPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
 		if matchesCommand("streamer", message) {
 			query, parts := parseCommand(message)
@@ -33,7 +33,7 @@ func (p *StreamerPlugin) messageFunc(bot *Bot, service Service, message Message)
 
 			r, _ := p.requests[query]
 			if r == nil {
-				r = &StreamerPluginRequest{}
+				r = &streamerPluginRequest{}
 				p.requests[query] = r
 			}
 
@@ -47,7 +47,7 @@ func (p *StreamerPlugin) messageFunc(bot *Bot, service Service, message Message)
 
 			r.lastUpdate = n
 
-			m, err := p.Streamer(query)
+			m, err := p.streamer(query)
 			if err != nil {
 				service.SendMessage(message.Channel(), "There was an error while requesting the streamer, please try again later.")
 				return
@@ -59,7 +59,7 @@ func (p *StreamerPlugin) messageFunc(bot *Bot, service Service, message Message)
 	}
 }
 
-func (p *StreamerPlugin) Streamer(search string) (string, error) {
+func (p *streamerPlugin) streamer(search string) (string, error) {
 	channelList, err := p.youTube.Service.Channels.List("id,snippet,statistics").ForUsername(search).Do()
 
 	if err != nil {
@@ -96,11 +96,12 @@ func (p *StreamerPlugin) Streamer(search string) (string, error) {
 	return fmt.Sprintf("%v: %v%v videos, %v views.", channelList.Items[0].Snippet.Title, subscriberCount, humanize.Comma(int64(channelList.Items[0].Statistics.VideoCount)), humanize.Comma(int64(channelList.Items[0].Statistics.ViewCount))), nil
 }
 
-func NewStreamerPlugin(yt *YouTube) *StreamerPlugin {
-	s := &StreamerPlugin{
+// Creates a new streamer plugin.
+func NewStreamerPlugin(yt *YouTube) Plugin {
+	s := &streamerPlugin{
 		SimplePlugin: *NewSimplePlugin("Streamer"),
 		youTube:      yt,
-		requests:     make(map[string]*StreamerPluginRequest),
+		requests:     make(map[string]*streamerPluginRequest),
 	}
 	s.message = s.messageFunc
 	s.help = s.helpFunc

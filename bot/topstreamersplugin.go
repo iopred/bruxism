@@ -9,18 +9,18 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
-type TopStreamersPlugin struct {
+type topStreamersPlugin struct {
 	SimplePlugin
 	youTube     *YouTube
 	lastUpdate  time.Time
 	lastMessage string
 }
 
-func (p *TopStreamersPlugin) helpFunc(bot *Bot, service Service) []string {
+func (p *topStreamersPlugin) helpFunc(bot *Bot, service Service) []string {
 	return commandHelp("topstreamers", "", "List the current top streamers.")
 }
 
-func (p *TopStreamersPlugin) messageFunc(bot *Bot, service Service, message Message) {
+func (p *topStreamersPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
 		if matchesCommand("topstreamers", message) {
 			n := time.Now()
@@ -33,7 +33,7 @@ func (p *TopStreamersPlugin) messageFunc(bot *Bot, service Service, message Mess
 
 			p.lastUpdate = n
 
-			m, err := p.TopStreamers(5)
+			m, err := p.topStreamers(5)
 			if err != nil {
 				service.SendMessage(message.Channel(), "There was an error while requesting the top streamers, please try again later.")
 				return
@@ -45,7 +45,7 @@ func (p *TopStreamersPlugin) messageFunc(bot *Bot, service Service, message Mess
 	}
 }
 
-func (p *TopStreamersPlugin) TopStreamers(count int) (string, error) {
+func (p *topStreamersPlugin) topStreamers(count int) (string, error) {
 	videoList, err := p.youTube.GetTopLivestreams(200)
 	if err != nil {
 		return "", err
@@ -67,8 +67,9 @@ func (p *TopStreamersPlugin) TopStreamers(count int) (string, error) {
 	return fmt.Sprintf("Current top streamers: %v.", strings.Join(channels, ", ")), nil
 }
 
-func NewTopStreamersPlugin(yt *YouTube) *TopStreamersPlugin {
-	ts := &TopStreamersPlugin{
+// Creates a new top streamers plugin.
+func NewTopStreamersPlugin(yt *YouTube) Plugin {
+	ts := &topStreamersPlugin{
 		SimplePlugin: *NewSimplePlugin("TopStreamers"),
 		youTube:      yt,
 	}

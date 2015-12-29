@@ -1,5 +1,6 @@
 package bot
 
+// A message interface, wraps a single message from a service.
 type Message interface {
 	Channel() string
 	UserName() string
@@ -9,6 +10,7 @@ type Message interface {
 	IsModerator() bool
 }
 
+// A service interface, wraps a single service such as YouTube or Discord.
 type Service interface {
 	Name() string
 	UserName() string
@@ -21,11 +23,19 @@ type Service interface {
 	Join(join string) error
 }
 
+// The function signature for a load handler.
 type LoadFunc func(*Bot, Service, []byte) error
+
+// The function signature for a save handler.
 type SaveFunc func() ([]byte, error)
+
+// The function signature for a help handler.
 type HelpFunc func(*Bot, Service) []string
+
+// The function signature for a message handler.
 type MessageFunc func(*Bot, Service, Message)
 
+// A plugin interface, supports loading and saving to a byte array and has help and message handlers.
 type Plugin interface {
 	Name() string
 	Load(*Bot, Service, []byte) error

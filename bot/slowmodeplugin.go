@@ -9,10 +9,12 @@ type SlowModePlugin struct {
 	Enabled map[string]bool
 }
 
+// The name of the plugin.
 func (p *SlowModePlugin) Name() string {
 	return "SlowMode"
 }
 
+// Loads plugin state from a byte array.
 func (p *SlowModePlugin) Load(bot *Bot, service Service, data []byte) error {
 	if data != nil {
 		if err := json.Unmarshal(data, p); err != nil {
@@ -22,18 +24,17 @@ func (p *SlowModePlugin) Load(bot *Bot, service Service, data []byte) error {
 	return nil
 }
 
+// Saves plugin state to a byte array.
 func (p *SlowModePlugin) Save() ([]byte, error) {
-	if data, err := json.Marshal(p); err != nil {
-		return nil, err
-	} else {
-		return data, nil
-	}
+	return json.Marshal(p)
 }
 
+// Returns a list of help strings that are printed when the user requests them.
 func (p *SlowModePlugin) Help(bot *Bot, service Service) []string {
 	return commandHelp("slowmode", "[<on|off>]", "Turn slow mode on or off, or return the current slow mode state.")
 }
 
+// Message handler.
 func (p *SlowModePlugin) Message(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
 		messageChannel := message.Channel()
@@ -78,6 +79,7 @@ func (p *SlowModePlugin) Message(bot *Bot, service Service, message Message) {
 	}
 }
 
+// Creates a new slow mode plugin.
 func NewSlowModePlugin() *SlowModePlugin {
 	return &SlowModePlugin{
 		Enabled: make(map[string]bool),
