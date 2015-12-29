@@ -87,7 +87,7 @@ func NewYouTube(url bool, auth, configFilename, tokenFilename, liveChatIds strin
   }
 }
 
-func (yt *YouTube) PollBroadcasts(broadcasts *ytc.LiveBroadcastListResponse, err error) {
+func (yt *YouTube) pollBroadcasts(broadcasts *ytc.LiveBroadcastListResponse, err error) {
   if err != nil {
     log.Println(err)
     return
@@ -253,8 +253,8 @@ func (yt *YouTube) Open() (<-chan Message, error) {
   }
   yt.me = me
 
-  // yt.PollBroadcasts(yt.Client.ListLiveBroadcasts("default=true"))
-  // yt.PollBroadcasts(yt.Client.ListLiveBroadcasts("mine=true"))
+  yt.pollBroadcasts(yt.Client.ListLiveBroadcasts("default=true"))
+  yt.pollBroadcasts(yt.Client.ListLiveBroadcasts("mine=true"))
   if yt.liveChatIds != "" {
     liveChatIdsArray := strings.Split(yt.liveChatIds, ",")
 
@@ -270,7 +270,7 @@ func (yt *YouTube) Open() (<-chan Message, error) {
       })
     }
 
-    yt.PollBroadcasts(additionalBroadcasts, nil)
+    yt.pollBroadcasts(additionalBroadcasts, nil)
   }
 
   // This is a map of channel id's to channels, it is used to send messages to a goroutine that is rate limiting each chatroom.
