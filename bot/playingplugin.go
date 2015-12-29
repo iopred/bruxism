@@ -45,7 +45,6 @@ func (p *PlayingPlugin) Save() ([]byte, error) {
 	} else {
 		return data, nil
 	}
-	return nil, nil
 }
 
 func NewPlayingPlugin() *PlayingPlugin {

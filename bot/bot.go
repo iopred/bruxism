@@ -59,7 +59,7 @@ func (b *Bot) Open() {
 		if messageChan, err := service.Open(); err == nil {
 			go b.listen(service, messageChan)
 		} else {
-			log.Println("Error creating service %v: %v", service.Name(), err)
+			log.Printf("Error creating service %v: %v\n", service.Name(), err)
 		}
 
 	}

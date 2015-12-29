@@ -28,7 +28,6 @@ func (p *SlowModePlugin) Save() ([]byte, error) {
 	} else {
 		return data, nil
 	}
-	return nil, nil
 }
 
 func (p *SlowModePlugin) Help(bot *Bot, service Service) []string {
