@@ -5,17 +5,17 @@ import (
 	"log"
 )
 
-type SlowModePlugin struct {
+type slowModePlugin struct {
 	Enabled map[string]bool
 }
 
 // Name returns the name of the plugin.
-func (p *SlowModePlugin) Name() string {
+func (p *slowModePlugin) Name() string {
 	return "SlowMode"
 }
 
 // Load will load plugin state from a byte array.
-func (p *SlowModePlugin) Load(bot *Bot, service Service, data []byte) error {
+func (p *slowModePlugin) Load(bot *Bot, service Service, data []byte) error {
 	if data != nil {
 		if err := json.Unmarshal(data, p); err != nil {
 			log.Println("Error loading data", err)
@@ -25,17 +25,17 @@ func (p *SlowModePlugin) Load(bot *Bot, service Service, data []byte) error {
 }
 
 // Save will save plugin state to a byte array.
-func (p *SlowModePlugin) Save() ([]byte, error) {
+func (p *slowModePlugin) Save() ([]byte, error) {
 	return json.Marshal(p)
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
-func (p *SlowModePlugin) Help(bot *Bot, service Service) []string {
+func (p *slowModePlugin) Help(bot *Bot, service Service) []string {
 	return commandHelp("slowmode", "[<on|off>]", "Turn slow mode on or off, or return the current slow mode state.")
 }
 
 // Message handler.
-func (p *SlowModePlugin) Message(bot *Bot, service Service, message Message) {
+func (p *slowModePlugin) Message(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
 		messageChannel := message.Channel()
 
@@ -80,8 +80,8 @@ func (p *SlowModePlugin) Message(bot *Bot, service Service, message Message) {
 }
 
 // NewSlowModePlugin will create a new slow mode plugin.
-func NewSlowModePlugin() *SlowModePlugin {
-	return &SlowModePlugin{
+func NewslowModePlugin() Plugin {
+	return &slowModePlugin{
 		Enabled: make(map[string]bool),
 	}
 }

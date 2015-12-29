@@ -22,7 +22,7 @@ import (
 // YouTubeServiceName is the service name for the YouTube service.
 const YouTubeServiceName string = "YouTube"
 
-// LiveChatMessage is a MessageWrapper around ytc.LiveChatMessage.
+// LiveChatMessage is a Message wrapper around ytc.LiveChatMessage.
 type LiveChatMessage ytc.LiveChatMessage
 
 // Channel returns the channel id for this message.
@@ -176,7 +176,7 @@ func (yt *YouTube) addFanFundingMessage(message *ytc.LiveChatMessage) {
 	yt.writeMessagesToFile([]*ytc.LiveChatMessage{largest}, "youtubelargest.txt")
 }
 
-func (yt *YouTube) generateOauthUrlAndExit() {
+func (yt *YouTube) generateOauthURLAndExit() {
 	// Redirect user to Google's consent page to ask for permission
 	// for the scopes specified above.
 	url := yt.config.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
@@ -206,11 +206,11 @@ func (yt *YouTube) createToken() error {
 		b, err := json.Marshal(yt.token)
 		if err != nil {
 			return err
-		} else {
-			err := ioutil.WriteFile(yt.tokenFilename, b, 0777)
-			if err != nil {
-				return err
-			}
+		}
+
+		err = ioutil.WriteFile(yt.tokenFilename, b, 0777)
+		if err != nil {
+			return err
 		}
 	} else {
 		b, err := ioutil.ReadFile(yt.tokenFilename)
@@ -224,7 +224,7 @@ func (yt *YouTube) createToken() error {
 		} else {
 			// There was an error with the token, maybe it doesn't exist.
 			// If we haven't been given an auth code, we must generate one.
-			yt.generateOauthUrlAndExit()
+			yt.generateOauthURLAndExit()
 		}
 	}
 	return nil
@@ -298,7 +298,7 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 
 	// An oauth URL was requested, error early.
 	if yt.url {
-		yt.generateOauthUrlAndExit()
+		yt.generateOauthURLAndExit()
 	}
 
 	if err := yt.createToken(); err != nil {
@@ -323,10 +323,10 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 	yt.pollBroadcasts(yt.Client.ListLiveBroadcasts("default=true"))
 	yt.pollBroadcasts(yt.Client.ListLiveBroadcasts("mine=true"))
 	if yt.liveChatIds != "" {
-		liveChatIdsArray := strings.Split(yt.liveChatIds, ",")
+		liveChatIDsArray := strings.Split(yt.liveChatIds, ",")
 
-		for _, liveChatId := range liveChatIdsArray {
-			yt.Join(liveChatId)
+		for _, liveChatID := range liveChatIDsArray {
+			yt.Join(liveChatID)
 		}
 	}
 
@@ -394,20 +394,21 @@ func (yt *YouTube) Join(join string) error {
 	return nil
 }
 
-type VideoList []*youtube.Video
+type videoList []*youtube.Video
 
-func (v VideoList) Len() int {
+func (v videoList) Len() int {
 	return len(v)
 }
 
-func (v VideoList) Swap(i, j int) {
+func (v videoList) Swap(i, j int) {
 	v[i], v[j] = v[j], v[i]
 }
 
-func (v VideoList) Less(i, j int) bool {
+func (v videoList) Less(i, j int) bool {
 	return v[i].LiveStreamingDetails.ConcurrentViewers > v[j].LiveStreamingDetails.ConcurrentViewers
 }
 
+// GetMe gets the channel for the bot.
 func (yt *YouTube) GetMe() (*youtube.Channel, error) {
 	channelList, err := yt.Service.Channels.List("id,snippet").Mine(true).Do()
 
@@ -422,8 +423,9 @@ func (yt *YouTube) GetMe() (*youtube.Channel, error) {
 	return channelList.Items[0], nil
 }
 
-func (yt *YouTube) GetTopLivestreamIds(count int) ([]string, error) {
-	ids := make([]string, 0)
+// GetTopLivestreamIDs gets the video ids for the current top livestreams.
+func (yt *YouTube) GetTopLivestreamIDs(count int) ([]string, error) {
+	ids := []string{}
 
 	pageToken := ""
 
@@ -452,8 +454,9 @@ func (yt *YouTube) GetTopLivestreamIds(count int) ([]string, error) {
 	return ids, nil
 }
 
-func (yt *YouTube) GetVideosByIdList(ids []string) ([]*youtube.Video, error) {
-	videos := make([]*youtube.Video, 0)
+// GetVideosByIDList gets all the videos for a list of video IDs.
+func (yt *YouTube) GetVideosByIDList(ids []string) ([]*youtube.Video, error) {
+	videos := []*youtube.Video{}
 
 	i := 0
 	for i < len(ids) {
@@ -479,18 +482,19 @@ func (yt *YouTube) GetVideosByIdList(ids []string) ([]*youtube.Video, error) {
 	return videos, nil
 }
 
+// GetTopLivestreams gets a list of videos for the current top livestreams.
 func (yt *YouTube) GetTopLivestreams(count int) ([]*youtube.Video, error) {
-	ids, err := yt.GetTopLivestreamIds(count)
+	ids, err := yt.GetTopLivestreamIDs(count)
 	if err != nil {
 		return nil, nil
 	}
 
-	videos, err := yt.GetVideosByIdList(ids)
+	videos, err := yt.GetVideosByIDList(ids)
 	if err != nil {
 		return nil, nil
 	}
 
-	videoList := VideoList(videos)
+	videoList := videoList(videos)
 	sort.Sort(videoList)
 
 	return videoList, nil

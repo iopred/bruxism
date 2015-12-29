@@ -45,6 +45,7 @@ func (p *SimplePlugin) Message(bot *Bot, service Service, message Message) {
 	}
 }
 
+// NewSimplePlugin creates a new simple plugin.
 func NewSimplePlugin(name string) *SimplePlugin {
 	return &SimplePlugin{name: name}
 }

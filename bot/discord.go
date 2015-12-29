@@ -7,8 +7,10 @@ import (
 	"github.com/iopred/discordgo"
 )
 
+// DiscordServiceName is the service name for the Discord service.
 const DiscordServiceName string = "Discord"
 
+// DiscordMessage is a Message wrapper around discordgo.Message.
 type DiscordMessage discordgo.Message
 
 // Channel returns the channel id for this message.
