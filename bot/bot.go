@@ -12,12 +12,12 @@ type serviceEntry struct {
 	messageChannels []chan Message
 }
 
-// A Bot which enables registering of Services and Plugins.
+// Bot enables registering of Services and Plugins.
 type Bot struct {
 	Services map[string]*serviceEntry
 }
 
-// Creates a new bot.
+// NewBot will create a new bot.
 func NewBot() *Bot {
 	return &Bot{
 		Services: make(map[string]*serviceEntry, 0),
@@ -31,7 +31,7 @@ func (b *Bot) getData(service Service, plugin Plugin) []byte {
 	return nil
 }
 
-// Registers a service.
+// RegisterService registers a service with the bot.
 func (b *Bot) RegisterService(service Service) {
 	serviceName := service.Name()
 	b.Services[serviceName] = &serviceEntry{
@@ -40,7 +40,7 @@ func (b *Bot) RegisterService(service Service) {
 	}
 }
 
-// Registerns a plugin on a service.
+// RegisterPlugin registers a plugin on a service.
 func (b *Bot) RegisterPlugin(service Service, plugin Plugin) {
 	b.Services[service.Name()].Plugins[plugin.Name()] = plugin
 	plugin.Load(b, service, b.getData(service, plugin))
@@ -58,7 +58,7 @@ func (b *Bot) listen(service Service, messageChan <-chan Message) {
 	}
 }
 
-// Opens all the current services connections and begins listening.
+// Open will open all the current services and begins listening.
 func (b *Bot) Open() {
 	for _, service := range b.Services {
 		if messageChan, err := service.Open(); err == nil {
@@ -69,7 +69,7 @@ func (b *Bot) Open() {
 	}
 }
 
-// Saves the current plugin state for all plugins on all services.
+// Save will save the current plugin state for all plugins on all services.
 func (b *Bot) Save() {
 	for _, service := range b.Services {
 		serviceName := service.Name()

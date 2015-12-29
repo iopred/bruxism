@@ -67,7 +67,7 @@ func (p *topStreamersPlugin) topStreamers(count int) (string, error) {
 	return fmt.Sprintf("Current top streamers: %v.", strings.Join(channels, ", ")), nil
 }
 
-// Creates a new top streamers plugin.
+// Create will create a new top streamers plugin.
 func NewTopStreamersPlugin(yt *YouTube) Plugin {
 	ts := &topStreamersPlugin{
 		SimplePlugin: *NewSimplePlugin("TopStreamers"),

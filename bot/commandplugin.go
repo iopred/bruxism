@@ -47,29 +47,29 @@ type command struct {
 	help    CommandHelpFunc
 }
 
-//A plugin that can have commands registered and handle them on chat messages.
+// Command plugin is a plugin that can have commands registered and will handle messages matching that command by calling functions.
 type CommandPlugin struct {
 	commands map[string]*command
 }
 
-// The name of the plugin.
+// Name returns the name of the plugin.
 func (p *CommandPlugin) Name() string {
 	return "Command"
 }
 
-// Loads plugin state from a byte array.
+// Load will load plugin state from a byte array.
 func (p *CommandPlugin) Load(bot *Bot, service Service, data []byte) error {
 	// TODO: Add a generic data store backed by json.
 	return nil
 }
 
-// Saves plugin state to a byte array.
+// Save will save plugin state to a byte array.
 func (p *CommandPlugin) Save() ([]byte, error) {
 	// TODO: Add a generic data store backed by json.
 	return nil, nil
 }
 
-// Returns a list of help strings that are printed when the user requests them.
+// Help returns a list of help strings that are printed when the user requests them.
 func (p *CommandPlugin) Help(bot *Bot, service Service) []string {
 	help := make([]string, 0)
 	for commandString, command := range p.commands {
@@ -93,7 +93,7 @@ func (p *CommandPlugin) Message(bot *Bot, service Service, message Message) {
 	}
 }
 
-// Adds a command.
+// AddCommand adds a command.
 func (p *CommandPlugin) AddCommand(commandString string, message MessageFunc, help CommandHelpFunc) {
 	p.commands[commandString] = &command{
 		message: message,
@@ -101,14 +101,14 @@ func (p *CommandPlugin) AddCommand(commandString string, message MessageFunc, he
 	}
 }
 
-// Adds a simple command
+// AddSimpleCommand adds a simple command.
 func (p *CommandPlugin) AddSimpleCommand(commandString string, message CommandMessageFunc, arguments, help string) {
 	p.AddCommand(commandString, NewCommandMessageFunc(message), func(bot *Bot, service Service) (string, string) {
 		return arguments, help
 	})
 }
 
-// Creates a new command plugin.
+// Create will create a new command plugin.
 func NewCommandPlugin() *CommandPlugin {
 	return &CommandPlugin{make(map[string]*command)}
 }

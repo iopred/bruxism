@@ -10,12 +10,12 @@ type PlayingPlugin struct {
 	Playing string
 }
 
-// The name of the plugin.
+// Name returns the name of the plugin.
 func (p *PlayingPlugin) Name() string {
 	return "Playing"
 }
 
-// Loads plugin state from a byte array.
+// Load will load plugin state from a byte array.
 func (p *PlayingPlugin) Load(bot *Bot, service Service, data []byte) error {
 	if data != nil {
 		if err := json.Unmarshal(data, p); err != nil {
@@ -28,12 +28,12 @@ func (p *PlayingPlugin) Load(bot *Bot, service Service, data []byte) error {
 	return nil
 }
 
-// Saves plugin state to a byte array.
+// Save will save plugin state to a byte array.
 func (p *PlayingPlugin) Save() ([]byte, error) {
 	return json.Marshal(p)
 }
 
-// Returns a list of help strings that are printed when the user requests them.
+// Help returns a list of help strings that are printed when the user requests them.
 func (p *PlayingPlugin) Help(bot *Bot, service Service) []string {
 	return commandHelp("playing", "<game>", fmt.Sprintf("Set which game %s is playing.", service.UserName()))
 }
@@ -48,7 +48,7 @@ func (p *PlayingPlugin) Message(bot *Bot, service Service, message Message) {
 	}
 }
 
-// Creates a new playing plugin.
+// Create will create a new playing plugin.
 func NewPlayingPlugin() *PlayingPlugin {
 	return &PlayingPlugin{}
 }
