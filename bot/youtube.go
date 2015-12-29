@@ -224,6 +224,67 @@ func (yt *YouTube) Name() string {
 	return YouTubeServiceName
 }
 
+func (yt *YouTube) handleRequests() {
+	// This is a map of channel id's to channels, it is used to send messages to a goroutine that is rate limiting each chatroom.
+	channelInsertChans := make(map[string]chan *ytc.LiveChatMessage)
+
+	// Chat messages need to be separated by one second, they must be handled by a separate goroutine.
+	insertLiveChatMessageLimited := func(liveChatMessage *ytc.LiveChatMessage) {
+		channelInsertChan := channelInsertChans[liveChatMessage.Snippet.LiveChatId]
+		if channelInsertChan == nil {
+			channelInsertChan = make(chan *ytc.LiveChatMessage, 200)
+			channelInsertChans[liveChatMessage.Snippet.LiveChatId] = channelInsertChan
+
+			// Start a goroutine to rate limit sends.
+			go func() {
+				for {
+					if err := yt.Client.InsertLiveChatMessage(<-channelInsertChan); err != nil {
+						log.Println(err)
+					}
+					time.Sleep(1 * time.Second)
+				}
+			}()
+		}
+		channelInsertChan <- liveChatMessage
+	}
+
+	for {
+		select {
+		case request := <-yt.InsertChan:
+			switch request := request.(type) {
+			case *ytc.LiveChatMessage:
+				insertLiveChatMessageLimited(request)
+			case *ytc.LiveChatBan:
+				if err := yt.Client.InsertLiveChatBan(request); err != nil {
+					log.Println(err)
+				}
+			case *ytc.LiveChatModerator:
+				if err := yt.Client.InsertLiveChatModerator(request); err != nil {
+					log.Println(err)
+				}
+			}
+		case request := <-yt.DeleteChan:
+			switch request := request.(type) {
+			case *ytc.LiveChatMessage:
+				if err := yt.Client.DeleteLiveChatMessage(request); err != nil {
+					log.Println(err)
+				}
+			case *ytc.LiveChatBan:
+				if err := yt.Client.DeleteLiveChatBan(request); err != nil {
+					log.Println(err)
+				}
+			case *ytc.LiveChatModerator:
+				if err := yt.Client.DeleteLiveChatModerator(request); err != nil {
+					log.Println(err)
+				}
+			}
+		}
+
+		// Sleep for a millisecond, this will guarantee a maximum QPS of 1000.
+		time.Sleep(1 * time.Millisecond)
+	}
+}
+
 func (yt *YouTube) Open() (<-chan Message, error) {
 	if err := yt.createConfig(); err != nil {
 		return nil, err
@@ -263,67 +324,8 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 		}
 	}
 
-	// This is a map of channel id's to channels, it is used to send messages to a goroutine that is rate limiting each chatroom.
-	channelInsertChans := make(map[string]chan *ytc.LiveChatMessage)
-
-	// Chat messages need to be separated by one second, they must be handled by a separate goroutine.
-	insertLiveChatMessageLimited := func(liveChatMessage *ytc.LiveChatMessage) {
-		channelInsertChan := channelInsertChans[liveChatMessage.Snippet.LiveChatId]
-		if channelInsertChan == nil {
-			channelInsertChan = make(chan *ytc.LiveChatMessage, 200)
-			channelInsertChans[liveChatMessage.Snippet.LiveChatId] = channelInsertChan
-
-			// Start a goroutine to rate limit sends.
-			go func() {
-				for {
-					if err := yt.Client.InsertLiveChatMessage(<-channelInsertChan); err != nil {
-						log.Println(err)
-					}
-					time.Sleep(1 * time.Second)
-				}
-			}()
-		}
-		channelInsertChan <- liveChatMessage
-	}
-
 	// Start a goroutine to handle all requests.
-	go func() {
-		for {
-			select {
-			case request := <-yt.InsertChan:
-				switch request := request.(type) {
-				case *ytc.LiveChatMessage:
-					insertLiveChatMessageLimited(request)
-				case *ytc.LiveChatBan:
-					if err := yt.Client.InsertLiveChatBan(request); err != nil {
-						log.Println(err)
-					}
-				case *ytc.LiveChatModerator:
-					if err := yt.Client.InsertLiveChatModerator(request); err != nil {
-						log.Println(err)
-					}
-				}
-			case request := <-yt.DeleteChan:
-				switch request := request.(type) {
-				case *ytc.LiveChatMessage:
-					if err := yt.Client.DeleteLiveChatMessage(request); err != nil {
-						log.Println(err)
-					}
-				case *ytc.LiveChatBan:
-					if err := yt.Client.DeleteLiveChatBan(request); err != nil {
-						log.Println(err)
-					}
-				case *ytc.LiveChatModerator:
-					if err := yt.Client.DeleteLiveChatModerator(request); err != nil {
-						log.Println(err)
-					}
-				}
-			}
-
-			// Sleep for a millisecond, this will guarantee a maximum QPS of 1000.
-			time.Sleep(1 * time.Millisecond)
-		}
-	}()
+	go yt.handleRequests()
 
 	return yt.messageChan, nil
 }
