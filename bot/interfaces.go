@@ -18,6 +18,7 @@ type Service interface {
   DeleteMessage(messageId string) error
   BanUser(channel, user string, duration int) error
   SetPlaying(game string) error
+  Join(join string) error
 }
 
 type Plugin interface {

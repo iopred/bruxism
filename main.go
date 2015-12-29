@@ -42,11 +42,13 @@ func main() {
   b.RegisterPlugin(youtube, bot.NewSlowModePlugin())
   b.RegisterPlugin(youtube, bot.NewTopStreamersPlugin(youtube))
   b.RegisterPlugin(youtube, bot.NewStreamerPlugin(youtube))
+  b.RegisterPlugin(youtube, bot.NewInvitePlugin())
 
   b.RegisterPlugin(discord, bot.NewHelpPlugin())
   b.RegisterPlugin(discord, bot.NewTopStreamersPlugin(youtube))
   b.RegisterPlugin(discord, bot.NewStreamerPlugin(youtube))
   b.RegisterPlugin(discord, bot.NewPlayingPlugin())
+  b.RegisterPlugin(discord, bot.NewInvitePlugin())
 
   defer func() {
     if r := recover(); r != nil {

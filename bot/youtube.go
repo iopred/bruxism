@@ -258,19 +258,9 @@ func (yt *YouTube) Open() (<-chan Message, error) {
   if yt.liveChatIds != "" {
     liveChatIdsArray := strings.Split(yt.liveChatIds, ",")
 
-    additionalBroadcasts := &ytc.LiveBroadcastListResponse{
-      Items: make([]*ytc.LiveBroadcast, 0),
-    }
-
     for _, liveChatId := range liveChatIdsArray {
-      additionalBroadcasts.Items = append(additionalBroadcasts.Items, &ytc.LiveBroadcast{
-        Snippet: &ytc.LiveBroadcastSnippet{
-          LiveChatId: liveChatId,
-        },
-      })
+      yt.Join(liveChatId)
     }
-
-    yt.pollBroadcasts(additionalBroadcasts, nil)
   }
 
   // This is a map of channel id's to channels, it is used to send messages to a goroutine that is rate limiting each chatroom.
@@ -363,6 +353,30 @@ func (yt *YouTube) UserName() string {
 
 func (yt *YouTube) SetPlaying(game string) error {
   return errors.New("Set playing not supported on YouTube.")
+}
+
+func (yt *YouTube) Join(join string) error {
+  liveChatMessageListResponse, err := yt.Client.ListLiveChatMessages(join, "")
+  if err != nil {
+    return err
+  }
+
+  if liveChatMessageListResponse.Error != nil {
+    return liveChatMessageListResponse.Error.NewError("joining channel")
+  }
+
+  liveBroadcastListResponse := &ytc.LiveBroadcastListResponse{
+    Items: []*ytc.LiveBroadcast{
+      {
+        Snippet: &ytc.LiveBroadcastSnippet{
+          LiveChatId: join,
+        },
+      },
+    },
+  }
+  yt.pollBroadcasts(liveBroadcastListResponse, nil)
+
+  return nil
 }
 
 type VideoList []*youtube.Video

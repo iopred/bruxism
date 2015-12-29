@@ -104,7 +104,6 @@ func (d *Discord) SendMessage(channel, message string) error {
     log.Println("Error sending discord message: ", err)
     return err
   }
-
   return nil
 }
 
@@ -122,4 +121,11 @@ func (d *Discord) UserName() string {
 
 func (d *Discord) SetPlaying(game string) error {
   return d.Session.UpdateStatus(0, game)
+}
+
+func (d *Discord) Join(join string) error {
+  if _, err := d.Session.InviteAccept(join); err != nil {
+    return err
+  }
+  return nil
 }
