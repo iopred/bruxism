@@ -13,10 +13,16 @@ func (p *SimplePlugin) Name() string {
 }
 
 func (p *SimplePlugin) Load(bot *Bot, service Service, data []byte) error {
+	if p.load != nil {
+		return p.load(bot, service, data)
+	}
 	return nil
 }
 
 func (p *SimplePlugin) Save() ([]byte, error) {
+	if p.save != nil {
+		return p.save()
+	}
 	return nil, nil
 }
 
@@ -28,7 +34,9 @@ func (p *SimplePlugin) Help(bot *Bot, service Service) []string {
 }
 
 func (p *SimplePlugin) Message(bot *Bot, service Service, message Message) {
-	p.message(bot, service, message)
+	if p.message != nil {
+		p.message(bot, service, message)
+	}
 }
 
 func NewSimplePlugin(name string) *SimplePlugin {
