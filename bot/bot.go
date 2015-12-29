@@ -42,10 +42,10 @@ func (b *Bot) RegisterPlugin(service Service, plugin Plugin) {
   plugin.Load(b, service, b.getData(service, plugin))
 }
 
-func (b *Bot) listen(service Service, serviceMessageChannel <-chan Message) {
+func (b *Bot) listen(service Service, messageChan <-chan Message) {
   serviceName := service.Name()
   for {
-    message := <-serviceMessageChannel
+    message := <-messageChan
     log.Printf("<%s> %s: %s\n", message.Channel(), message.UserName(), message.Message())
     plugins := b.Services[serviceName].Plugins
     for _, plugin := range plugins {

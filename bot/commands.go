@@ -8,7 +8,7 @@ import (
 )
 
 func HelpCommand(bot *Bot, service Service, message Message) {
-	help := make([]string, 0)
+	help := []string{}
 
 	for _, plugin := range bot.Services[service.Name()].Plugins {
 		h := plugin.Help(bot, service)
@@ -19,10 +19,8 @@ func HelpCommand(bot *Bot, service Service, message Message) {
 
 	sort.Strings(help)
 
-	messageChannel := message.Channel()
-
 	for _, h := range help {
-		if err := service.SendMessage(messageChannel, h); err != nil {
+		if err := service.SendMessage(message.Channel(), h); err != nil {
 			log.Println(err)
 		}
 	}
