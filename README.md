@@ -1,13 +1,21 @@
 # Bruxism
 A chat bot for YouTube and Discord.
 
-Current support:
+[![GoDoc](https://godoc.org/github.com/iopred/bruxism?status.svg)](https://godoc.org/github.com/iopred/bruxism)
+[![Go Walker](http://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/iopred/bruxism)
+[![Go report](http://goreportcard.com/badge/iopred/bruxism)](http://goreportcard.com/report/iopred/bruxism)
+[![Build Status](https://travis-ci.org/iopred/bruxism.svg?branch=master)](https://travis-ci.org/iopred/bruxism)
 
-* Slow Mode - Slows down YouTube chat by temporarily banning anyone who speaks.
-* Top Streamers - Lists the current top streamers on YouTube Gaming.
+## Current support:
+
 * Help - !help to list all available commands.
+* Invite - !invite to invite the bot into a channel or Discord server.
+* Playing - !playing to set the currently playing game in Discord.
+* Slow Mode - !slowmode to slows down YouTube chat by temporarily banning anyone who speaks.
+* Streamer - !streamer to list stats about a YouTube streamer.
+* Top Streamers - !topstreamers to list the current top streamers on YouTube Gaming.
 
-Arguments:
+## Arguments:
 
 * youtubeurl - Outputs a new OAuth URL for YouTube and then exits.
 * youtubeauth - Sets the YouTube OAuth Response, this will generate a OAuth token.
