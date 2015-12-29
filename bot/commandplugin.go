@@ -1,9 +1,13 @@
 package bot
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 const COMMAND_DELIMITER = "!"
 
+type CommandHelpFunc func(bot *Bot, service Service) (string, string)
 type CommandMessageFunc func(joined string, parts []string) string
 
 func NewCommandMessageFunc(commandMessageFunc CommandMessageFunc) MessageFunc {
@@ -27,9 +31,16 @@ func parseCommand(message Message) (string, []string) {
 	return "", []string{}
 }
 
+func commandHelp(command, arguments, help string) []string {
+	if arguments != "" {
+		return []string{fmt.Sprintf("%s%s %s - %s", COMMAND_DELIMITER, command, arguments, help)}
+	}
+	return []string{fmt.Sprintf("%s%s - %s", COMMAND_DELIMITER, command, help)}
+}
+
 type Command struct {
 	message MessageFunc
-	help    HelpFunc
+	help    CommandHelpFunc
 }
 
 type CommandPlugin struct {
@@ -52,9 +63,10 @@ func (p *CommandPlugin) Save() ([]byte, error) {
 
 func (p *CommandPlugin) Help(bot *Bot, service Service) []string {
 	help := make([]string, 0)
-	for _, command := range p.commands {
+	for commandString, command := range p.commands {
 		if command.help != nil {
-			help = append(help, command.help(bot, service)...)
+			arguments, h := command.help(bot, service)
+			help = append(help, commandHelp(commandString, arguments, h)...)
 		}
 	}
 	return help
@@ -70,19 +82,15 @@ func (p *CommandPlugin) Message(bot *Bot, service Service, message Message) {
 	}
 }
 
-func (p *CommandPlugin) AddCommand(commandString string, message MessageFunc, help HelpFunc) {
+func (p *CommandPlugin) AddCommand(commandString string, message MessageFunc, help CommandHelpFunc) {
 	p.commands[commandString] = &Command{
 		message: message,
 		help:    help,
 	}
 }
 
-func (p *CommandPlugin) AddSimpleCommand(commandString string, message CommandMessageFunc, help string) {
-	var helpFunc HelpFunc
-	if help != "" {
-		helpFunc = func(bot *Bot, service Service) []string { return []string{help} }
-	}
-	p.AddCommand(commandString, NewCommandMessageFunc(message), helpFunc)
+func (p *CommandPlugin) AddSimpleCommand(commandString string, message CommandMessageFunc, help CommandHelpFunc) {
+	p.AddCommand(commandString, NewCommandMessageFunc(message), help)
 }
 
 func NewCommandPlugin() *CommandPlugin {

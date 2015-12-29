@@ -16,8 +16,8 @@ type TopStreamersPlugin struct {
   lastMessage string
 }
 
-func (p *TopStreamersPlugin) help(bot *Bot, service Service) []string {
-  return []string{"!topstreamers - List the current top streamers."}
+func (p *TopStreamersPlugin) helpFunc(bot *Bot, service Service) []string {
+  return commandHelp("topstreamers", "", "List the current top streamers.")
 }
 
 func (p *TopStreamersPlugin) messageFunc(bot *Bot, service Service, message Message) {
@@ -73,5 +73,6 @@ func NewTopStreamersPlugin(yt *YouTube) *TopStreamersPlugin {
     youTube:      yt,
   }
   ts.message = ts.messageFunc
+  ts.help = ts.helpFunc
   return ts
 }

@@ -15,7 +15,7 @@ func (p *PlayingPlugin) Name() string {
 }
 
 func (p *PlayingPlugin) Help(bot *Bot, service Service) []string {
-	return []string{fmt.Sprintf("!playing [game] - Set which game %v is playing.", service.UserName())}
+	return commandHelp("playing", "<game>", fmt.Sprintf("Set which game %s is playing.", service.UserName()))
 }
 
 func (p *PlayingPlugin) Load(bot *Bot, service Service, data []byte) error {

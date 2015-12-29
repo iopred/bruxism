@@ -41,19 +41,18 @@ func main() {
   cp := bot.NewCommandPlugin()
   cp.AddCommand("help", bot.HelpCommand, nil)
   cp.AddCommand("command", bot.HelpCommand, nil)
-  cp.AddCommand("commands", bot.HelpCommand, nil)
+  cp.AddCommand("invite", bot.InviteCommand, bot.InviteHelp)
+  cp.AddCommand("join", bot.InviteCommand, nil)
 
   b.RegisterPlugin(youtube, cp)
   b.RegisterPlugin(youtube, bot.NewSlowModePlugin())
   b.RegisterPlugin(youtube, bot.NewTopStreamersPlugin(youtube))
   b.RegisterPlugin(youtube, bot.NewStreamerPlugin(youtube))
-  b.RegisterPlugin(youtube, bot.NewInvitePlugin())
 
   b.RegisterPlugin(discord, cp)
   b.RegisterPlugin(discord, bot.NewTopStreamersPlugin(youtube))
   b.RegisterPlugin(discord, bot.NewStreamerPlugin(youtube))
   b.RegisterPlugin(discord, bot.NewPlayingPlugin())
-  b.RegisterPlugin(discord, bot.NewInvitePlugin())
 
   defer func() {
     if r := recover(); r != nil {

@@ -32,7 +32,7 @@ func (p *SlowModePlugin) Save() ([]byte, error) {
 }
 
 func (p *SlowModePlugin) Help(bot *Bot, service Service) []string {
-  return []string{"!slowmode [on|off] - Turn slow mode on or off."}
+  return commandHelp("slowmode", "[<on|off>]", "Turn slow mode on or off, or return the current slow mode state.")
 }
 
 func (p *SlowModePlugin) Message(bot *Bot, service Service, message Message) {
