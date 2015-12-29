@@ -61,7 +61,6 @@ func (b *Bot) Open() {
 		} else {
 			log.Printf("Error creating service %v: %v\n", service.Name(), err)
 		}
-
 	}
 }
 
