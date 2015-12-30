@@ -423,6 +423,15 @@ func (yt *YouTube) GetMe() (*youtube.Channel, error) {
 	return channelList.Items[0], nil
 }
 
+// GetAvatar returns the url for the owner of a message.
+func (d *YouTube) GetAvatar(message Message) (string, error) {
+	m, ok := message.(*LiveChatMessage)
+	if ok && m.AuthorDetails != nil {
+		return m.AuthorDetails.ProfileImageUrl, nil
+	}
+	return "", errors.New("Bad message.")
+}
+
 // GetTopLivestreamIDs gets the video ids for the current top livestreams.
 func (yt *YouTube) GetTopLivestreamIDs(count int) ([]string, error) {
 	ids := []string{}

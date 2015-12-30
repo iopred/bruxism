@@ -21,6 +21,7 @@ type Service interface {
 	BanUser(channel, user string, duration int) error
 	SetPlaying(game string) error
 	Join(join string) error
+	GetAvatar(message Message) (string, error)
 }
 
 // LoadFunc is the function signature for a load handler.

@@ -50,7 +50,8 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 		}
 
 		speakers := make(map[string]int)
-		avatars := make(map[int]bool)
+		claimed := make(map[int]bool)
+		avatars := make(map[int]string)
 
 		messages := log[len(log)-lines:]
 
@@ -61,8 +62,14 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 			if _, ok := speakers[message.UserName()]; !ok {
 				for {
 					speaker = rand.Intn(comic.Avatars())
-					if _, ok := avatars[speaker]; !ok {
-						avatars[speaker] = true
+					if _, ok := claimed[speaker]; !ok {
+						claimed[speaker] = true
+
+						a, err := service.GetAvatar(message)
+						if err == nil {
+							avatars[speaker] = a
+						}
+
 						break
 					}
 				}
@@ -80,24 +87,25 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 		image, err := comic.MakeComic(&comicgen.Script{
 			Messages: script,
 			Author:   fmt.Sprintf("%s and %s", service.UserName(), message.UserName()),
+			Avatars:  avatars,
 		})
 
 		if err != nil {
 			fmt.Println("Error creating comic", err)
-		}
-
-		go func() {
-			url, err := bot.UploadToImgur(image, "comic.png")
-			if err == nil {
-				if service.Name() == DiscordServiceName {
-					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic <@%s>: %s", message.UserID(), url))
+		} else {
+			go func() {
+				url, err := bot.UploadToImgur(image, "comic.png")
+				if err == nil {
+					if service.Name() == DiscordServiceName {
+						service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic <@%s>: %s", message.UserID(), url))
+					} else {
+						service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic %s: %s", message.UserName(), url))
+					}
 				} else {
-					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic %s: %s", message.UserName(), url))
+					fmt.Println("Error uploading comic", err)
 				}
-			} else {
-				fmt.Println("Error uploading comic", err)
-			}
-		}()
+			}()
+		}
 
 	} else {
 		if len(log) < 10 {

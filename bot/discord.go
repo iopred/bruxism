@@ -2,6 +2,7 @@ package bot
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/iopred/discordgo"
@@ -147,4 +148,14 @@ func (d *Discord) Join(join string) error {
 		return err
 	}
 	return nil
+}
+
+// GetAvatar returns the url for the owner of a message.
+func (d *Discord) GetAvatar(message Message) (string, error) {
+	u, err := d.Session.User(message.UserID())
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("https://discordapp.com/api/users/%s/avatars/%s.jpg", message.UserID(), u.Avatar), nil
 }
