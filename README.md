@@ -8,27 +8,25 @@ A chat bot for YouTube and Discord.
 
 ## Current support:
 
-* `!comic <lines> - Creates a comic from the last lines of chat.`
-* `!help - Lists available commands.``
-* `!invite <id> - Joins the provided YouTube chat or Discord server.`
-* `!playing - Set which game the bot is playing on Discord.`
-* `!slowmode [<on|off>]- Turn slow mode on or off, or return the current slow mode state. Slow mode slows down YouTube chat by temporarily banning anyone who speaks.`
-* `!streamer <streamername|streamerid> - Grabs details about a streamer.`
-* `!topstreamers - List the current top streamers on YouTube.`
+* `!comic <lines>` - Creates a comic from the last lines of chat.
+* `!help` - Lists available commands.
+* `!invite <id>` - Joins the provided YouTube chat or Discord server.
+* `!playing` - Set which game the bot is playing on Discord.
+* `!slowmode [<on|off>]` - Turn slow mode on or off, or return the current slow mode state. Slow mode slows down YouTube chat by temporarily banning anyone who speaks.
+* `!streamer <streamername|streamerid>` - Grabs details about a streamer.
+* `!topstreamers` - List the current top streamers on YouTube.
 
 ## Arguments:
 
-* youtubeurl - Outputs a new OAuth URL for YouTube and then exits.
-* youtubeauth - Sets the YouTube OAuth Response, this will generate a OAuth token.
-* youtubeconfig - The filename for your YouTube OAuth client. (Download JSON in Google Developers Console -> Credentials).
-* youtubetoken - The filename for your OAuth token.
-* youtubelivechatids - An additional comma separated list of YouTube Live Chat ID's to listen on. By default the bot listens to all the live broadcasts on the primary account.
-* discordemail - Sets the Discord email address.
-* discordpassword - Sets the Discord password.
-* imgurid - Sets the Imgur client id
+* `youtubeurl` - Outputs a new OAuth URL for YouTube and then exits.
+* `youtubeauth` - Sets the YouTube OAuth Response, this will generate a OAuth token.
+* `youtubeconfig` - The filename for your YouTube OAuth client. (Download JSON in Google Developers Console -> Credentials).
+* `youtubetoken` - The filename for your OAuth token.
+* `youtubelivechatids` - An additional comma separated list of YouTube Live Chat ID's to listen on. By default the bot listens to all the live broadcasts on the primary account.
+* `discordemail` - Sets the Discord email address.
+* `discordpassword` - Sets the Discord password.
+* `imgurid` - Sets the Imgur client id
 
 eg:
 
-```
-bruxism -youtubelivechatids <comma separated list of chat ids> -discordemail <discord email> -discordpassword <discord password> -imgurid <imgur id>
-```
+`bruxism -youtubelivechatids <comma separated list of chat ids> -discordemail <discord email> -discordpassword <discord password> -imgurid <imgur id>`
