@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/signal"
 	"time"
@@ -29,6 +30,8 @@ func init() {
 	flag.StringVar(&discordPassword, "discordpassword", "", "Discord account password.")
 	flag.StringVar(&imgurID, "imgurid", "", "Imgur client id.")
 	flag.Parse()
+
+	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
