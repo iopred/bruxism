@@ -8,13 +8,13 @@ A chat bot for YouTube and Discord.
 
 ## Current support:
 
-* !comic <lines> - Creates a comic from the last lines of chat.
-* !help - Lists available commands.
-* !invite <id> - Joins the provided YouTube chat or Discord server.
-* !playing - Set which game the bot is playing on Discord.
-* !slowmode [<on|off>]- Turn slow mode on or off, or return the current slow mode state. Slow mode slows down YouTube chat by temporarily banning anyone who speaks.
-* !streamer <streamername|streamerid> - Grabs details about a streamer.
-* !topstreamers - List the current top streamers on YouTube.
+* `!comic <lines> - Creates a comic from the last lines of chat.`
+* `!help - Lists available commands.``
+* `!invite <id> - Joins the provided YouTube chat or Discord server.`
+* `!playing - Set which game the bot is playing on Discord.`
+* `!slowmode [<on|off>]- Turn slow mode on or off, or return the current slow mode state. Slow mode slows down YouTube chat by temporarily banning anyone who speaks.`
+* `!streamer <streamername|streamerid> - Grabs details about a streamer.`
+* `!topstreamers - List the current top streamers on YouTube.`
 
 ## Arguments:
 
