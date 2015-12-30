@@ -69,11 +69,11 @@ func (p *topStreamersPlugin) topStreamers(count int) (string, error) {
 
 // NewTopStreamersPlugin will create a new top streamers plugin.
 func NewTopStreamersPlugin(yt *YouTube) Plugin {
-	ts := &topStreamersPlugin{
+	p := &topStreamersPlugin{
 		SimplePlugin: *NewSimplePlugin("TopStreamers"),
 		youTube:      yt,
 	}
-	ts.message = ts.messageFunc
-	ts.help = ts.helpFunc
-	return ts
+	p.message = p.messageFunc
+	p.help = p.helpFunc
+	return p
 }

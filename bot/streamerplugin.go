@@ -98,12 +98,12 @@ func (p *streamerPlugin) streamer(search string) (string, error) {
 
 // NewStreamerPlugin will create a new streamer plugin.
 func NewStreamerPlugin(yt *YouTube) Plugin {
-	s := &streamerPlugin{
+	p := &streamerPlugin{
 		SimplePlugin: *NewSimplePlugin("Streamer"),
 		youTube:      yt,
 		requests:     make(map[string]*streamerPluginRequest),
 	}
-	s.message = s.messageFunc
-	s.help = s.helpFunc
-	return s
+	p.message = p.messageFunc
+	p.help = p.helpFunc
+	return p
 }

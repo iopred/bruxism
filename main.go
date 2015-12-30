@@ -14,24 +14,27 @@ var youtubeURL bool
 var youtubeAuth string
 var youtubeConfigFilename string
 var youtubeTokenFilename string
-var youtubeLiveChatIds string
+var youtubeLiveChatIDs string
 var discordEmail string
 var discordPassword string
+var imgurID string
 
 func init() {
 	flag.BoolVar(&youtubeURL, "youtubeuRL", false, "Generates a URL that provides an auth code.")
 	flag.StringVar(&youtubeAuth, "youtubeauth", "", "Exchanges the provided auth code for an oauth2 token.")
 	flag.StringVar(&youtubeConfigFilename, "youtubeconfig", "youtubeoauth2config.json", "The filename that contains the oauth2 config.")
 	flag.StringVar(&youtubeTokenFilename, "youtubetoken", "youtubeoauth2token.json", "The filename to store the oauth2 token.")
-	flag.StringVar(&youtubeLiveChatIds, "youtubelivechatids", "", "Additional chat id's to poll.")
+	flag.StringVar(&youtubeLiveChatIDs, "youtubelivechatids", "", "Additional chat id's to poll.")
 	flag.StringVar(&discordEmail, "discordemail", "", "Discord account email.")
 	flag.StringVar(&discordPassword, "discordpassword", "", "Discord account password.")
+	flag.StringVar(&imgurID, "imgurid", "", "Imgur client id.")
 	flag.Parse()
 }
 
 func main() {
 	b := bot.NewBot()
-	youtube := bot.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIds)
+	b.ImgurID = imgurID
+	youtube := bot.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIDs)
 	discord := bot.NewDiscord(discordEmail, discordPassword)
 
 	b.RegisterService(youtube)
@@ -48,11 +51,13 @@ func main() {
 	b.RegisterPlugin(youtube, bot.NewSlowModePlugin())
 	b.RegisterPlugin(youtube, bot.NewTopStreamersPlugin(youtube))
 	b.RegisterPlugin(youtube, bot.NewStreamerPlugin(youtube))
+	b.RegisterPlugin(youtube, bot.NewComicPlugin())
 
 	b.RegisterPlugin(discord, cp)
 	b.RegisterPlugin(discord, bot.NewTopStreamersPlugin(youtube))
 	b.RegisterPlugin(discord, bot.NewStreamerPlugin(youtube))
 	b.RegisterPlugin(discord, bot.NewPlayingPlugin())
+	b.RegisterPlugin(discord, bot.NewComicPlugin())
 
 	defer func() {
 		if r := recover(); r != nil {

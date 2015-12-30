@@ -1,8 +1,15 @@
 package bot
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"image"
+	"image/png"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
+	"net/http"
 	"os"
 )
 
@@ -15,6 +22,7 @@ type serviceEntry struct {
 // Bot enables registering of Services and Plugins.
 type Bot struct {
 	Services map[string]*serviceEntry
+	ImgurID  string
 }
 
 // NewBot will create a new bot.
@@ -88,4 +96,55 @@ func (b *Bot) Save() {
 			}
 		}
 	}
+}
+
+func (b *Bot) UploadToImgur(image image.Image, filename string) (string, error) {
+	if b.ImgurID == "" {
+		return "", errors.New("No Imgur client ID provided.")
+	}
+
+	bodyBuf := &bytes.Buffer{}
+	bodywriter := multipart.NewWriter(bodyBuf)
+
+	// this step is very important
+	writer, err := bodywriter.CreateFormFile("image", filename)
+	if err != nil {
+		return "", err
+	}
+
+	png.Encode(writer, image)
+
+	contentType := bodywriter.FormDataContentType()
+	bodywriter.Close()
+
+	r, err := http.NewRequest("POST", "https://api.imgur.com/3/image", bodyBuf)
+	if err != nil {
+		return "", err
+	}
+
+	r.Header.Set("Content-Type", contentType)
+	r.Header.Set("Authorization", "Client-ID "+b.ImgurID)
+
+	resp, err := http.DefaultClient.Do(r)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode != 200 {
+		return "", errors.New(string(body))
+	}
+
+	j := make(map[string]interface{})
+
+	err = json.Unmarshal(body, &j)
+	if err != nil {
+		return "", err
+	}
+
+	return j["data"].(map[string]interface{})["link"].(string), nil
 }
