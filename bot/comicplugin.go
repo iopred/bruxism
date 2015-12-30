@@ -78,11 +78,11 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 		lines := 0
 		linesString, parts := parseCommand(message)
 		if len(parts) > 0 {
-			lines, _ = strconv.Atoi(linesString)
+			lines, err = strconv.Atoi(linesString)
 		}
 
 		if lines == 0 {
-			lines = rand.Intn(comic.MaxLines())
+			lines = 1 + rand.Intn(comic.MaxLines()-1)
 		}
 
 		if lines > len(log) {
