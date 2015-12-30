@@ -20,7 +20,7 @@ type comicPlugin struct {
 }
 
 func (p *comicPlugin) helpFunc(bot *Bot, service Service) []string {
-	return commandHelp("comic", "<lines>", "Creates a comic from the last lines of chat.")
+	return commandHelp("comic", "[<messages>]", "Creates a comic from recent messages.")
 }
 
 func makeScriptFromMessages(service Service, message Message, messages []Message) *comicgen.Script {
