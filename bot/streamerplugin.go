@@ -19,7 +19,7 @@ type streamerPlugin struct {
 }
 
 func (p *streamerPlugin) helpFunc(bot *Bot, service Service) []string {
-	return commandHelp("streamer", "<streamername|streamerid>", "Grabs details about a streamer.")
+	return commandHelp("streamer", "<streamername|streamerid>", "Grabs details about a YouTube streamer.")
 }
 
 func (p *streamerPlugin) messageFunc(bot *Bot, service Service, message Message) {
