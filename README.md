@@ -24,9 +24,10 @@ A chat bot for YouTube and Discord.
 * youtubelivechatids - An additional comma separated list of YouTube Live Chat ID's to listen on. By default the bot listens to all the live broadcasts on the primary account.
 * discordemail - Sets the Discord email address.
 * discordpassword - Sets the Discord password.
+* imgurid - Sets the Imgur client id
 
 eg:
 
 ```
-bruxism -youtubelivechatids <comma separated list of chat ids> -discordemail <discord email> -discordpassword <discord password>
+bruxism -youtubelivechatids <comma separated list of chat ids> -discordemail <discord email> -discordpassword <discord password> -imgurid <imgur id>
 ```
