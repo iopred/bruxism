@@ -110,6 +110,10 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 
 // NewComicPlugin will create a new top streamers plugin.
 func NewComicPlugin() Plugin {
+	if comic == nil {
+		return nil
+	}
+
 	p := &comicPlugin{
 		SimplePlugin: *NewSimplePlugin("Comic"),
 		log:          make(map[string][]Message),
