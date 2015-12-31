@@ -138,7 +138,7 @@ func (yt *YouTube) pollMessages(broadcast *ytc.LiveBroadcast) {
 			pageToken = liveChatMessageListResponse.NextPageToken
 		}
 
-		if liveChatMessageListResponse.PollingIntervalMillis != 0 {
+		if liveChatMessageListResponse != nil && liveChatMessageListResponse.PollingIntervalMillis != 0 {
 			time.Sleep(time.Duration(liveChatMessageListResponse.PollingIntervalMillis) * time.Millisecond)
 		} else {
 			time.Sleep(10 * time.Second)
