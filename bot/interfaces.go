@@ -19,10 +19,11 @@ type Service interface {
 	IsMe(message Message) bool
 	SendMessage(channel, message string) error
 	DeleteMessage(channel, messageID string) error
-	BanUser(channel, user string, duration int) error
+	BanUser(channel, userID string, duration int) error
 	SetPlaying(game string) error
 	Join(join string) error
 	Typing(channel string) error
+	PrivateMessage(userID, messageID string) error
 }
 
 // LoadFunc is the function signature for a load handler.

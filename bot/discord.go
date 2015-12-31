@@ -133,7 +133,7 @@ func (d *Discord) DeleteMessage(channel, messageID string) error {
 }
 
 // BanUser bans a user.
-func (d *Discord) BanUser(channel, user string, duration int) error {
+func (d *Discord) BanUser(channel, userID string, duration int) error {
 	return errors.New("Banning not supported on Discord.")
 }
 
@@ -158,4 +158,13 @@ func (d *Discord) Join(join string) error {
 // Typing sets that the bot is typing.
 func (d *Discord) Typing(channel string) error {
 	return d.Session.ChannelTyping(channel)
+}
+
+// PrivateMessage will send a private message to a user.
+func (d *Discord) PrivateMessage(userID, message string) error {
+	c, err := d.Session.UserChannelCreate("@me", userID)
+	if err != nil {
+		return err
+	}
+	return d.SendMessage(c.ID, message)
 }

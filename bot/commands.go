@@ -49,6 +49,8 @@ func InviteCommand(bot *Bot, service Service, message Message) {
 		}
 		if err := service.Join(join); err != nil {
 			fmt.Printf("Error joining %v %v", service.Name(), err)
+		} else if service.Name() == DiscordServiceName {
+			service.PrivateMessage(message.UserID(), "I have joined that server.")
 		}
 	}
 }

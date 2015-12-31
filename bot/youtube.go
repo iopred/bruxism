@@ -359,8 +359,8 @@ func (yt *YouTube) DeleteMessage(channel, messageID string) error {
 }
 
 // BanUser bans a user.
-func (yt *YouTube) BanUser(channel, user string, duration int) error {
-	yt.InsertChan <- ytc.NewLiveChatBan(channel, user, duration)
+func (yt *YouTube) BanUser(channel, userID string, duration int) error {
+	yt.InsertChan <- ytc.NewLiveChatBan(channel, userID, duration)
 	return nil
 }
 
@@ -372,6 +372,11 @@ func (yt *YouTube) UserName() string {
 // SetPlaying will set the current game being played by the bot.
 func (yt *YouTube) SetPlaying(game string) error {
 	return errors.New("Set playing not supported on YouTube.")
+}
+
+// PrivateMessage will send a private message to a user.
+func (yt *YouTube) PrivateMessage(userID, message string) error {
+	return errors.New("Private messages not supported on YouTube.")
 }
 
 // Join will join a channel.
