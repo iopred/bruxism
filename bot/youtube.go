@@ -40,6 +40,11 @@ func (m *LiveChatMessage) UserID() string {
 	return m.AuthorDetails.ChannelId
 }
 
+// UserAvatar returns the avatar url for this message.
+func (m *LiveChatMessage) UserAvatar() string {
+	return m.AuthorDetails.ProfileImageUrl
+}
+
 // Message returns the message content for this message.
 func (m *LiveChatMessage) Message() string {
 	switch m.Snippet.Type {
@@ -421,15 +426,6 @@ func (yt *YouTube) GetMe() (*youtube.Channel, error) {
 	}
 
 	return channelList.Items[0], nil
-}
-
-// GetAvatar returns the url for the owner of a message.
-func (yt *YouTube) GetAvatar(message Message) (string, error) {
-	m, ok := message.(*LiveChatMessage)
-	if ok && m.AuthorDetails != nil {
-		return m.AuthorDetails.ProfileImageUrl, nil
-	}
-	return "", errors.New("Bad message.")
 }
 
 // GetTopLivestreamIDs gets the video ids for the current top livestreams.

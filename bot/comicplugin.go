@@ -25,30 +25,16 @@ func (p *comicPlugin) helpFunc(bot *Bot, service Service) []string {
 
 func makeScriptFromMessages(service Service, message Message, messages []Message) *comicgen.Script {
 	speakers := make(map[string]int)
-	claimed := make(map[int]bool)
 	avatars := make(map[int]string)
 
 	script := []*comicgen.Message{}
 
 	for _, message := range messages {
-		speaker := 0
-		if _, ok := speakers[message.UserName()]; !ok {
-			for {
-				speaker = rand.Intn(comic.Avatars())
-				if _, ok := claimed[speaker]; !ok {
-					claimed[speaker] = true
-
-					a, err := service.GetAvatar(message)
-					if err == nil {
-						avatars[speaker] = a
-					}
-
-					break
-				}
-			}
+		speaker, ok := speakers[message.UserName()]
+		if !ok {
+			speaker = len(speakers)
 			speakers[message.UserName()] = speaker
-		} else {
-			speaker = speakers[message.UserName()]
+			avatars[speaker] = message.UserAvatar()
 		}
 
 		script = append(script, &comicgen.Message{

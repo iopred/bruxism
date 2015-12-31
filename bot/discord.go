@@ -29,6 +29,11 @@ func (m *DiscordMessage) UserID() string {
 	return m.Author.ID
 }
 
+// UserAvatar returns the avatar url for this message.
+func (m *DiscordMessage) UserAvatar() string {
+	return fmt.Sprintf("https://discordapp.com/api/users/%s/avatars/%s.jpg", m.Author.ID, m.Author.Avatar)
+}
+
 // Message returns the message content for this message.
 func (m *DiscordMessage) Message() string {
 	return m.Content
@@ -148,14 +153,4 @@ func (d *Discord) Join(join string) error {
 		return err
 	}
 	return nil
-}
-
-// GetAvatar returns the url for the owner of a message.
-func (d *Discord) GetAvatar(message Message) (string, error) {
-	u, err := d.Session.User(message.UserID())
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("https://discordapp.com/api/users/%s/avatars/%s.jpg", message.UserID(), u.Avatar), nil
 }

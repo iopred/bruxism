@@ -5,6 +5,7 @@ type Message interface {
 	Channel() string
 	UserName() string
 	UserID() string
+	UserAvatar() string
 	Message() string
 	MessageID() string
 	IsModerator() bool
@@ -21,7 +22,6 @@ type Service interface {
 	BanUser(channel, user string, duration int) error
 	SetPlaying(game string) error
 	Join(join string) error
-	GetAvatar(message Message) (string, error)
 }
 
 // LoadFunc is the function signature for a load handler.
