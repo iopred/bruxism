@@ -128,8 +128,8 @@ func (d *Discord) SendMessage(channel, message string) error {
 }
 
 // DeleteMessage deletes a message.
-func (d *Discord) DeleteMessage(messageID string) error {
-	return errors.New("Deleting not supported on Discord.")
+func (d *Discord) DeleteMessage(channel, messageID string) error {
+	return d.Session.ChannelMessageDelete(channel, messageID)
 }
 
 // BanUser bans a user.
@@ -153,4 +153,9 @@ func (d *Discord) Join(join string) error {
 		return err
 	}
 	return nil
+}
+
+// Typing sets that the bot is typing.
+func (d *Discord) Typing(channel string) error {
+	return d.Session.ChannelTyping(channel)
 }

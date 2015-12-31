@@ -60,6 +60,8 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 			return
 		}
 
+		service.Typing(message.Channel())
+
 		var err error
 		lines := 0
 		linesString, parts := parseCommand(message)
@@ -93,7 +95,6 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 				}
 			}()
 		}
-
 	} else {
 		if len(log) < 10 {
 			p.log[message.Channel()] = append(log, message)

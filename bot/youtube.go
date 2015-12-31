@@ -353,7 +353,7 @@ func (yt *YouTube) SendMessage(channel, message string) error {
 }
 
 // DeleteMessage deletes a message.
-func (yt *YouTube) DeleteMessage(messageID string) error {
+func (yt *YouTube) DeleteMessage(channel, messageID string) error {
 	yt.DeleteChan <- &ytc.LiveChatMessage{Id: messageID}
 	return nil
 }
@@ -426,6 +426,11 @@ func (yt *YouTube) GetMe() (*youtube.Channel, error) {
 	}
 
 	return channelList.Items[0], nil
+}
+
+// Typing sets that the bot is typing.
+func (yt *YouTube) Typing(channel string) error {
+	return errors.New("Tying is not supported on YouTube.")
 }
 
 // GetTopLivestreamIDs gets the video ids for the current top livestreams.
