@@ -20,7 +20,7 @@ type comicPlugin struct {
 }
 
 func (p *comicPlugin) helpFunc(bot *Bot, service Service) []string {
-	return commandHelp("comic", "[<messages>]", "Creates a comic from recent messages.")
+	return commandHelp(service, "comic", "[<messages>]", "Creates a comic from recent messages.")
 }
 
 func makeScriptFromMessages(service Service, message Message, messages []Message) *comicgen.Script {
@@ -55,7 +55,7 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 		log = []Message{}
 	}
 
-	if matchesCommand("comic", message) && !service.IsMe(message) {
+	if matchesCommand(service, "comic", message) && !service.IsMe(message) {
 		if len(log) == 0 {
 			return
 		}
@@ -64,7 +64,7 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 
 		var err error
 		lines := 0
-		linesString, parts := parseCommand(message)
+		linesString, parts := parseCommand(service, message)
 		if len(parts) > 0 {
 			lines, err = strconv.Atoi(linesString)
 		}

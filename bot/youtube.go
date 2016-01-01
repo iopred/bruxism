@@ -438,6 +438,16 @@ func (yt *YouTube) Typing(channel string) error {
 	return errors.New("Tying is not supported on YouTube.")
 }
 
+// SupportsMultiline returns whether the service supports multiline messages.
+func (yt *YouTube) SupportsMultiline() bool {
+	return false
+}
+
+// CommandPrefix returns the command prefix for the service.
+func (yt *YouTube) CommandPrefix() string {
+	return "!"
+}
+
 // GetTopLivestreamIDs gets the video ids for the current top livestreams.
 func (yt *YouTube) GetTopLivestreamIDs(count int) ([]string, error) {
 	ids := []string{}

@@ -31,7 +31,7 @@ func (p *slowModePlugin) Save() ([]byte, error) {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *slowModePlugin) Help(bot *Bot, service Service) []string {
-	return commandHelp("slowmode", "[<on|off>]", "Turn slow mode on or off, or return the current slow mode state.")
+	return commandHelp(service, "slowmode", "[<on|off>]", "Turn slow mode on or off, or return the current slow mode state.")
 }
 
 // Message handler.
@@ -39,10 +39,10 @@ func (p *slowModePlugin) Message(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
 		messageChannel := message.Channel()
 
-		if matchesCommand("slowmode", message) {
+		if matchesCommand(service, "slowmode", message) {
 			enabled := p.Enabled[messageChannel]
 
-			_, parts := parseCommand(message)
+			_, parts := parseCommand(service, message)
 
 			if len(parts) == 1 {
 				switch parts[0] {

@@ -39,9 +39,11 @@ func main() {
 	b.ImgurID = imgurID
 	youtube := bot.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIDs)
 	discord := bot.NewDiscord(discordEmail, discordPassword)
+	synirc := bot.NewIRC("irc.synirc.net", "Septapus", []string{"#logcabin"})
 
 	b.RegisterService(youtube)
 	b.RegisterService(discord)
+	b.RegisterService(synirc)
 	b.Open()
 
 	cp := bot.NewCommandPlugin()
@@ -61,6 +63,11 @@ func main() {
 	b.RegisterPlugin(discord, bot.NewStreamerPlugin(youtube))
 	b.RegisterPlugin(discord, bot.NewPlayingPlugin())
 	b.RegisterPlugin(discord, bot.NewComicPlugin())
+
+	b.RegisterPlugin(synirc, cp)
+	b.RegisterPlugin(synirc, bot.NewTopStreamersPlugin(youtube))
+	b.RegisterPlugin(synirc, bot.NewStreamerPlugin(youtube))
+	b.RegisterPlugin(synirc, bot.NewComicPlugin())
 
 	defer func() {
 		if r := recover(); r != nil {

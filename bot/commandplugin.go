@@ -16,18 +16,20 @@ type CommandMessageFunc func(joined string, parts []string) string
 // NewCommandMessageFunc will returns a MessageFunc that can be used by SimplePlugin, given a CommandMessageFunc.
 func NewCommandMessageFunc(commandMessageFunc CommandMessageFunc) MessageFunc {
 	return func(bot *Bot, service Service, message Message) {
-		if response := commandMessageFunc(parseCommand(message)); response != "" {
+		if response := commandMessageFunc(parseCommand(service, message)); response != "" {
 			service.SendMessage(message.Channel(), response)
 		}
 	}
 }
 
-func matchesCommand(commandString string, message Message) bool {
-	return strings.HasPrefix(message.Message(), commandDelimeter+commandString)
+func matchesCommand(service Service, commandString string, message Message) bool {
+	return strings.HasPrefix(strings.ToLower(message.Message()), strings.ToLower(service.CommandPrefix()+commandString))
 }
 
-func parseCommand(message Message) (string, []string) {
-	parts := strings.Split(message.Message(), " ")
+func parseCommand(service Service, message Message) (string, []string) {
+	m := message.Message()[len(service.CommandPrefix()):]
+
+	parts := strings.Split(m, " ")
 	if len(parts) > 1 {
 		rest := parts[1:]
 		return strings.Join(rest, " "), parts[1:]
@@ -35,11 +37,11 @@ func parseCommand(message Message) (string, []string) {
 	return "", []string{}
 }
 
-func commandHelp(command, arguments, help string) []string {
+func commandHelp(service Service, command, arguments, help string) []string {
 	if arguments != "" {
-		return []string{fmt.Sprintf("%s%s %s - %s", commandDelimeter, command, arguments, help)}
+		return []string{fmt.Sprintf("%s%s %s - %s", service.CommandPrefix(), command, arguments, help)}
 	}
-	return []string{fmt.Sprintf("%s%s - %s", commandDelimeter, command, help)}
+	return []string{fmt.Sprintf("%s%s - %s", service.CommandPrefix(), command, help)}
 }
 
 type command struct {
@@ -75,7 +77,7 @@ func (p *CommandPlugin) Help(bot *Bot, service Service) []string {
 	for commandString, command := range p.commands {
 		if command.help != nil {
 			arguments, h := command.help(bot, service)
-			help = append(help, commandHelp(commandString, arguments, h)...)
+			help = append(help, commandHelp(service, commandString, arguments, h)...)
 		}
 	}
 	return help
@@ -86,7 +88,7 @@ func (p *CommandPlugin) Help(bot *Bot, service Service) []string {
 func (p *CommandPlugin) Message(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
 		for commandString, command := range p.commands {
-			if matchesCommand(commandString, message) {
+			if matchesCommand(service, commandString, message) {
 				command.message(bot, service, message)
 			}
 		}

@@ -35,14 +35,14 @@ func (p *playingPlugin) Save() ([]byte, error) {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *playingPlugin) Help(bot *Bot, service Service) []string {
-	return commandHelp("playing", "<game>", fmt.Sprintf("Set which game %s is playing.", service.UserName()))
+	return commandHelp(service, "playing", "<game>", fmt.Sprintf("Set which game %s is playing.", service.UserName()))
 }
 
 // Message handler.
 func (p *playingPlugin) Message(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
-		if matchesCommand("playing", message) {
-			p.Playing, _ = parseCommand(message)
+		if matchesCommand(service, "playing", message) {
+			p.Playing, _ = parseCommand(service, message)
 			service.SetPlaying(p.Playing)
 		}
 	}

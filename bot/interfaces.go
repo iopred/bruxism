@@ -24,6 +24,8 @@ type Service interface {
 	Join(join string) error
 	Typing(channel string) error
 	PrivateMessage(userID, messageID string) error
+	SupportsMultiline() bool
+	CommandPrefix() string
 }
 
 // LoadFunc is the function signature for a load handler.

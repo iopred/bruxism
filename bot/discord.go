@@ -36,7 +36,8 @@ func (m *DiscordMessage) UserAvatar() string {
 
 // Message returns the message content for this message.
 func (m *DiscordMessage) Message() string {
-	return m.Content
+	d := discordgo.Message(*m)
+	return d.ContentWithMentionsReplaced()
 }
 
 // MessageID returns the message ID for this message.
@@ -56,6 +57,7 @@ type Discord struct {
 	Session     *discordgo.Session
 	messageChan chan Message
 	Me          *discordgo.User
+	Users       map[string]*discordgo.User
 }
 
 // NewDiscord creates a new discord service.
@@ -68,6 +70,9 @@ func NewDiscord(email, password string) *Discord {
 }
 
 func (d *Discord) onMessage(s *discordgo.Session, message discordgo.Message) {
+	if message.Content == "" {
+		return
+	}
 	dm := DiscordMessage(message)
 	d.messageChan <- &dm
 }
@@ -167,4 +172,14 @@ func (d *Discord) PrivateMessage(userID, message string) error {
 		return err
 	}
 	return d.SendMessage(c.ID, message)
+}
+
+// SupportsMultiline returns whether the service supports multiline messages.
+func (d *Discord) SupportsMultiline() bool {
+	return true
+}
+
+// CommandPrefix returns the command prefix for the service.
+func (d *Discord) CommandPrefix() string {
+	return fmt.Sprintf("@%s ", d.UserName())
 }

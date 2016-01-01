@@ -20,11 +20,18 @@ func HelpCommand(bot *Bot, service Service, message Message) {
 
 	sort.Strings(help)
 
-	for _, h := range help {
-		if err := service.SendMessage(message.Channel(), h); err != nil {
+	if service.SupportsMultiline() {
+		if err := service.SendMessage(message.Channel(), strings.Join(help, "\n")); err != nil {
 			log.Println(err)
 		}
+	} else {
+		for _, h := range help {
+			if err := service.SendMessage(message.Channel(), h); err != nil {
+				log.Println(err)
+			}
+		}
 	}
+
 }
 
 // InviteHelp will return the help text for the invite command.
@@ -40,7 +47,7 @@ func InviteHelp(bot *Bot, service Service) (string, string) {
 
 // InviteCommand is a command for accepting an invite to a channel.
 func InviteCommand(bot *Bot, service Service, message Message) {
-	_, parts := parseCommand(message)
+	_, parts := parseCommand(service, message)
 	if len(parts) == 1 {
 		join := parts[0]
 		if service.Name() == DiscordServiceName {

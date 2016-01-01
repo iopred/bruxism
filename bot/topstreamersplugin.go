@@ -17,12 +17,12 @@ type topStreamersPlugin struct {
 }
 
 func (p *topStreamersPlugin) helpFunc(bot *Bot, service Service) []string {
-	return commandHelp("topstreamers", "", "List the current top streamers on YouTube.")
+	return commandHelp(service, "topstreamers", "", "List the current top streamers on YouTube.")
 }
 
 func (p *topStreamersPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
-		if matchesCommand("topstreamers", message) {
+		if matchesCommand(service, "topstreamers", message) {
 			n := time.Now()
 			if !n.After(p.lastUpdate.Add(1 * time.Minute)) {
 				if p.lastMessage != "" {
