@@ -51,6 +51,7 @@ func main() {
 	cp.AddCommand("command", bot.HelpCommand, nil)
 	cp.AddCommand("invite", bot.InviteCommand, bot.InviteHelp)
 	cp.AddCommand("join", bot.InviteCommand, nil)
+	cp.AddCommand("stats", bot.StatsCommand, bot.StatsHelp)
 
 	b.RegisterPlugin(youtube, cp)
 	b.RegisterPlugin(youtube, bot.NewSlowModePlugin())
@@ -63,6 +64,7 @@ func main() {
 	b.RegisterPlugin(discord, bot.NewStreamerPlugin(youtube))
 	b.RegisterPlugin(discord, bot.NewPlayingPlugin())
 	b.RegisterPlugin(discord, bot.NewComicPlugin())
+	b.RegisterPlugin(discord, bot.NewDirectMessageInvitePlugin())
 
 	b.RegisterPlugin(synirc, cp)
 	b.RegisterPlugin(synirc, bot.NewTopStreamersPlugin(youtube))

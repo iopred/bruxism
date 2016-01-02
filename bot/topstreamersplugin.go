@@ -17,7 +17,7 @@ type topStreamersPlugin struct {
 }
 
 func (p *topStreamersPlugin) helpFunc(bot *Bot, service Service) []string {
-	return commandHelp(service, "topstreamers", "", "List the current top streamers on YouTube.")
+	return commandHelp(service, "topstreamers", "", "List the current top streamers on YouTube Gaming.")
 }
 
 func (p *topStreamersPlugin) messageFunc(bot *Bot, service Service, message Message) {
@@ -64,7 +64,7 @@ func (p *topStreamersPlugin) topStreamers(count int) (string, error) {
 		}
 	}
 
-	return fmt.Sprintf("Current top streamers: %v.", strings.Join(channels, ", ")), nil
+	return fmt.Sprintf("Current YouTube Gaming top streamers: %v.", strings.Join(channels, ", ")), nil
 }
 
 // NewTopStreamersPlugin will create a new top streamers plugin.

@@ -162,3 +162,8 @@ func (i *IRC) SupportsMultiline() bool {
 func (i *IRC) CommandPrefix() string {
 	return "!"
 }
+
+// IsPrivate returns whether or not a message was private.
+func (i *IRC) IsPrivate(message Message) bool {
+	return message.UserName() == message.Channel()
+}

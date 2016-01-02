@@ -47,7 +47,7 @@ func (p *streamerPlugin) messageFunc(bot *Bot, service Service, message Message)
 
 			r.lastUpdate = n
 
-			m, err := p.streamer(query)
+			m, err := p.streamer(query, service.Name() == DiscordServiceName)
 			if err != nil {
 				service.SendMessage(message.Channel(), "There was an error while requesting the streamer, please try again later.")
 				return
@@ -59,7 +59,7 @@ func (p *streamerPlugin) messageFunc(bot *Bot, service Service, message Message)
 	}
 }
 
-func (p *streamerPlugin) streamer(search string) (string, error) {
+func (p *streamerPlugin) streamer(search string, bold bool) (string, error) {
 	channelList, err := p.youTube.Service.Channels.List("id,snippet,statistics").ForUsername(search).Do()
 
 	if err != nil {
@@ -91,9 +91,15 @@ func (p *streamerPlugin) streamer(search string) (string, error) {
 
 	subscriberCount := ""
 	if !channelList.Items[0].Statistics.HiddenSubscriberCount {
-		subscriberCount = fmt.Sprintf("%v subscribers, ", humanize.Comma(int64(channelList.Items[0].Statistics.SubscriberCount)))
+		subscriberCount = fmt.Sprintf("%s subscribers, ", humanize.Comma(int64(channelList.Items[0].Statistics.SubscriberCount)))
 	}
-	return fmt.Sprintf("%v: %v%v videos, %v views.", channelList.Items[0].Snippet.Title, subscriberCount, humanize.Comma(int64(channelList.Items[0].Statistics.VideoCount)), humanize.Comma(int64(channelList.Items[0].Statistics.ViewCount))), nil
+
+	b := ""
+	if bold {
+		b = "**"
+	}
+
+	return fmt.Sprintf("%s%s%s: %s%s videos, %s views.", b, channelList.Items[0].Snippet.Title, b, subscriberCount, humanize.Comma(int64(channelList.Items[0].Statistics.VideoCount)), humanize.Comma(int64(channelList.Items[0].Statistics.ViewCount))), nil
 }
 
 // NewStreamerPlugin will create a new streamer plugin.

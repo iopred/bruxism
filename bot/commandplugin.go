@@ -38,10 +38,15 @@ func parseCommand(service Service, message Message) (string, []string) {
 }
 
 func commandHelp(service Service, command, arguments, help string) []string {
-	if arguments != "" {
-		return []string{fmt.Sprintf("%s%s %s - %s", service.CommandPrefix(), command, arguments, help)}
+	ticks := ""
+	if service.Name() == DiscordServiceName {
+		ticks = "`"
 	}
-	return []string{fmt.Sprintf("%s%s - %s", service.CommandPrefix(), command, help)}
+
+	if arguments != "" {
+		return []string{fmt.Sprintf("%s%s%s %s%s - %s", ticks, service.CommandPrefix(), command, arguments, ticks, help)}
+	}
+	return []string{fmt.Sprintf("%s%s%s%s - %s", ticks, service.CommandPrefix(), command, ticks, help)}
 }
 
 type command struct {

@@ -86,9 +86,11 @@ func (d *Discord) Name() string {
 func (d *Discord) Open() (<-chan Message, error) {
 	var err error
 
-	d.Session = &discordgo.Session{
-		OnMessageCreate: d.onMessage,
+	d.Session, err = discordgo.New()
+	if err != nil {
+		return nil, err
 	}
+	d.Session.OnMessageCreate = d.onMessage
 
 	d.Session.Token, err = d.Session.Login(d.email, d.password)
 	if err != nil {
@@ -152,8 +154,15 @@ func (d *Discord) SetPlaying(game string) error {
 	return d.Session.UpdateStatus(0, game)
 }
 
-// Join will join a channel.
+// Join accept an invite or return an error.
+// If AlreadyJoinedError is return, @me has already accepted that invite.
 func (d *Discord) Join(join string) error {
+	if i, err := d.Session.Invite(join); err == nil {
+		if _, err := d.Session.State.GetGuildByID(i.Guild.ID); err == nil {
+			return AlreadyJoinedError
+		}
+	}
+
 	if _, err := d.Session.InviteAccept(join); err != nil {
 		return err
 	}
@@ -182,4 +191,10 @@ func (d *Discord) SupportsMultiline() bool {
 // CommandPrefix returns the command prefix for the service.
 func (d *Discord) CommandPrefix() string {
 	return fmt.Sprintf("@%s ", d.UserName())
+}
+
+// IsPrivate returns whether or not a message was private.
+func (d *Discord) IsPrivate(message Message) bool {
+	_, err := d.Session.State.GetPrivateChannelByID(message.Channel())
+	return err == nil
 }

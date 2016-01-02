@@ -2,6 +2,7 @@ package bot
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"strconv"
 
@@ -11,7 +12,7 @@ import (
 var comic *comicgen.ComicGen
 
 func init() {
-	comic, _ = comicgen.NewComicGen()
+	comic, _ = comicgen.NewComicGen("arial")
 }
 
 type comicPlugin struct {
@@ -20,7 +21,7 @@ type comicPlugin struct {
 }
 
 func (p *comicPlugin) helpFunc(bot *Bot, service Service) []string {
-	return commandHelp(service, "comic", "[<messages>]", "Creates a comic from recent messages.")
+	return commandHelp(service, "comic", "[<1-5>]", "Creates a comic from recent messages.")
 }
 
 func makeScriptFromMessages(service Service, message Message, messages []Message) *comicgen.Script {
@@ -70,7 +71,7 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 		}
 
 		if lines == 0 {
-			lines = 1 + rand.Intn(comic.MaxLines()-1)
+			lines = 1 + int(math.Floor((math.Pow(2*rand.Float64()-1, 3)/2+0.5)*float64(comic.MaxLines()-1)))
 		}
 
 		if lines > len(log) {

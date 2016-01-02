@@ -13,6 +13,8 @@ import (
 	"os"
 )
 
+const VersionString string = "0.1.0"
+
 type serviceEntry struct {
 	Service
 	Plugins         map[string]Plugin

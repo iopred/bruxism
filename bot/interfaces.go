@@ -1,5 +1,7 @@
 package bot
 
+import "errors"
+
 // Message is a message interface, wraps a single message from a service.
 type Message interface {
 	Channel() string
@@ -10,6 +12,8 @@ type Message interface {
 	MessageID() string
 	IsModerator() bool
 }
+
+var AlreadyJoinedError error = errors.New("Already joined.")
 
 // Service is a service interface, wraps a single service such as YouTube or Discord.
 type Service interface {
@@ -24,6 +28,7 @@ type Service interface {
 	Join(join string) error
 	Typing(channel string) error
 	PrivateMessage(userID, messageID string) error
+	IsPrivate(message Message) bool
 	SupportsMultiline() bool
 	CommandPrefix() string
 }

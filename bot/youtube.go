@@ -448,6 +448,11 @@ func (yt *YouTube) CommandPrefix() string {
 	return "!"
 }
 
+// IsPrivate returns whether or not a message was private.
+func (yt *YouTube) IsPrivate(message Message) bool {
+	return false
+}
+
 // GetTopLivestreamIDs gets the video ids for the current top livestreams.
 func (yt *YouTube) GetTopLivestreamIDs(count int) ([]string, error) {
 	ids := []string{}

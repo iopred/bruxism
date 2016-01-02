@@ -1,10 +1,17 @@
 package bot
 
 import (
+	"bytes"
 	"fmt"
 	"log"
+	"runtime"
 	"sort"
 	"strings"
+	"text/tabwriter"
+	"time"
+
+	"github.com/dustin/go-humanize"
+	"github.com/iopred/discordgo"
 )
 
 // HelpCommand is a command for returning help text for all registered plugins on a service.
@@ -51,13 +58,77 @@ func InviteCommand(bot *Bot, service Service, message Message) {
 	if len(parts) == 1 {
 		join := parts[0]
 		if service.Name() == DiscordServiceName {
-			join = strings.Replace(join, "https://discord.gg/", "", -1)
-			join = strings.Replace(join, "http://discord.gg/", "", -1)
+			join = discordInviteID(join)
 		}
 		if err := service.Join(join); err != nil {
+			if service.Name() == DiscordServiceName && err == AlreadyJoinedError {
+				service.PrivateMessage(message.UserID(), "I have already joined that server.")
+				return
+			}
 			fmt.Printf("Error joining %v %v", service.Name(), err)
 		} else if service.Name() == DiscordServiceName {
 			service.PrivateMessage(message.UserID(), "I have joined that server.")
 		}
 	}
+}
+
+var startTime time.Time
+
+func init() {
+	startTime = time.Now()
+}
+
+func getDurationString(duration time.Duration) string {
+	return fmt.Sprintf(
+		"%0.2d:%02d:%02d",
+		int(duration.Hours()),
+		int(duration.Minutes())%60,
+		int(duration.Seconds())%60,
+	)
+}
+
+// StatsHelp will return the help text for the stats command.
+func StatsHelp(bot *Bot, service Service) (string, string) {
+	return "", "Lists bot statistics."
+}
+
+// StatsCommand returns bot statistics.
+func StatsCommand(bot *Bot, service Service, message Message) {
+	stats := runtime.MemStats{}
+	runtime.ReadMemStats(&stats)
+
+	w := &tabwriter.Writer{}
+	buf := &bytes.Buffer{}
+
+	w.Init(buf, 0, 4, 0, ' ', 0)
+	if service.Name() == DiscordServiceName {
+		fmt.Fprintf(w, "```\n")
+	}
+	fmt.Fprintf(w, "Septapus: \t%s\n", VersionString)
+	if service.Name() == DiscordServiceName {
+		fmt.Fprintf(w, "Discordgo: \t%s\n", discordgo.VERSION)
+	}
+	fmt.Fprintf(w, "Uptime: \t%s\n", getDurationString(time.Now().Sub(startTime)))
+	fmt.Fprintf(w, "Memory used: \t%s\n", humanize.Bytes(stats.Alloc))
+	fmt.Fprintf(w, "Concurrent tasks: \t%d", runtime.NumGoroutine())
+	if service.Name() == DiscordServiceName {
+		fmt.Fprintf(w, "\n```")
+	}
+	w.Flush()
+
+	out := buf.String()
+
+	if service.SupportsMultiline() {
+		if err := service.SendMessage(message.Channel(), out); err != nil {
+			log.Println(err)
+		}
+	} else {
+		lines := strings.Split(out, "\n")
+		for _, line := range lines {
+			if err := service.SendMessage(message.Channel(), line); err != nil {
+				log.Println(err)
+			}
+		}
+	}
+
 }
