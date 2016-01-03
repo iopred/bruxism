@@ -20,7 +20,9 @@ func NewCommandHelp(args, help string) CommandHelpFunc {
 }
 
 func matchesCommand(service Service, commandString string, message Message) bool {
-	return strings.HasPrefix(strings.ToLower(message.Message()), strings.ToLower(service.CommandPrefix()+commandString))
+	lowerMessage := strings.ToLower(message.Message())
+	lowerCommand := strings.ToLower(service.CommandPrefix() + commandString)
+	return lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ")
 }
 
 func parseCommand(service Service, message Message) (string, []string) {
@@ -88,11 +90,13 @@ func (p *CommandPlugin) Help(bot *Bot, service Service) []string {
 // Message handler.
 // Iterates over the registered commands and executes them if the message matches.
 func (p *CommandPlugin) Message(bot *Bot, service Service, message Message) {
+	defer messageRecover()
 	if !service.IsMe(message) {
 		for commandString, command := range p.commands {
 			if matchesCommand(service, commandString, message) {
 				args, parts := parseCommand(service, message)
 				command.message(bot, service, message, args, parts)
+				return
 			}
 		}
 	}

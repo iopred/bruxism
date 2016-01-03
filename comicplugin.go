@@ -2,6 +2,7 @@ package bruxism
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"math/rand"
 	"strconv"
@@ -10,21 +11,20 @@ import (
 	"github.com/iopred/comicgen"
 )
 
-var comic *comicgen.ComicGen
-
-func init() {
-	comic, _ = comicgen.NewComicGen("arial")
-}
-
 type comicPlugin struct {
 	SimplePlugin
 	log map[string][]Message
 }
 
 func (p *comicPlugin) helpFunc(bot *Bot, service Service) []string {
+	ticks := ""
+	if service.Name() == DiscordServiceName {
+		ticks = "`"
+	}
+
 	return []string{
 		commandHelp(service, "comic", "[<1-5>]", "Creates a comic from recent messages.")[0],
-		commandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", "Creates a custom comic, eg: customcomic Hello | 1: World!")[0],
+		commandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", fmt.Sprintf("Creates a custom comic, eg: %scustomcomic Hello | 1: World!%s", ticks, ticks))[0],
 	}
 }
 
@@ -55,10 +55,10 @@ func makeScriptFromMessages(service Service, message Message, messages []Message
 }
 
 func (p *comicPlugin) makeComic(bot *Bot, service Service, message Message, script *comicgen.Script) {
+	comic := comicgen.NewComicGen("arial")
 	image, err := comic.MakeComic(script)
-
 	if err != nil {
-		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was an error creating the comic: %s", message.UserName(), err))
+		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was an error creating the comic. %s", message.UserName(), err))
 	} else {
 		go func() {
 			url, err := bot.UploadToImgur(image, "comic.png")
@@ -69,7 +69,8 @@ func (p *comicPlugin) makeComic(bot *Bot, service Service, message Message, scri
 					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic %s: %s", message.UserName(), url))
 				}
 			} else {
-				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the comic to imgur.", message.UserName()))
+				fmt.Println(err)
+				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the comic to imgur."))
 			}
 		}()
 	}
@@ -77,6 +78,7 @@ func (p *comicPlugin) makeComic(bot *Bot, service Service, message Message, scri
 
 func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if service.IsMe(message) {
+		log.Println("Its me, ignore.")
 		return
 	}
 
@@ -103,9 +105,6 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 				lineSplit := strings.Split(line, ":")
 
 				speaker, _ = strconv.Atoi(strings.Trim(lineSplit[0], " "))
-				if speaker < 0 {
-					speaker = 0
-				}
 
 				text = strings.Trim(lineSplit[1], " ")
 			} else {
@@ -130,6 +129,7 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 		})
 	} else if matchesCommand(service, "comic", message) {
 		if len(log) == 0 {
+			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, I don't have enough messages to make a comic yet.", message.UserName()))
 			return
 		}
 
@@ -142,7 +142,7 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 		}
 
 		if lines <= 0 {
-			lines = 1 + int(math.Floor((math.Pow(2*rand.Float64()-1, 3)/2+0.5)*float64(comic.MaxLines()-1)))
+			lines = 1 + int(math.Floor((math.Pow(2*rand.Float64()-1, 3)/2+0.5)*float64(comicgen.MaxLines()-1)))
 		}
 
 		if lines > len(log) {
@@ -161,10 +161,6 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 
 // NewComicPlugin will create a new top streamers plugin.
 func NewComicPlugin() Plugin {
-	if comic == nil {
-		return nil
-	}
-
 	p := &comicPlugin{
 		SimplePlugin: *NewSimplePlugin("Comic"),
 		log:          make(map[string][]Message),

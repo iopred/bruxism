@@ -11,9 +11,10 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"runtime/debug"
 )
 
-const VersionString string = "0.1.0"
+const VersionString string = "0.1.1"
 
 type serviceEntry struct {
 	Service
@@ -27,8 +28,14 @@ type Bot struct {
 	ImgurID  string
 }
 
+func messageRecover() {
+	if r := recover(); r != nil {
+		log.Println("Recovered:", string(debug.Stack()))
+	}
+}
+
 // New will create a new bot.
-func New() *Bot {
+func NewBot() *Bot {
 	return &Bot{
 		Services: make(map[string]*serviceEntry, 0),
 	}
@@ -43,6 +50,9 @@ func (b *Bot) getData(service Service, plugin Plugin) []byte {
 
 // RegisterService registers a service with the bot.
 func (b *Bot) RegisterService(service Service) {
+	if b.Services[service.Name()] != nil {
+		log.Println("Service with that name already registered", service.Name())
+	}
 	serviceName := service.Name()
 	b.Services[serviceName] = &serviceEntry{
 		Service: service,
@@ -52,7 +62,11 @@ func (b *Bot) RegisterService(service Service) {
 
 // RegisterPlugin registers a plugin on a service.
 func (b *Bot) RegisterPlugin(service Service, plugin Plugin) {
-	b.Services[service.Name()].Plugins[plugin.Name()] = plugin
+	s := b.Services[service.Name()]
+	if s.Plugins[plugin.Name()] != nil {
+		log.Println("Plugin with that name already registered", plugin.Name())
+	}
+	s.Plugins[plugin.Name()] = plugin
 	plugin.Load(b, service, b.getData(service, plugin))
 }
 
@@ -72,6 +86,7 @@ func (b *Bot) listen(service Service, messageChan <-chan Message) {
 func (b *Bot) Open() {
 	for _, service := range b.Services {
 		if messageChan, err := service.Open(); err == nil {
+			log.Println("Started service", service.Name())
 			go b.listen(service, messageChan)
 		} else {
 			log.Printf("Error creating service %v: %v\n", service.Name(), err)
@@ -102,6 +117,8 @@ func (b *Bot) Save() {
 
 // UploadToImgur uploads image data to Imgur and returns the url to it.
 func (b *Bot) UploadToImgur(image image.Image, filename string) (string, error) {
+	log.Println("Beginning upload.")
+
 	if b.ImgurID == "" {
 		return "", errors.New("No Imgur client ID provided.")
 	}
@@ -109,13 +126,15 @@ func (b *Bot) UploadToImgur(image image.Image, filename string) (string, error) 
 	bodyBuf := &bytes.Buffer{}
 	bodywriter := multipart.NewWriter(bodyBuf)
 
-	// this step is very important
 	writer, err := bodywriter.CreateFormFile("image", filename)
 	if err != nil {
 		return "", err
 	}
 
-	png.Encode(writer, image)
+	err = png.Encode(writer, image)
+	if err != nil {
+		return "", err
+	}
 
 	contentType := bodywriter.FormDataContentType()
 	bodywriter.Close()

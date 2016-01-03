@@ -7,6 +7,7 @@ import (
 )
 
 type playingPlugin struct {
+	SimplePlugin
 	Playing string
 }
 
@@ -34,12 +35,12 @@ func (p *playingPlugin) Save() ([]byte, error) {
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
-func (p *playingPlugin) Help(bot *Bot, service Service) []string {
+func (p *playingPlugin) helpFunc(bot *Bot, service Service) []string {
 	return commandHelp(service, "playing", "<game>", fmt.Sprintf("Set which game %s is playing.", service.UserName()))
 }
 
 // Message handler.
-func (p *playingPlugin) Message(bot *Bot, service Service, message Message) {
+func (p *playingPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
 		if matchesCommand(service, "playing", message) {
 			p.Playing, _ = parseCommand(service, message)
@@ -48,7 +49,10 @@ func (p *playingPlugin) Message(bot *Bot, service Service, message Message) {
 	}
 }
 
-// NewPlayingPlugin will create a new playing plugin.
+// NewPlayingPlugin will create a new top streamers plugin.
 func NewPlayingPlugin() Plugin {
-	return &playingPlugin{}
+	p := &playingPlugin{}
+	p.message = p.messageFunc
+	p.help = p.helpFunc
+	return p
 }

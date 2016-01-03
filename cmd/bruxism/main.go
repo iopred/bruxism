@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -37,8 +36,9 @@ func init() {
 }
 
 func main() {
-	b := bruxism.New()
-	b.ImgurID = imgurID
+	bot := bruxism.NewBot()
+	bot.ImgurID = imgurID
+
 	youtube := bruxism.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIDs)
 
 	var discord *bruxism.Discord
@@ -47,44 +47,40 @@ func main() {
 	} else {
 		discord = bruxism.NewDiscord(discordEmail, discordPassword)
 	}
-	synirc := bruxism.NewIRC("irc.synirc.net", "Septapus", []string{"#logcabin"})
+	synirc := bruxism.NewIRC("irc.synirc.net", "Septapus", []string{"#septapus"})
 
-	b.RegisterService(youtube)
-	b.RegisterService(discord)
-	b.RegisterService(synirc)
-	b.Open()
+	bot.RegisterService(youtube)
+	bot.RegisterService(discord)
+	bot.RegisterService(synirc)
+	bot.Open()
 
 	cp := bruxism.NewCommandPlugin()
 	cp.AddCommand("help", bruxism.HelpCommand, nil)
 	cp.AddCommand("command", bruxism.HelpCommand, nil)
+	cp.AddCommand("commands", bruxism.HelpCommand, nil)
 	cp.AddCommand("invite", bruxism.InviteCommand, bruxism.InviteHelp)
 	cp.AddCommand("join", bruxism.InviteCommand, nil)
 	cp.AddCommand("stats", bruxism.StatsCommand, bruxism.NewCommandHelp("", "Lists bot statistics."))
+	cp.AddCommand("info", bruxism.StatsCommand, nil)
+	cp.AddCommand("stat", bruxism.StatsCommand, nil)
 
-	b.RegisterPlugin(youtube, cp)
-	b.RegisterPlugin(youtube, bruxism.NewSlowModePlugin())
-	b.RegisterPlugin(youtube, bruxism.NewTopStreamersPlugin(youtube))
-	b.RegisterPlugin(youtube, bruxism.NewStreamerPlugin(youtube))
-	b.RegisterPlugin(youtube, bruxism.NewComicPlugin())
+	bot.RegisterPlugin(youtube, cp)
+	bot.RegisterPlugin(youtube, bruxism.NewSlowModePlugin())
+	bot.RegisterPlugin(youtube, bruxism.NewTopStreamersPlugin(youtube))
+	bot.RegisterPlugin(youtube, bruxism.NewStreamerPlugin(youtube))
+	bot.RegisterPlugin(youtube, bruxism.NewComicPlugin())
 
-	b.RegisterPlugin(discord, cp)
-	b.RegisterPlugin(discord, bruxism.NewTopStreamersPlugin(youtube))
-	b.RegisterPlugin(discord, bruxism.NewStreamerPlugin(youtube))
-	b.RegisterPlugin(discord, bruxism.NewPlayingPlugin())
-	b.RegisterPlugin(discord, bruxism.NewComicPlugin())
-	b.RegisterPlugin(discord, bruxism.NewDirectMessageInvitePlugin())
+	bot.RegisterPlugin(discord, cp)
+	bot.RegisterPlugin(discord, bruxism.NewTopStreamersPlugin(youtube))
+	bot.RegisterPlugin(discord, bruxism.NewStreamerPlugin(youtube))
+	bot.RegisterPlugin(discord, bruxism.NewPlayingPlugin())
+	bot.RegisterPlugin(discord, bruxism.NewComicPlugin())
+	bot.RegisterPlugin(discord, bruxism.NewDirectMessageInvitePlugin())
 
-	b.RegisterPlugin(synirc, cp)
-	b.RegisterPlugin(synirc, bruxism.NewTopStreamersPlugin(youtube))
-	b.RegisterPlugin(synirc, bruxism.NewStreamerPlugin(youtube))
-	b.RegisterPlugin(synirc, bruxism.NewComicPlugin())
-
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Recovered in f", r)
-		}
-		b.Save()
-	}()
+	bot.RegisterPlugin(synirc, cp)
+	bot.RegisterPlugin(synirc, bruxism.NewTopStreamersPlugin(youtube))
+	bot.RegisterPlugin(synirc, bruxism.NewStreamerPlugin(youtube))
+	bot.RegisterPlugin(synirc, bruxism.NewComicPlugin())
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill)
@@ -96,7 +92,7 @@ func main() {
 		case <-c:
 			return
 		case <-t:
-			b.Save()
+			bot.Save()
 		}
 	}
 }

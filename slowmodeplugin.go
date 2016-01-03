@@ -36,6 +36,7 @@ func (p *slowModePlugin) Help(bot *Bot, service Service) []string {
 
 // Message handler.
 func (p *slowModePlugin) Message(bot *Bot, service Service, message Message) {
+	defer messageRecover()
 	if !service.IsMe(message) {
 		messageChannel := message.Channel()
 

@@ -74,7 +74,6 @@ func (d *Discord) onMessage(s *discordgo.Session, message discordgo.Message) {
 	}
 
 	message.Content = channelIdRegex.ReplaceAllStringFunc(message.Content, func(str string) string {
-		fmt.Println(str)
 		c, err := d.Session.State.Channel(str[2 : len(str)-1])
 		if err != nil {
 			return str

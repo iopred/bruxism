@@ -101,15 +101,16 @@ func StatsCommand(bot *Bot, service Service, message Message, command string, pa
 	if service.Name() == DiscordServiceName {
 		fmt.Fprintf(w, "Discordgo: \t%s\n", discordgo.VERSION)
 	}
+	fmt.Fprintf(w, "Go: \t%s\n", runtime.Version())
 	fmt.Fprintf(w, "Uptime: \t%s\n", getDurationString(time.Now().Sub(startTime)))
-	fmt.Fprintf(w, "Memory used: \t%s\n", humanize.Bytes(stats.Alloc))
+	fmt.Fprintf(w, "Memory used: \t%s / %s\n", humanize.Bytes(stats.Alloc), humanize.Bytes(stats.TotalAlloc))
 	fmt.Fprintf(w, "Concurrent tasks: \t%d", runtime.NumGoroutine())
 	if service.Name() == DiscordServiceName {
 		fmt.Fprintf(w, "\n```")
 	}
 	w.Flush()
 
-	out := buf.String()
+	out := buf.String() + "\nBuilt with love by iopred."
 
 	if service.SupportsMultiline() {
 		if err := service.SendMessage(message.Channel(), out); err != nil {
