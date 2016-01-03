@@ -1,4 +1,4 @@
-package bot
+package bruxism
 
 import (
 	"bytes"
@@ -27,8 +27,8 @@ type Bot struct {
 	ImgurID  string
 }
 
-// NewBot will create a new bot.
-func NewBot() *Bot {
+// New will create a new bot.
+func New() *Bot {
 	return &Bot{
 		Services: make(map[string]*serviceEntry, 0),
 	}

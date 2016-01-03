@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/iopred/bruxism/bot"
+	"github.com/iopred/bruxism"
 )
 
 var youtubeURL bool
@@ -35,41 +35,41 @@ func init() {
 }
 
 func main() {
-	b := bot.NewBot()
+	b := bruxism.New()
 	b.ImgurID = imgurID
-	youtube := bot.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIDs)
-	discord := bot.NewDiscord(discordEmail, discordPassword)
-	synirc := bot.NewIRC("irc.synirc.net", "Septapus", []string{"#logcabin"})
+	youtube := bruxism.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIDs)
+	discord := bruxism.NewDiscord(discordEmail, discordPassword)
+	synirc := bruxism.NewIRC("irc.synirc.net", "Septapus", []string{"#logcabin"})
 
 	b.RegisterService(youtube)
 	b.RegisterService(discord)
 	b.RegisterService(synirc)
 	b.Open()
 
-	cp := bot.NewCommandPlugin()
-	cp.AddCommand("help", bot.HelpCommand, nil)
-	cp.AddCommand("command", bot.HelpCommand, nil)
-	cp.AddCommand("invite", bot.InviteCommand, bot.InviteHelp)
-	cp.AddCommand("join", bot.InviteCommand, nil)
-	cp.AddCommand("stats", bot.StatsCommand, bot.NewCommandHelp("", "Lists bot statistics."))
+	cp := bruxism.NewCommandPlugin()
+	cp.AddCommand("help", bruxism.HelpCommand, nil)
+	cp.AddCommand("command", bruxism.HelpCommand, nil)
+	cp.AddCommand("invite", bruxism.InviteCommand, bruxism.InviteHelp)
+	cp.AddCommand("join", bruxism.InviteCommand, nil)
+	cp.AddCommand("stats", bruxism.StatsCommand, bruxism.NewCommandHelp("", "Lists bot statistics."))
 
 	b.RegisterPlugin(youtube, cp)
-	b.RegisterPlugin(youtube, bot.NewSlowModePlugin())
-	b.RegisterPlugin(youtube, bot.NewTopStreamersPlugin(youtube))
-	b.RegisterPlugin(youtube, bot.NewStreamerPlugin(youtube))
-	b.RegisterPlugin(youtube, bot.NewComicPlugin())
+	b.RegisterPlugin(youtube, bruxism.NewSlowModePlugin())
+	b.RegisterPlugin(youtube, bruxism.NewTopStreamersPlugin(youtube))
+	b.RegisterPlugin(youtube, bruxism.NewStreamerPlugin(youtube))
+	b.RegisterPlugin(youtube, bruxism.NewComicPlugin())
 
 	b.RegisterPlugin(discord, cp)
-	b.RegisterPlugin(discord, bot.NewTopStreamersPlugin(youtube))
-	b.RegisterPlugin(discord, bot.NewStreamerPlugin(youtube))
-	b.RegisterPlugin(discord, bot.NewPlayingPlugin())
-	b.RegisterPlugin(discord, bot.NewComicPlugin())
-	b.RegisterPlugin(discord, bot.NewDirectMessageInvitePlugin())
+	b.RegisterPlugin(discord, bruxism.NewTopStreamersPlugin(youtube))
+	b.RegisterPlugin(discord, bruxism.NewStreamerPlugin(youtube))
+	b.RegisterPlugin(discord, bruxism.NewPlayingPlugin())
+	b.RegisterPlugin(discord, bruxism.NewComicPlugin())
+	b.RegisterPlugin(discord, bruxism.NewDirectMessageInvitePlugin())
 
 	b.RegisterPlugin(synirc, cp)
-	b.RegisterPlugin(synirc, bot.NewTopStreamersPlugin(youtube))
-	b.RegisterPlugin(synirc, bot.NewStreamerPlugin(youtube))
-	b.RegisterPlugin(synirc, bot.NewComicPlugin())
+	b.RegisterPlugin(synirc, bruxism.NewTopStreamersPlugin(youtube))
+	b.RegisterPlugin(synirc, bruxism.NewStreamerPlugin(youtube))
+	b.RegisterPlugin(synirc, bruxism.NewComicPlugin())
 
 	defer func() {
 		if r := recover(); r != nil {

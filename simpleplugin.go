@@ -1,4 +1,4 @@
-package bot
+package bruxism
 
 // SimplePlugin is a simple wrapper around a Plugin that can implement handlers by function reference.
 type SimplePlugin struct {
