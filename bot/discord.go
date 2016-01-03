@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/iopred/discordgo"
 )
@@ -69,10 +70,23 @@ func NewDiscord(email, password string) *Discord {
 	}
 }
 
+var channelIdRegex = regexp.MustCompile("<#[0-9]*>")
+
 func (d *Discord) onMessage(s *discordgo.Session, message discordgo.Message) {
 	if message.Content == "" {
 		return
 	}
+
+	message.Content = channelIdRegex.ReplaceAllStringFunc(message.Content, func(str string) string {
+		fmt.Println(str)
+		c, err := d.Session.State.Channel(str[2 : len(str)-1])
+		if err != nil {
+			return str
+		}
+
+		return "#" + c.Name
+	})
+
 	dm := DiscordMessage(message)
 	d.messageChan <- &dm
 }
@@ -158,7 +172,7 @@ func (d *Discord) SetPlaying(game string) error {
 // If AlreadyJoinedError is return, @me has already accepted that invite.
 func (d *Discord) Join(join string) error {
 	if i, err := d.Session.Invite(join); err == nil {
-		if _, err := d.Session.State.GetGuildByID(i.Guild.ID); err == nil {
+		if _, err := d.Session.State.Guild(i.Guild.ID); err == nil {
 			return AlreadyJoinedError
 		}
 	}
@@ -195,6 +209,6 @@ func (d *Discord) CommandPrefix() string {
 
 // IsPrivate returns whether or not a message was private.
 func (d *Discord) IsPrivate(message Message) bool {
-	_, err := d.Session.State.GetPrivateChannelByID(message.Channel())
+	_, err := d.Session.State.PrivateChannel(message.Channel())
 	return err == nil
 }
