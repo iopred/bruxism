@@ -58,7 +58,7 @@ func (p *comicPlugin) makeComic(bot *Bot, service Service, message Message, scri
 	image, err := comic.MakeComic(script)
 
 	if err != nil {
-		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was an error creating the comic: %s", err))
+		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was an error creating the comic: %s", message.UserName(), err))
 	} else {
 		go func() {
 			url, err := bot.UploadToImgur(image, "comic.png")
