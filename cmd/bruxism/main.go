@@ -16,6 +16,7 @@ var youtubeAuth string
 var youtubeConfigFilename string
 var youtubeTokenFilename string
 var youtubeLiveChatIDs string
+var discordToken string
 var discordEmail string
 var discordPassword string
 var imgurID string
@@ -26,6 +27,7 @@ func init() {
 	flag.StringVar(&youtubeConfigFilename, "youtubeconfig", "youtubeoauth2config.json", "The filename that contains the oauth2 config.")
 	flag.StringVar(&youtubeTokenFilename, "youtubetoken", "youtubeoauth2token.json", "The filename to store the oauth2 token.")
 	flag.StringVar(&youtubeLiveChatIDs, "youtubelivechatids", "", "Additional chat id's to poll.")
+	flag.StringVar(&discordToken, "discordtoken", "", "Discord token.")
 	flag.StringVar(&discordEmail, "discordemail", "", "Discord account email.")
 	flag.StringVar(&discordPassword, "discordpassword", "", "Discord account password.")
 	flag.StringVar(&imgurID, "imgurid", "", "Imgur client id.")
@@ -38,7 +40,13 @@ func main() {
 	b := bruxism.New()
 	b.ImgurID = imgurID
 	youtube := bruxism.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveChatIDs)
-	discord := bruxism.NewDiscord(discordEmail, discordPassword)
+
+	var discord *bruxism.Discord
+	if discordToken != "" {
+		discord = bruxism.NewDiscord(discordToken)
+	} else {
+		discord = bruxism.NewDiscord(discordEmail, discordPassword)
+	}
 	synirc := bruxism.NewIRC("irc.synirc.net", "Septapus", []string{"#logcabin"})
 
 	b.RegisterService(youtube)

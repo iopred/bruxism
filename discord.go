@@ -53,19 +53,15 @@ func (m *DiscordMessage) IsModerator() bool {
 
 // Discord is a Service provider for Discord.
 type Discord struct {
-	email       string
-	password    string
+	args        []interface{}
 	Session     *discordgo.Session
 	messageChan chan Message
-	Me          *discordgo.User
-	Users       map[string]*discordgo.User
 }
 
 // NewDiscord creates a new discord service.
-func NewDiscord(email, password string) *Discord {
+func NewDiscord(args ...interface{}) *Discord {
 	return &Discord{
-		email:       email,
-		password:    password,
+		args:        args,
 		messageChan: make(chan Message, 200),
 	}
 }
@@ -100,43 +96,18 @@ func (d *Discord) Name() string {
 func (d *Discord) Open() (<-chan Message, error) {
 	var err error
 
-	d.Session, err = discordgo.New()
+	d.Session, err = discordgo.New(d.args...)
 	if err != nil {
 		return nil, err
 	}
 	d.Session.OnMessageCreate = d.onMessage
-
-	d.Session.Token, err = d.Session.Login(d.email, d.password)
-	if err != nil {
-		return nil, err
-	}
-
-	err = d.Session.Open()
-	if err != nil {
-		return nil, err
-	}
-
-	err = d.Session.Handshake()
-	if err != nil {
-		return nil, err
-	}
-
-	u, err := d.Session.User("@me")
-	if err != nil {
-		return nil, err
-	}
-
-	d.Me = &u
-
-	// Listen for events.
-	go d.Session.Listen()
 
 	return d.messageChan, nil
 }
 
 // IsMe returns whether or not a message was sent by the bot.
 func (d *Discord) IsMe(message Message) bool {
-	return message.UserID() == d.Me.ID
+	return message.UserID() == d.Session.State.User.ID
 }
 
 // SendMessage sends a message.
@@ -160,7 +131,7 @@ func (d *Discord) BanUser(channel, userID string, duration int) error {
 
 // UserName returns the bots name.
 func (d *Discord) UserName() string {
-	return d.Me.Username
+	return d.Session.State.User.Username
 }
 
 // SetPlaying will set the current game being played by the bot.
