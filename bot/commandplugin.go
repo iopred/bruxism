@@ -11,14 +11,11 @@ const commandDelimeter = "!"
 type CommandHelpFunc func(bot *Bot, service Service) (string, string)
 
 // CommandMessageFunc is the function signature for bot message commands.
-type CommandMessageFunc func(joined string, parts []string) string
+type CommandMessageFunc func(bot *Bot, service Service, message Message, args string, parts []string)
 
-// NewCommandMessageFunc will returns a MessageFunc that can be used by SimplePlugin, given a CommandMessageFunc.
-func NewCommandMessageFunc(commandMessageFunc CommandMessageFunc) MessageFunc {
-	return func(bot *Bot, service Service, message Message) {
-		if response := commandMessageFunc(parseCommand(service, message)); response != "" {
-			service.SendMessage(message.Channel(), response)
-		}
+func NewCommandHelp(args, help string) CommandHelpFunc {
+	return func(bot *Bot, service Service) (string, string) {
+		return args, help
 	}
 }
 
@@ -50,7 +47,7 @@ func commandHelp(service Service, command, arguments, help string) []string {
 }
 
 type command struct {
-	message MessageFunc
+	message CommandMessageFunc
 	help    CommandHelpFunc
 }
 
@@ -94,25 +91,19 @@ func (p *CommandPlugin) Message(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
 		for commandString, command := range p.commands {
 			if matchesCommand(service, commandString, message) {
-				command.message(bot, service, message)
+				args, parts := parseCommand(service, message)
+				command.message(bot, service, message, args, parts)
 			}
 		}
 	}
 }
 
 // AddCommand adds a command.
-func (p *CommandPlugin) AddCommand(commandString string, message MessageFunc, help CommandHelpFunc) {
+func (p *CommandPlugin) AddCommand(commandString string, message CommandMessageFunc, help CommandHelpFunc) {
 	p.commands[commandString] = &command{
 		message: message,
 		help:    help,
 	}
-}
-
-// AddSimpleCommand adds a simple command.
-func (p *CommandPlugin) AddSimpleCommand(commandString string, message CommandMessageFunc, arguments, help string) {
-	p.AddCommand(commandString, NewCommandMessageFunc(message), func(bot *Bot, service Service) (string, string) {
-		return arguments, help
-	})
 }
 
 // NewCommandPlugin will create a new command plugin.

@@ -51,7 +51,7 @@ func main() {
 	cp.AddCommand("command", bot.HelpCommand, nil)
 	cp.AddCommand("invite", bot.InviteCommand, bot.InviteHelp)
 	cp.AddCommand("join", bot.InviteCommand, nil)
-	cp.AddCommand("stats", bot.StatsCommand, bot.StatsHelp)
+	cp.AddCommand("stats", bot.StatsCommand, bot.NewCommandHelp("", "Lists bot statistics."))
 
 	b.RegisterPlugin(youtube, cp)
 	b.RegisterPlugin(youtube, bot.NewSlowModePlugin())

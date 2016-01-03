@@ -15,7 +15,7 @@ import (
 )
 
 // HelpCommand is a command for returning help text for all registered plugins on a service.
-func HelpCommand(bot *Bot, service Service, message Message) {
+func HelpCommand(bot *Bot, service Service, message Message, command string, parts []string) {
 	help := []string{}
 
 	for _, plugin := range bot.Services[service.Name()].Plugins {
@@ -38,7 +38,6 @@ func HelpCommand(bot *Bot, service Service, message Message) {
 			}
 		}
 	}
-
 }
 
 // InviteHelp will return the help text for the invite command.
@@ -53,8 +52,7 @@ func InviteHelp(bot *Bot, service Service) (string, string) {
 }
 
 // InviteCommand is a command for accepting an invite to a channel.
-func InviteCommand(bot *Bot, service Service, message Message) {
-	_, parts := parseCommand(service, message)
+func InviteCommand(bot *Bot, service Service, message Message, command string, parts []string) {
 	if len(parts) == 1 {
 		join := parts[0]
 		if service.Name() == DiscordServiceName {
@@ -87,13 +85,8 @@ func getDurationString(duration time.Duration) string {
 	)
 }
 
-// StatsHelp will return the help text for the stats command.
-func StatsHelp(bot *Bot, service Service) (string, string) {
-	return "", "Lists bot statistics."
-}
-
 // StatsCommand returns bot statistics.
-func StatsCommand(bot *Bot, service Service, message Message) {
+func StatsCommand(bot *Bot, service Service, message Message, command string, parts []string) {
 	stats := runtime.MemStats{}
 	runtime.ReadMemStats(&stats)
 
@@ -130,5 +123,4 @@ func StatsCommand(bot *Bot, service Service, message Message) {
 			}
 		}
 	}
-
 }
