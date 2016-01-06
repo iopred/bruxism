@@ -21,7 +21,7 @@ var discordPassword string
 var imgurID string
 
 func init() {
-	flag.BoolVar(&youtubeURL, "youtubeuRL", false, "Generates a URL that provides an auth code.")
+	flag.BoolVar(&youtubeURL, "youtubeurl", false, "Generates a URL that provides an auth code.")
 	flag.StringVar(&youtubeAuth, "youtubeauth", "", "Exchanges the provided auth code for an oauth2 token.")
 	flag.StringVar(&youtubeConfigFilename, "youtubeconfig", "youtubeoauth2config.json", "The filename that contains the oauth2 config.")
 	flag.StringVar(&youtubeTokenFilename, "youtubetoken", "youtubeoauth2token.json", "The filename to store the oauth2 token.")
