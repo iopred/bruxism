@@ -23,8 +23,9 @@ func (p *comicPlugin) helpFunc(bot *Bot, service Service) []string {
 	}
 
 	return []string{
-		commandHelp(service, "comic", "[<1-5>]", "Creates a comic from recent messages.")[0],
+		commandHelp(service, "comic", "[<1-6>]", "Creates a comic from recent messages.")[0],
 		commandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", fmt.Sprintf("Creates a custom comic, eg: %scustomcomic Hello | 1: World!%s", ticks, ticks))[0],
+		commandHelp(service, "customcomicsimple", "[<id>:] <text> | [<id>:] <text>", fmt.Sprintf("Creates a simple custom comic."))[0],
 	}
 }
 
@@ -45,17 +46,19 @@ func makeScriptFromMessages(service Service, message Message, messages []Message
 		script = append(script, &comicgen.Message{
 			Speaker: speaker,
 			Text:    message.Message(),
+			Author:  message.UserName(),
 		})
 	}
 	return &comicgen.Script{
 		Messages: script,
 		Author:   fmt.Sprintf("%s and %s", service.UserName(), message.UserName()),
 		Avatars:  avatars,
+		Type:     comicgen.ComicTypeChat,
 	}
 }
 
 func (p *comicPlugin) makeComic(bot *Bot, service Service, message Message, script *comicgen.Script) {
-	comic := comicgen.NewComicGen("arial")
+	comic := comicgen.NewComicGen("arial", service.Name() != DiscordServiceName)
 	image, err := comic.MakeComic(script)
 	if err != nil {
 		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was an error creating the comic. %s", message.UserName(), err))
@@ -87,12 +90,16 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 		log = []Message{}
 	}
 
-	if matchesCommand(service, "customcomic", message) {
+	if matchesCommand(service, "customcomic", message) || matchesCommand(service, "customcomicsimple", message) {
+		ty := comicgen.ComicTypeChat
+		if matchesCommand(service, "customcomicsimple", message) {
+			ty = comicgen.ComicTypeSimple
+		}
+
 		service.Typing(message.Channel())
 
 		str, _ := parseCommand(service, message)
 
-		avatars := map[int]string{0: message.UserAvatar()}
 		messages := []*comicgen.Message{}
 
 		splits := strings.Split(str, "|")
@@ -125,7 +132,7 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 		p.makeComic(bot, service, message, &comicgen.Script{
 			Messages: messages,
 			Author:   fmt.Sprintf("%s and %s", service.UserName(), message.UserName()),
-			Avatars:  avatars,
+			Type:     ty,
 		})
 	} else if matchesCommand(service, "comic", message) {
 		if len(log) == 0 {
@@ -142,7 +149,7 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 		}
 
 		if lines <= 0 {
-			lines = 1 + int(math.Floor((math.Pow(2*rand.Float64()-1, 3)/2+0.5)*float64(comicgen.MaxLines()-1)))
+			lines = 1 + int(math.Floor((math.Pow(2*rand.Float64()-1, 3)/2+0.5)*float64(5)))
 		}
 
 		if lines > len(log) {

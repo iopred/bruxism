@@ -31,6 +31,8 @@ func (p *topStreamersPlugin) messageFunc(bot *Bot, service Service, message Mess
 				return
 			}
 
+			service.Typing(message.Channel())
+
 			p.lastUpdate = n
 
 			m, err := p.topStreamers(5)

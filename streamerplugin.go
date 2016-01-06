@@ -45,6 +45,8 @@ func (p *streamerPlugin) messageFunc(bot *Bot, service Service, message Message)
 				return
 			}
 
+			service.Typing(message.Channel())
+
 			r.lastUpdate = n
 
 			m, err := p.streamer(query, service.Name() == DiscordServiceName)
