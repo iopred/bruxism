@@ -24,6 +24,7 @@ type Service interface {
 	SendMessage(channel, message string) error
 	DeleteMessage(channel, messageID string) error
 	BanUser(channel, userID string, duration int) error
+	UnbanUser(channel, userID string) error
 	SetPlaying(game string) error
 	Join(join string) error
 	Typing(channel string) error

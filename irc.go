@@ -127,6 +127,11 @@ func (i *IRC) BanUser(channel, userID string, duration int) error {
 	return nil
 }
 
+// UnbanUser unbans a user.
+func (i *IRC) UnbanUser(channel, userID string) error {
+	return errors.New("Unbanning users not supported on IRC.")
+}
+
 // UserName returns the bots name.
 func (i *IRC) UserName() string {
 	return i.Conn.Me().Nick

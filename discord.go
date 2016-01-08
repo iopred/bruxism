@@ -1,7 +1,6 @@
 package bruxism
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -125,7 +124,12 @@ func (d *Discord) DeleteMessage(channel, messageID string) error {
 
 // BanUser bans a user.
 func (d *Discord) BanUser(channel, userID string, duration int) error {
-	return errors.New("Banning not supported on Discord.")
+	return d.Session.GuildBanCreate(channel, userID, 0)
+}
+
+// UnbanUser unbans a user.
+func (d *Discord) UnbanUser(channel, userID string) error {
+	return d.Session.GuildBanDelete(channel, userID)
 }
 
 // UserName returns the bots name.
