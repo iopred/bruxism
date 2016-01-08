@@ -73,7 +73,7 @@ func (p *comicPlugin) makeComic(bot *Bot, service Service, message Message, scri
 				}
 			} else {
 				fmt.Println(err)
-				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the comic to imgur."))
+				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the comic to imgur.", message.UserName()))
 			}
 		}()
 	}

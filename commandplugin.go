@@ -20,13 +20,27 @@ func NewCommandHelp(args, help string) CommandHelpFunc {
 }
 
 func matchesCommand(service Service, commandString string, message Message) bool {
+	if service.IsPrivate(message) {
+		lowerMessage := strings.ToLower(message.Message())
+		lowerCommand := strings.ToLower(commandString)
+		if lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ") {
+			return true
+		}
+	}
 	lowerMessage := strings.ToLower(message.Message())
 	lowerCommand := strings.ToLower(service.CommandPrefix() + commandString)
 	return lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ")
 }
 
 func parseCommand(service Service, message Message) (string, []string) {
-	m := message.Message()[len(service.CommandPrefix()):]
+	m := message.Message()
+
+	lowerMessage := strings.ToLower(m)
+	lowerPrefix := strings.ToLower(service.CommandPrefix())
+
+	if strings.HasPrefix(lowerMessage, lowerPrefix) {
+		m = m[len(lowerPrefix):]
+	}
 
 	parts := strings.Split(m, " ")
 	if len(parts) > 1 {
