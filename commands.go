@@ -59,7 +59,7 @@ func InviteCommand(bot *Bot, service Service, message Message, command string, p
 			join = discordInviteID(join)
 		}
 		if err := service.Join(join); err != nil {
-			if service.Name() == DiscordServiceName && err == AlreadyJoinedError {
+			if service.Name() == DiscordServiceName && err == ErrAlreadyJoined {
 				service.PrivateMessage(message.UserID(), "I have already joined that server.")
 				return
 			}

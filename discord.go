@@ -65,14 +65,14 @@ func NewDiscord(args ...interface{}) *Discord {
 	}
 }
 
-var channelIdRegex = regexp.MustCompile("<#[0-9]*>")
+var channelIDRegex = regexp.MustCompile("<#[0-9]*>")
 
 func (d *Discord) onMessage(s *discordgo.Session, message discordgo.Message) {
 	if message.Content == "" {
 		return
 	}
 
-	message.Content = channelIdRegex.ReplaceAllStringFunc(message.Content, func(str string) string {
+	message.Content = channelIDRegex.ReplaceAllStringFunc(message.Content, func(str string) string {
 		c, err := d.Session.State.Channel(str[2 : len(str)-1])
 		if err != nil {
 			return str
@@ -147,7 +147,7 @@ func (d *Discord) SetPlaying(game string) error {
 func (d *Discord) Join(join string) error {
 	if i, err := d.Session.Invite(join); err == nil {
 		if _, err := d.Session.State.Guild(i.Guild.ID); err == nil {
-			return AlreadyJoinedError
+			return ErrAlreadyJoined
 		}
 	}
 

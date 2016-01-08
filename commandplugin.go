@@ -13,6 +13,7 @@ type CommandHelpFunc func(bot *Bot, service Service) (string, string)
 // CommandMessageFunc is the function signature for bot message commands.
 type CommandMessageFunc func(bot *Bot, service Service, message Message, args string, parts []string)
 
+// NewCommandHelp creates a new Command Help function.
 func NewCommandHelp(args, help string) CommandHelpFunc {
 	return func(bot *Bot, service Service) (string, string) {
 		return args, help

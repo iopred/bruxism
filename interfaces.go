@@ -13,7 +13,8 @@ type Message interface {
 	IsModerator() bool
 }
 
-var AlreadyJoinedError error = errors.New("Already joined.")
+// ErrAlreadyJoined is an error dispatched on Join if the bot is already joined to the request.
+var ErrAlreadyJoined = errors.New("Already joined.")
 
 // Service is a service interface, wraps a single service such as YouTube or Discord.
 type Service interface {

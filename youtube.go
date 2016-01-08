@@ -21,6 +21,18 @@ import (
 // YouTubeServiceName is the service name for the YouTube service.
 const YouTubeServiceName string = "YouTube"
 
+// Enums for LiveMessageSnippet types.
+const (
+	LiveChatMessageSnippetTypeText       string = "textMessageEvent"
+	LiveChatMessageSnippetTypeFanFunding string = "fanFundingEvent"
+)
+
+// Enums for LiveChatBanSnippet types.
+const (
+	LiveChatBanSnippetTypeTemporary string = "temporary"
+	LiveChatBanSnippetTypePermanent        = "permanent"
+)
+
 // LiveChatMessage is a Message wrapper around youtube.LiveChatMessage.
 type LiveChatMessage youtube.LiveChatMessage
 
@@ -43,11 +55,6 @@ func (m *LiveChatMessage) UserID() string {
 func (m *LiveChatMessage) UserAvatar() string {
 	return m.AuthorDetails.ProfileImageUrl
 }
-
-const (
-	LiveChatMessageSnippetTypeText       string = "textMessageEvent"
-	LiveChatMessageSnippetTypeFanFunding string = "fanFundingEvent"
-)
 
 // Message returns the message content for this message.
 func (m *LiveChatMessage) Message() string {
@@ -370,11 +377,6 @@ func (yt *YouTube) DeleteMessage(channel, messageID string) error {
 	yt.DeleteChan <- &youtube.LiveChatMessage{Id: messageID}
 	return nil
 }
-
-const (
-	LiveChatBanSnippetTypeTemporary string = "temporary"
-	LiveChatBanSnippetTypePermanent        = "permanent"
-)
 
 // BanUser bans a user.
 func (yt *YouTube) BanUser(channel, userID string, duration int) error {

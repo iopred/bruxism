@@ -14,7 +14,8 @@ import (
 	"runtime/debug"
 )
 
-const VersionString string = "0.1.1"
+// VersionString is the current version of the bot
+const VersionString string = "0.2.0"
 
 type serviceEntry struct {
 	Service
@@ -34,7 +35,7 @@ func messageRecover() {
 	}
 }
 
-// New will create a new bot.
+// NewBot will create a new bot.
 func NewBot() *Bot {
 	return &Bot{
 		Services: make(map[string]*serviceEntry, 0),

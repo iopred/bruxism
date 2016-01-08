@@ -18,7 +18,7 @@ func directMessageInviteMessageFunc(bot *Bot, service Service, message Message) 
 		id := discordInviteID(messageMessage)
 		if id != messageMessage && strings.HasPrefix(messageMessage, "http") {
 			if err := service.Join(id); err != nil {
-				if err == AlreadyJoinedError {
+				if err == ErrAlreadyJoined {
 					service.PrivateMessage(message.UserID(), "I have already joined that server.")
 					return
 				}
@@ -30,6 +30,7 @@ func directMessageInviteMessageFunc(bot *Bot, service Service, message Message) 
 	}
 }
 
+// NewDirectMessageInvitePlugin creates a new direct message invite plugin.
 func NewDirectMessageInvitePlugin() Plugin {
 	p := NewSimplePlugin("DirectMessageInvite")
 	p.message = directMessageInviteMessageFunc
