@@ -136,7 +136,7 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 
 		p.makeComic(bot, service, message, &comicgen.Script{
 			Messages: messages,
-			Author:   fmt.Sprintf("%s and %s", service.UserName(), message.UserName()),
+			Author:   fmt.Sprintf(service.UserName()),
 			Type:     ty,
 		})
 	} else if matchesCommand(service, "comic", message) {

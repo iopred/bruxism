@@ -15,7 +15,7 @@ import (
 )
 
 // VersionString is the current version of the bot
-const VersionString string = "0.3.1"
+const VersionString string = "0.3.2"
 
 type serviceEntry struct {
 	Service
