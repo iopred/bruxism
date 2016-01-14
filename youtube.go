@@ -58,6 +58,11 @@ func (m *LiveChatMessage) UserAvatar() string {
 
 // Message returns the message content for this message.
 func (m *LiveChatMessage) Message() string {
+	return m.RawMessage()
+}
+
+// RawMessage returns the message content for this message.
+func (m *LiveChatMessage) RawMessage() string {
 	switch m.Snippet.Type {
 	case LiveChatMessageSnippetTypeText:
 		return html.UnescapeString(m.Snippet.TextMessageDetails.MessageText)

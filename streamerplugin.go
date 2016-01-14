@@ -18,7 +18,10 @@ type streamerPlugin struct {
 	requests map[string]*streamerPluginRequest
 }
 
-func (p *streamerPlugin) helpFunc(bot *Bot, service Service) []string {
+func (p *streamerPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
+	if detailed {
+		return nil
+	}
 	return commandHelp(service, "streamer", "<streamername|streamerid>", "Grabs details about a YouTube streamer.")
 }
 

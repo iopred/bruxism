@@ -16,16 +16,23 @@ type comicPlugin struct {
 	log map[string][]Message
 }
 
-func (p *comicPlugin) helpFunc(bot *Bot, service Service) []string {
-	ticks := ""
-	if service.Name() == DiscordServiceName {
-		ticks = "`"
+func (p *comicPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
+	if detailed {
+		ticks := ""
+		if service.Name() == DiscordServiceName {
+			ticks = "`"
+		}
+		return []string{
+			fmt.Sprintf("%scomic 5%s - Creates a comic from the last 5 messages.", ticks, ticks),
+			fmt.Sprintf("%scustomcomic Hello | 1: World | Yeah!%s - Creates a comic with 3 lines, with the second line being spoken by a different character.", ticks, ticks),
+			fmt.Sprintf("%scustomcomicsimple Foo | 1: Bar%s - Creates a comic with 2 lines, both spoken by different characters.", ticks, ticks),
+		}
 	}
 
 	return []string{
 		commandHelp(service, "comic", "[<1-6>]", "Creates a comic from recent messages.")[0],
-		commandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", fmt.Sprintf("Creates a custom comic, eg: %scustomcomic Hello | 1: World!%s", ticks, ticks))[0],
-		commandHelp(service, "customcomicsimple", "[<id>:] <text> | [<id>:] <text>", fmt.Sprintf("Creates a simple custom comic."))[0],
+		commandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", "Creates a custom comic.")[0],
+		commandHelp(service, "customcomicsimple", "[<id>:] <text> | [<id>:] <text>", "Creates a simple custom comic.")[0],
 	}
 }
 

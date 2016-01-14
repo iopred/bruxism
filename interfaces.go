@@ -9,6 +9,7 @@ type Message interface {
 	UserID() string
 	UserAvatar() string
 	Message() string
+	RawMessage() string
 	MessageID() string
 	IsModerator() bool
 }
@@ -42,7 +43,7 @@ type LoadFunc func(*Bot, Service, []byte) error
 type SaveFunc func() ([]byte, error)
 
 // HelpFunc is the function signature for a help handler.
-type HelpFunc func(*Bot, Service) []string
+type HelpFunc func(*Bot, Service, bool) []string
 
 // MessageFunc is the function signature for a message handler.
 type MessageFunc func(*Bot, Service, Message)
@@ -52,6 +53,6 @@ type Plugin interface {
 	Name() string
 	Load(*Bot, Service, []byte) error
 	Save() ([]byte, error)
-	Help(*Bot, Service) []string
+	Help(*Bot, Service, bool) []string
 	Message(*Bot, Service, Message)
 }

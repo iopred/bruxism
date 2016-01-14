@@ -30,7 +30,10 @@ func (p *slowModePlugin) Save() ([]byte, error) {
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
-func (p *slowModePlugin) Help(bot *Bot, service Service) []string {
+func (p *slowModePlugin) Help(bot *Bot, service Service, detailed bool) []string {
+	if detailed {
+		return nil
+	}
 	return commandHelp(service, "slowmode", "[<on|off>]", "Turn slow mode on or off, or return the current slow mode state.")
 }
 

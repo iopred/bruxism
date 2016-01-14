@@ -31,13 +31,18 @@ func (m *DiscordMessage) UserID() string {
 
 // UserAvatar returns the avatar url for this message.
 func (m *DiscordMessage) UserAvatar() string {
-	return fmt.Sprintf("https://discordapp.com/api/users/%s/avatars/%s.jpg", m.Author.ID, m.Author.Avatar)
+	return discordgo.USER_AVATAR(m.Author.ID, m.Author.Avatar)
 }
 
 // Message returns the message content for this message.
 func (m *DiscordMessage) Message() string {
 	d := discordgo.Message(*m)
 	return d.ContentWithMentionsReplaced()
+}
+
+// Message returns the message content for this message.
+func (m *DiscordMessage) RawMessage() string {
+	return m.Content
 }
 
 // MessageID returns the message ID for this message.
@@ -67,7 +72,7 @@ func NewDiscord(args ...interface{}) *Discord {
 
 var channelIDRegex = regexp.MustCompile("<#[0-9]*>")
 
-func (d *Discord) onMessage(s *discordgo.Session, message discordgo.Message) {
+func (d *Discord) onMessage(s *discordgo.Session, message *discordgo.Message) {
 	if message.Content == "" {
 		return
 	}
@@ -81,8 +86,7 @@ func (d *Discord) onMessage(s *discordgo.Session, message discordgo.Message) {
 		return "#" + c.Name
 	})
 
-	dm := DiscordMessage(message)
-	d.messageChan <- &dm
+	d.messageChan <- (*DiscordMessage)(message)
 }
 
 // Name returns the name of the service.
@@ -105,6 +109,9 @@ func (d *Discord) Open() (<-chan Message, error) {
 
 // IsMe returns whether or not a message was sent by the bot.
 func (d *Discord) IsMe(message Message) bool {
+	if d.Session.State.User == nil {
+		return false
+	}
 	return message.UserID() == d.Session.State.User.ID
 }
 
@@ -134,6 +141,9 @@ func (d *Discord) UnbanUser(channel, userID string) error {
 
 // UserName returns the bots name.
 func (d *Discord) UserName() string {
+	if d.Session.State.User == nil {
+		return ""
+	}
 	return d.Session.State.User.Username
 }
 
@@ -164,7 +174,7 @@ func (d *Discord) Typing(channel string) error {
 
 // PrivateMessage will send a private message to a user.
 func (d *Discord) PrivateMessage(userID, message string) error {
-	c, err := d.Session.UserChannelCreate("@me", userID)
+	c, err := d.Session.UserChannelCreate(userID)
 	if err != nil {
 		return err
 	}

@@ -31,9 +31,9 @@ func (p *SimplePlugin) Save() ([]byte, error) {
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
-func (p *SimplePlugin) Help(bot *Bot, service Service) []string {
+func (p *SimplePlugin) Help(bot *Bot, service Service, detailed bool) []string {
 	if p.help != nil {
-		return p.help(bot, service)
+		return p.help(bot, service, detailed)
 	}
 	return nil
 }

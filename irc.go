@@ -35,6 +35,11 @@ func (m *IRCMessage) UserAvatar() string {
 
 // Message returns the message content for this message.
 func (m *IRCMessage) Message() string {
+	return m.RawMessage()
+}
+
+// RawMessage returns the raw message content for this message.
+func (m *IRCMessage) RawMessage() string {
 	i := client.Line(*m)
 	return i.Text()
 }

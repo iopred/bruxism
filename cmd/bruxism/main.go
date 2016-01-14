@@ -55,7 +55,7 @@ func main() {
 	bot.Open()
 
 	cp := bruxism.NewCommandPlugin()
-	cp.AddCommand("help", bruxism.HelpCommand, nil)
+	cp.AddCommand("help", bruxism.HelpCommand, bruxism.HelpHelp)
 	cp.AddCommand("command", bruxism.HelpCommand, nil)
 	cp.AddCommand("commands", bruxism.HelpCommand, nil)
 	cp.AddCommand("invite", bruxism.InviteCommand, bruxism.InviteHelp)
@@ -69,6 +69,7 @@ func main() {
 	bot.RegisterPlugin(youtube, bruxism.NewTopStreamersPlugin(youtube))
 	bot.RegisterPlugin(youtube, bruxism.NewStreamerPlugin(youtube))
 	bot.RegisterPlugin(youtube, bruxism.NewComicPlugin())
+	bot.RegisterPlugin(youtube, bruxism.NewReminderPlugin())
 
 	bot.RegisterPlugin(discord, cp)
 	bot.RegisterPlugin(discord, bruxism.NewTopStreamersPlugin(youtube))
@@ -76,11 +77,13 @@ func main() {
 	bot.RegisterPlugin(discord, bruxism.NewPlayingPlugin())
 	bot.RegisterPlugin(discord, bruxism.NewComicPlugin())
 	bot.RegisterPlugin(discord, bruxism.NewDirectMessageInvitePlugin())
+	bot.RegisterPlugin(discord, bruxism.NewReminderPlugin())
 
 	bot.RegisterPlugin(synirc, cp)
 	bot.RegisterPlugin(synirc, bruxism.NewTopStreamersPlugin(youtube))
 	bot.RegisterPlugin(synirc, bruxism.NewStreamerPlugin(youtube))
 	bot.RegisterPlugin(synirc, bruxism.NewComicPlugin())
+	bot.RegisterPlugin(synirc, bruxism.NewReminderPlugin())
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill)

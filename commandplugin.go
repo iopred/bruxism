@@ -20,35 +20,41 @@ func NewCommandHelp(args, help string) CommandHelpFunc {
 	}
 }
 
-func matchesCommand(service Service, commandString string, message Message) bool {
-	if service.IsPrivate(message) {
-		lowerMessage := strings.ToLower(message.Message())
+func matchesCommandString(service Service, commandString string, private bool, message string) bool {
+	if private {
+		lowerMessage := strings.ToLower(message)
 		lowerCommand := strings.ToLower(commandString)
 		if lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ") {
 			return true
 		}
 	}
-	lowerMessage := strings.ToLower(message.Message())
+	lowerMessage := strings.ToLower(message)
 	lowerCommand := strings.ToLower(service.CommandPrefix() + commandString)
 	return lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ")
 }
 
-func parseCommand(service Service, message Message) (string, []string) {
-	m := message.Message()
+func matchesCommand(service Service, commandString string, message Message) bool {
+	return matchesCommandString(service, commandString, service.IsPrivate(message), message.Message())
+}
 
-	lowerMessage := strings.ToLower(m)
+func parseCommandString(service Service, message string) (string, []string) {
+	lowerMessage := strings.ToLower(message)
 	lowerPrefix := strings.ToLower(service.CommandPrefix())
 
 	if strings.HasPrefix(lowerMessage, lowerPrefix) {
-		m = m[len(lowerPrefix):]
+		message = message[len(lowerPrefix):]
 	}
 
-	parts := strings.Split(m, " ")
+	parts := strings.Split(message, " ")
 	if len(parts) > 1 {
 		rest := parts[1:]
 		return strings.Join(rest, " "), parts[1:]
 	}
 	return "", []string{}
+}
+
+func parseCommand(service Service, message Message) (string, []string) {
+	return parseCommandString(service, message.Message())
 }
 
 func commandHelp(service Service, command, arguments, help string) []string {
@@ -91,7 +97,10 @@ func (p *CommandPlugin) Save() ([]byte, error) {
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
-func (p *CommandPlugin) Help(bot *Bot, service Service) []string {
+func (p *CommandPlugin) Help(bot *Bot, service Service, detailed bool) []string {
+	if detailed {
+		return nil
+	}
 	help := []string{}
 	for commandString, command := range p.commands {
 		if command.help != nil {
