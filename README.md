@@ -8,15 +8,17 @@ A chat bot for YouTube and Discord.
 
 ## Current support:
 
-* `!comic [<1-6>]` - Creates a comic from the last lines of chat.
-* `!help` - Lists available commands.
-* `!invite <id>` - Joins the provided YouTube chat or Discord server.
+* `!comic [<1-6>]` - Creates a comic from recent messages.
+* `!customcomic [<id>:] <text> | [<id>:] <text>` - Creates a custom comic.
+* `!customcomicsimple [<id>:] <text> | [<id>:] <text>` - Creates a simple custom comic.
+* `!help [<topic>]` - Returns generic help or help for a specific topic. Available topics: `comic,remind`
+* `!invite <id>` - Joins the provided YouTube chat, IRC channel or Discord server.
 * `!playing` - Set which game the bot is playing on Discord.
-* `!remindme <time> | <message>` - Sets a reminder that is sent with a private message.
-* `!remindchannel <time> | <message>` - Sets a reminder that is to the current channel.
-* `!slowmode [<on|off>]` - Turn slow mode on or off, or return the current slow mode state. Slow mode slows down YouTube chat by temporarily banning anyone who speaks.
-* `!streamer <streamername|streamerid>` - Grabs details about a streamer.
-* `!topstreamers` - List the current top streamers on YouTube.
+* `!remindchannel <time> | <reminder>` - Sets a reminder that is sent to this channel.
+* `!remindme <time> | <reminder>` - Sets a reminder that is sent with a private message.
+* `!stats` - Lists bot statistics.
+* `!streamer <streamername|streamerid>` - Grabs details about a YouTube streamer.
+* `!topstreamers` - List the current top streamers on YouTube Gaming.
 
 ## Arguments:
 
