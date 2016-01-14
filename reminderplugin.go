@@ -116,6 +116,36 @@ func (p *ReminderPlugin) parseTime(str string) (time.Time, error) {
 	return time.Time{}, errors.New("Invalid string.")
 }
 
+// AddReminder adds a reminder.
+func (p *ReminderPlugin) AddReminder(reminder *Reminder) error {
+	p.Lock()
+	defer p.Unlock()
+
+	i := 0
+	for _, r := range p.Reminders {
+		if r.Requester == reminder.Requester {
+			i++
+			if i > 5 {
+				return errors.New("You have too many reminders already.")
+			}
+		}
+	}
+
+	i = 0
+	for _, r := range p.Reminders {
+		if r.Time.After(reminder.Time) {
+			break
+		}
+		i++
+	}
+
+	p.Reminders = append(p.Reminders, reminder)
+	copy(p.Reminders[i+1:], p.Reminders[i:])
+	p.Reminders[i] = reminder
+
+	return nil
+}
+
 func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
 		isPrivate := matchesCommand(service, "remindme", message)
@@ -145,7 +175,9 @@ func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message)
 
 			t, err := p.parseTime(split[0])
 
-			if err != nil {
+			now := time.Now()
+
+			if err != nil || t.Before(now) {
 				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid time. eg: %s", strings.Join(randomTimes, ", ")))
 				return
 			}
@@ -157,17 +189,18 @@ func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message)
 
 			raw := strings.Split(message.RawMessage(), "|")
 
-			p.Lock()
-			defer p.Unlock()
-
-			p.Reminders = append(p.Reminders, &Reminder{
-				StartTime: time.Now(),
+			err = p.AddReminder(&Reminder{
+				StartTime: now,
 				Time:      t,
 				Requester: requester,
 				IsPrivate: isPrivate,
 				Target:    target,
 				Message:   strings.Trim(raw[len(raw)-1], " "),
 			})
+			if err != nil {
+				service.SendMessage(message.Channel(), err.Error())
+				return
+			}
 
 			service.SendMessage(message.Channel(), fmt.Sprintf("Reminder set for %s.", humanize.Time(t)))
 		}
@@ -196,14 +229,13 @@ func (p *ReminderPlugin) Run(bot *Bot, service Service) {
 	for {
 		p.RLock()
 
-		now := time.Now()
-		for i := len(p.Reminders) - 1; i >= 0; i-- {
-			reminder := p.Reminders[i]
-			if now.After(reminder.Time) {
+		if len(p.Reminders) > 0 {
+			reminder := p.Reminders[0]
+			if time.Now().After(reminder.Time) {
 				p.SendReminder(service, reminder)
-
-				p.Reminders[i] = p.Reminders[len(p.Reminders)-1]
-				p.Reminders = p.Reminders[:len(p.Reminders)-1]
+				p.Reminders = p.Reminders[1:]
+				p.RUnlock()
+				continue
 			}
 		}
 

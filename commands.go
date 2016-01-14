@@ -14,6 +14,7 @@ import (
 	"github.com/iopred/discordgo"
 )
 
+// HelpHelp returns help for the help plugin.
 func HelpHelp(bot *Bot, service Service) (string, string) {
 	ticks := ""
 	if service.Name() == DiscordServiceName {
