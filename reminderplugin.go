@@ -48,26 +48,24 @@ var randomMessages = []string{
 	"feed the baby",
 }
 
-// Returns a random item from a list.
-func (p *ReminderPlugin) Random(list []string) string {
+func (p *ReminderPlugin) random(list []string) string {
 	return list[rand.Intn(len(list))]
 }
 
-// Returns a random reminder command.
-func (p *ReminderPlugin) RandomReminder(service Service, command string) string {
+func (p *ReminderPlugin) randomReminder(service Service, command string) string {
 	ticks := ""
 	if service.Name() == DiscordServiceName {
 		ticks = "`"
 	}
 
-	return fmt.Sprintf("%s%s %s | %s%s", ticks, command, p.Random(randomTimes), p.Random(randomMessages), ticks)
+	return fmt.Sprintf("%s%s %s | %s%s", ticks, command, p.random(randomTimes), p.random(randomMessages), ticks)
 }
 
 func (p *ReminderPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
 	if detailed {
 		return []string{
-			p.RandomReminder(service, "remindme"),
-			p.RandomReminder(service, "remindchannel"),
+			p.randomReminder(service, "remindme"),
+			p.randomReminder(service, "remindchannel"),
 		}
 	}
 	return []string{
@@ -163,13 +161,13 @@ func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message)
 			}
 
 			if len(parts) == 0 {
-				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder, no time or message. eg: %s", p.RandomReminder(service, command)))
+				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder, no time or message. eg: %s", p.randomReminder(service, command)))
 				return
 			}
 
 			split := strings.Split(query, "|")
 			if len(split) != 2 {
-				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder. eg: %s", p.RandomReminder(service, command)))
+				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder. eg: %s", p.randomReminder(service, command)))
 				return
 			}
 
