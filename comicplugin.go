@@ -57,7 +57,7 @@ func makeScriptFromMessages(service Service, message Message, messages []Message
 	}
 	return &comicgen.Script{
 		Messages: script,
-		Author:   fmt.Sprintf("%s and %s", service.UserName(), message.UserName()),
+		Author:   fmt.Sprintf(service.UserName()),
 		Avatars:  avatars,
 		Type:     comicgen.ComicTypeChat,
 	}
