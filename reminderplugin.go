@@ -14,6 +14,7 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
+// A Reminder holds data about a specific reminder.
 type Reminder struct {
 	StartTime time.Time
 	Time      time.Time
@@ -23,6 +24,7 @@ type Reminder struct {
 	IsPrivate bool
 }
 
+// ReminderPlugin is a plugin that reminds users.
 type ReminderPlugin struct {
 	sync.RWMutex
 	SimplePlugin
@@ -46,10 +48,12 @@ var randomMessages = []string{
 	"feed the baby",
 }
 
+// Returns a random item from a list.
 func (p *ReminderPlugin) Random(list []string) string {
 	return list[rand.Intn(len(list))]
 }
 
+// Returns a random reminder command.
 func (p *ReminderPlugin) RandomReminder(service Service, command string) string {
 	ticks := ""
 	if service.Name() == DiscordServiceName {

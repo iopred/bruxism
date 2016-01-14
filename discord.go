@@ -40,7 +40,7 @@ func (m *DiscordMessage) Message() string {
 	return d.ContentWithMentionsReplaced()
 }
 
-// Message returns the message content for this message.
+// RawMessage returns the raw message content for this message.
 func (m *DiscordMessage) RawMessage() string {
 	return m.Content
 }
