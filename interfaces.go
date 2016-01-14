@@ -34,6 +34,7 @@ type Service interface {
 	IsPrivate(message Message) bool
 	SupportsMultiline() bool
 	CommandPrefix() string
+	ChannelCount() int
 }
 
 // LoadFunc is the function signature for a load handler.

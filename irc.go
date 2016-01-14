@@ -177,3 +177,8 @@ func (i *IRC) CommandPrefix() string {
 func (i *IRC) IsPrivate(message Message) bool {
 	return message.UserName() == message.Channel()
 }
+
+// ChannelCount returns the number of channels the bot is in.
+func (i *IRC) ChannelCount() int {
+	return len(i.channels)
+}

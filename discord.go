@@ -196,3 +196,8 @@ func (d *Discord) IsPrivate(message Message) bool {
 	_, err := d.Session.State.PrivateChannel(message.Channel())
 	return err == nil
 }
+
+// ChannelCount returns the number of channels the bot is in.
+func (d *Discord) ChannelCount() int {
+	return len(d.Session.State.Guilds)
+}

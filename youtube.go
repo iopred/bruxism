@@ -105,6 +105,7 @@ type YouTube struct {
 	DeleteChan     chan interface{}
 	fanFunding     fanFunding
 	me             *youtube.Channel
+	channelCount   int
 }
 
 // NewYouTube creates a new YouTube service.
@@ -140,6 +141,7 @@ func (yt *YouTube) pollBroadcasts(broadcasts *youtube.LiveBroadcastListResponse,
 }
 
 func (yt *YouTube) pollMessages(broadcast *youtube.LiveBroadcast) {
+	yt.channelCount++
 	pageToken := ""
 	for {
 		list := yt.Service.LiveChatMessages.List(broadcast.Snippet.LiveChatId, "id,snippet,authorDetails").MaxResults(200)
@@ -502,6 +504,11 @@ func (yt *YouTube) CommandPrefix() string {
 // IsPrivate returns whether or not a message was private.
 func (yt *YouTube) IsPrivate(message Message) bool {
 	return false
+}
+
+// ChannelCount returns the number of channels the bot is in.
+func (yt *YouTube) ChannelCount() int {
+	return yt.channelCount
 }
 
 // GetTopLivestreamIDs gets the video ids for the current top livestreams.
