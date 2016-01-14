@@ -227,7 +227,7 @@ func (p *ReminderPlugin) Run(bot *Bot, service Service) {
 		}
 
 		p.RUnlock()
-		time.Sleep(250 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond)
 	}
 }
 
