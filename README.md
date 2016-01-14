@@ -14,8 +14,7 @@ A chat bot for YouTube and Discord.
 * `!help [<topic>]` - Returns generic help or help for a specific topic. Available topics: `comic,remind`
 * `!invite <id>` - Joins the provided YouTube chat, IRC channel or Discord server.
 * `!playing` - Set which game the bot is playing on Discord.
-* `!remindchannel <time> | <reminder>` - Sets a reminder that is sent to this channel.
-* `!remindme <time> | <reminder>` - Sets a reminder that is sent with a private message.
+* `!reminder <time> | <reminder>` - Sets a reminder.
 * `!stats` - Lists bot statistics.
 * `!streamer <streamername|streamerid>` - Grabs details about a YouTube streamer.
 * `!topstreamers` - List the current top streamers on YouTube Gaming.

@@ -56,6 +56,8 @@ func HelpCommand(bot *Bot, service Service, message Message, command string, par
 
 	if len(parts) != 0 && len(help) == 0 {
 		help = []string{fmt.Sprintf("Unknown topic: %s", parts[0])}
+	} else if service.Name() != YouTubeServiceName {
+		help = append([]string{fmt.Sprintf("All commands can be used in private messages without the `%s` prefix.", service.CommandPrefix())}, help...)
 	}
 
 	if service.SupportsMultiline() {

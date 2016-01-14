@@ -52,25 +52,23 @@ func (p *ReminderPlugin) random(list []string) string {
 	return list[rand.Intn(len(list))]
 }
 
-func (p *ReminderPlugin) randomReminder(service Service, command string) string {
+func (p *ReminderPlugin) randomReminder(service Service) string {
 	ticks := ""
 	if service.Name() == DiscordServiceName {
 		ticks = "`"
 	}
 
-	return fmt.Sprintf("%s%s %s | %s%s", ticks, command, p.random(randomTimes), p.random(randomMessages), ticks)
+	return fmt.Sprintf("%sreminder %s | %s%s", ticks, p.random(randomTimes), p.random(randomMessages), ticks)
 }
 
 func (p *ReminderPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
 	if detailed {
 		return []string{
-			p.randomReminder(service, "remindme"),
-			p.randomReminder(service, "remindchannel"),
+			p.randomReminder(service),
 		}
 	}
 	return []string{
-		commandHelp(service, "remindme", "<time> | <reminder>", "Sets a reminder that is sent with a private message.")[0],
-		commandHelp(service, "remindchannel", "<time> | <reminder>", "Sets a reminder that is sent to this channel.")[0],
+		commandHelp(service, "reminder", "<time> | <reminder>", "Sets a reminder that is sent after the provided time.")[0],
 	}
 }
 
@@ -81,7 +79,6 @@ func (p *ReminderPlugin) parseTime(str string) (time.Time, error) {
 	}
 
 	split := strings.Split(str, " ")
-	fmt.Println(split)
 	if len(split) == 2 {
 		if split[0] == "next" {
 			switch split[1] {
@@ -108,6 +105,14 @@ func (p *ReminderPlugin) parseTime(str string) (time.Time, error) {
 			return time.Now().Add(time.Duration(i) * time.Minute), nil
 		case strings.HasPrefix(split[1], "hour"):
 			return time.Now().Add(time.Duration(i) * time.Hour), nil
+		case strings.HasPrefix(split[1], "day"):
+			return time.Now().Add(time.Duration(i) * time.Hour * 24), nil
+		case strings.HasPrefix(split[1], "week"):
+			return time.Now().Add(time.Duration(i) * time.Hour * 24 * 7), nil
+		case strings.HasPrefix(split[1], "month"):
+			return time.Now().Add(time.Duration(i) * time.Hour * 24 * 7 * 4), nil
+		case strings.HasPrefix(split[1], "year"):
+			return time.Now().Add(time.Duration(i) * time.Hour * 24 * 365), nil
 		}
 
 	}
@@ -146,28 +151,17 @@ func (p *ReminderPlugin) AddReminder(reminder *Reminder) error {
 
 func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
-		isPrivate := matchesCommand(service, "remindme", message)
-		if isPrivate || matchesCommand(service, "remindchannel", message) {
+		if matchesCommand(service, "reminder", message) {
 			query, parts := parseCommand(service, message)
 
-			var command string
-			var target string
-			if isPrivate {
-				command = "remindme"
-				target = message.UserID()
-			} else {
-				command = "remindchannel"
-				target = message.Channel()
-			}
-
 			if len(parts) == 0 {
-				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder, no time or message. eg: %s", p.randomReminder(service, command)))
+				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder, no time or message. eg: %s", p.randomReminder(service)))
 				return
 			}
 
 			split := strings.Split(query, "|")
 			if len(split) != 2 {
-				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder. eg: %s", p.randomReminder(service, command)))
+				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder. eg: %s", p.randomReminder(service)))
 				return
 			}
 
@@ -175,7 +169,7 @@ func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message)
 
 			now := time.Now()
 
-			if err != nil || t.Before(now) {
+			if err != nil || t.Before(now) || t.After(now.Add(time.Hour*24*365+time.Hour)) {
 				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid time. eg: %s", strings.Join(randomTimes, ", ")))
 				return
 			}
@@ -191,9 +185,9 @@ func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message)
 				StartTime: now,
 				Time:      t,
 				Requester: requester,
-				IsPrivate: isPrivate,
-				Target:    target,
+				Target:    message.Channel(),
 				Message:   strings.Trim(raw[len(raw)-1], " "),
+				IsPrivate: service.IsPrivate(message),
 			})
 			if err != nil {
 				service.SendMessage(message.Channel(), err.Error())
@@ -205,20 +199,12 @@ func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message)
 	}
 }
 
-// ReminderMessage returns the message for a reminder.
-func (p *ReminderPlugin) ReminderMessage(reminder *Reminder) string {
-	if reminder.IsPrivate {
-		return fmt.Sprintf("%s you set a reminder: %s", humanize.Time(reminder.StartTime), reminder.Message)
-	}
-	return fmt.Sprintf("%s %s set a reminder: %s", humanize.Time(reminder.StartTime), reminder.Requester, reminder.Message)
-}
-
 // SendReminder sends a reminder.
 func (p *ReminderPlugin) SendReminder(service Service, reminder *Reminder) {
 	if reminder.IsPrivate {
-		service.PrivateMessage(reminder.Target, p.ReminderMessage(reminder))
+		service.SendMessage(reminder.Target, fmt.Sprintf("%s you set a reminder: %s", humanize.Time(reminder.StartTime), reminder.Message))
 	} else {
-		service.SendMessage(reminder.Target, p.ReminderMessage(reminder))
+		service.SendMessage(reminder.Target, fmt.Sprintf("%s %s set a reminder: %s", humanize.Time(reminder.StartTime), reminder.Requester, reminder.Message))
 	}
 }
 

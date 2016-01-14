@@ -58,16 +58,20 @@ func (m *LiveChatMessage) UserAvatar() string {
 
 // Message returns the message content for this message.
 func (m *LiveChatMessage) Message() string {
-	return m.RawMessage()
+	switch m.Snippet.Type {
+	case LiveChatMessageSnippetTypeText:
+		return html.UnescapeString(m.Snippet.TextMessageDetails.MessageText)
+	}
+	return html.UnescapeString(m.Snippet.DisplayMessage)
 }
 
 // RawMessage returns the message content for this message.
 func (m *LiveChatMessage) RawMessage() string {
 	switch m.Snippet.Type {
 	case LiveChatMessageSnippetTypeText:
-		return html.UnescapeString(m.Snippet.TextMessageDetails.MessageText)
+		return m.Snippet.TextMessageDetails.MessageText
 	}
-	return html.UnescapeString(m.Snippet.DisplayMessage)
+	return m.Snippet.DisplayMessage
 }
 
 // MessageID returns the message ID for this message.
@@ -91,7 +95,8 @@ type YouTube struct {
 	auth           string
 	configFilename string
 	tokenFilename  string
-	liveChatIds    string
+	liveVideoIDs   string
+	liveChatIDs    string
 	config         *oauth2.Config
 	token          *oauth2.Token
 	Service        *youtube.Service
@@ -103,13 +108,14 @@ type YouTube struct {
 }
 
 // NewYouTube creates a new YouTube service.
-func NewYouTube(url bool, auth, configFilename, tokenFilename, liveChatIds string) *YouTube {
+func NewYouTube(url bool, auth, configFilename, tokenFilename, liveVideoIDs, liveChatIDs string) *YouTube {
 	return &YouTube{
 		url:            url,
 		auth:           auth,
 		configFilename: configFilename,
 		tokenFilename:  tokenFilename,
-		liveChatIds:    liveChatIds,
+		liveVideoIDs:   liveVideoIDs,
+		liveChatIDs:    liveChatIDs,
 		messageChan:    make(chan Message, 200),
 		InsertChan:     make(chan interface{}, 200),
 		DeleteChan:     make(chan interface{}, 200),
@@ -343,9 +349,10 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 
 	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Mine(true).BroadcastType("persistent").Do())
 	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Mine(true).Do())
+	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Id(yt.liveVideoIDs).Do())
 
-	if yt.liveChatIds != "" {
-		liveChatIDsArray := strings.Split(yt.liveChatIds, ",")
+	if yt.liveChatIDs != "" {
+		liveChatIDsArray := strings.Split(yt.liveChatIDs, ",")
 
 		for _, liveChatID := range liveChatIDsArray {
 			yt.Join(liveChatID)
@@ -363,6 +370,8 @@ func (yt *YouTube) IsMe(message Message) bool {
 	return message.UserID() == yt.me.Id
 }
 
+var messageReplacer = strings.NewReplacer("<", "(", ">", ")")
+
 // SendMessage sends a message.
 func (yt *YouTube) SendMessage(channel, message string) error {
 	yt.InsertChan <- &youtube.LiveChatMessage{
@@ -370,7 +379,7 @@ func (yt *YouTube) SendMessage(channel, message string) error {
 			LiveChatId: channel,
 			Type:       LiveChatMessageSnippetTypeText,
 			TextMessageDetails: &youtube.LiveChatTextMessageDetails{
-				MessageText: message,
+				MessageText: messageReplacer.Replace(message),
 			},
 		},
 	}

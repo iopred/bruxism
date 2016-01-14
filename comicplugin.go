@@ -2,7 +2,6 @@ package bruxism
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"math/rand"
 	"strconv"
@@ -88,7 +87,6 @@ func (p *comicPlugin) makeComic(bot *Bot, service Service, message Message, scri
 
 func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if service.IsMe(message) {
-		log.Println("Its me, ignore.")
 		return
 	}
 
