@@ -16,23 +16,26 @@ type comicPlugin struct {
 }
 
 func (p *comicPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
+	help := []string{
+		commandHelp(service, "comic", "[<1-6>]", "Creates a comic from recent messages.")[0],
+		commandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", "Creates a custom comic.")[0],
+		commandHelp(service, "customcomicsimple", "[<id>:] <text> | [<id>:] <text>", "Creates a simple custom comic.")[0],
+	}
+
 	if detailed {
 		ticks := ""
 		if service.Name() == DiscordServiceName {
 			ticks = "`"
 		}
-		return []string{
-			fmt.Sprintf("%scomic 5%s - Creates a comic from the last 5 messages.", ticks, ticks),
-			fmt.Sprintf("%scustomcomic Hello | 1: World | Yeah!%s - Creates a comic with 3 lines, with the second line being spoken by a different character.", ticks, ticks),
-			fmt.Sprintf("%scustomcomicsimple Foo | 1: Bar%s - Creates a comic with 2 lines, both spoken by different characters.", ticks, ticks),
-		}
+		help = append(help, []string{
+			"Examples:",
+			fmt.Sprintf("%s%scomic 5%s - Creates a comic from the last 5 messages.", ticks, service.CommandPrefix(), ticks),
+			fmt.Sprintf("%s%scustomcomic Hello | 1: World | Yeah!%s - Creates a comic with 3 lines, with the second line being spoken by a different character.", ticks, service.CommandPrefix(), ticks),
+			fmt.Sprintf("%s%scustomcomicsimple Foo | 1: Bar%s - Creates a comic with 2 lines, both spoken by different characters.", ticks, service.CommandPrefix(), ticks),
+		}...)
 	}
 
-	return []string{
-		commandHelp(service, "comic", "[<1-6>]", "Creates a comic from recent messages.")[0],
-		commandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", "Creates a custom comic.")[0],
-		commandHelp(service, "customcomicsimple", "[<id>:] <text> | [<id>:] <text>", "Creates a simple custom comic.")[0],
-	}
+	return help
 }
 
 func makeScriptFromMessages(service Service, message Message, messages []Message) *comicgen.Script {

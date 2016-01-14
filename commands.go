@@ -33,7 +33,7 @@ func HelpHelp(bot *Bot, service Service) (string, string) {
 
 	sort.Strings(commands)
 
-	return "[<topic>]", fmt.Sprintf("Returns generic help or help for a specific topic. Available topics: %s%s%s", ticks, strings.Join(commands, ","), ticks)
+	return "[<topic>]", fmt.Sprintf("Returns generic help or help for a specific topic. Available topics: %s%s%s", ticks, strings.Join(commands, ", "), ticks)
 }
 
 // HelpCommand is a command for returning help text for all registered plugins on a service.
@@ -52,12 +52,13 @@ func HelpCommand(bot *Bot, service Service, message Message, command string, par
 		}
 	}
 
-	sort.Strings(help)
+	if len(parts) == 0 {
+		sort.Strings(help)
+		help = append([]string{fmt.Sprintf("All commands can be used in private messages without the `%s` prefix.", service.CommandPrefix())}, help...)
+	}
 
 	if len(parts) != 0 && len(help) == 0 {
 		help = []string{fmt.Sprintf("Unknown topic: %s", parts[0])}
-	} else if service.Name() != YouTubeServiceName {
-		help = append([]string{fmt.Sprintf("All commands can be used in private messages without the `%s` prefix.", service.CommandPrefix())}, help...)
 	}
 
 	if service.SupportsMultiline() {

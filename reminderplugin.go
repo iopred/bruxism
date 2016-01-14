@@ -58,18 +58,21 @@ func (p *ReminderPlugin) randomReminder(service Service) string {
 		ticks = "`"
 	}
 
-	return fmt.Sprintf("%sreminder %s | %s%s", ticks, p.random(randomTimes), p.random(randomMessages), ticks)
+	return fmt.Sprintf("%s%sreminder %s | %s%s", ticks, service.CommandPrefix(), p.random(randomTimes), p.random(randomMessages), ticks)
 }
 
 func (p *ReminderPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
-	if detailed {
-		return []string{
-			p.randomReminder(service),
-		}
-	}
-	return []string{
+	help := []string{
 		commandHelp(service, "reminder", "<time> | <reminder>", "Sets a reminder that is sent after the provided time.")[0],
 	}
+	if detailed {
+		help = append(help, []string{
+			"Examples: ",
+			p.randomReminder(service),
+			p.randomReminder(service),
+		}...)
+	}
+	return help
 }
 
 func (p *ReminderPlugin) parseTime(str string) (time.Time, error) {
@@ -224,7 +227,7 @@ func (p *ReminderPlugin) Run(bot *Bot, service Service) {
 		}
 
 		p.RUnlock()
-		time.Sleep(time.Second)
+		time.Sleep(250 * time.Millisecond)
 	}
 }
 
@@ -247,7 +250,7 @@ func (p *ReminderPlugin) Save() ([]byte, error) {
 // NewReminderPlugin will create a new Reminder plugin.
 func NewReminderPlugin() Plugin {
 	p := &ReminderPlugin{
-		SimplePlugin: *NewSimplePlugin("Remind"),
+		SimplePlugin: *NewSimplePlugin("Reminder"),
 		Reminders:    []*Reminder{},
 	}
 	p.message = p.messageFunc
