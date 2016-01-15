@@ -25,8 +25,9 @@ type serviceEntry struct {
 
 // Bot enables registering of Services and Plugins.
 type Bot struct {
-	Services map[string]*serviceEntry
-	ImgurID  string
+	Services   map[string]*serviceEntry
+	ImgurID    string
+	ImgurAlbum string
 }
 
 func messageRecover() {
@@ -138,6 +139,9 @@ func (b *Bot) UploadToImgur(image image.Image, filename string) (string, error) 
 	}
 
 	contentType := bodywriter.FormDataContentType()
+	if b.ImgurAlbum != "" {
+		bodywriter.WriteField("album", b.ImgurAlbum)
+	}
 	bodywriter.Close()
 
 	r, err := http.NewRequest("POST", "https://api.imgur.com/3/image", bodyBuf)

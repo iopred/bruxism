@@ -20,6 +20,7 @@ var discordToken string
 var discordEmail string
 var discordPassword string
 var imgurID string
+var imgurAlbum string
 
 func init() {
 	flag.BoolVar(&youtubeURL, "youtubeuRL", false, "Generates a URL that provides an auth code.")
@@ -32,6 +33,7 @@ func init() {
 	flag.StringVar(&discordEmail, "discordemail", "", "Discord account email.")
 	flag.StringVar(&discordPassword, "discordpassword", "", "Discord account password.")
 	flag.StringVar(&imgurID, "imgurid", "", "Imgur client id.")
+	flag.StringVar(&imgurAlbum, "imguralbum", "", "Imgur album id.")
 	flag.Parse()
 
 	rand.Seed(time.Now().UnixNano())
@@ -40,6 +42,7 @@ func init() {
 func main() {
 	bot := bruxism.NewBot()
 	bot.ImgurID = imgurID
+	bot.ImgurAlbum = imgurAlbum
 
 	youtube := bruxism.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveVideoIDs, youtubeLiveChatIDs)
 

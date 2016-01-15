@@ -168,7 +168,7 @@ func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message)
 				return
 			}
 
-			t, err := p.parseTime(split[0])
+			t, err := p.parseTime(strings.Trim(split[0], " "))
 
 			now := time.Now()
 

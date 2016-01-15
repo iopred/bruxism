@@ -21,15 +21,18 @@ func NewCommandHelp(args, help string) CommandHelpFunc {
 }
 
 func matchesCommandString(service Service, commandString string, private bool, message string) bool {
-	if private {
-		lowerMessage := strings.ToLower(message)
-		lowerCommand := strings.ToLower(commandString)
-		if lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ") {
-			return true
-		}
+	lowerMessage := strings.ToLower(strings.Trim(message, " "))
+	lowerPrefix := strings.ToLower(service.CommandPrefix())
+
+	if strings.HasPrefix(lowerMessage, lowerPrefix) {
+		lowerMessage = lowerMessage[len(lowerPrefix):]
+	} else if !private {
+		return false
 	}
-	lowerMessage := strings.ToLower(message)
-	lowerCommand := strings.ToLower(service.CommandPrefix() + commandString)
+
+	lowerMessage = strings.Trim(lowerMessage, " ")
+	lowerCommand := strings.ToLower(commandString)
+
 	return lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ")
 }
 
@@ -38,12 +41,15 @@ func matchesCommand(service Service, commandString string, message Message) bool
 }
 
 func parseCommandString(service Service, message string) (string, []string) {
+	message = strings.Trim(message, " ")
+
 	lowerMessage := strings.ToLower(message)
 	lowerPrefix := strings.ToLower(service.CommandPrefix())
 
 	if strings.HasPrefix(lowerMessage, lowerPrefix) {
 		message = message[len(lowerPrefix):]
 	}
+	message = strings.Trim(message, " ")
 
 	parts := strings.Split(message, " ")
 	if len(parts) > 1 {
