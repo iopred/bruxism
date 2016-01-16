@@ -13,6 +13,7 @@ A chat bot for YouTube and Discord.
 * `!customcomicsimple [<id>:] <text> | [<id>:] <text>` - Creates a simple custom comic.
 * `!help [<topic>]` - Returns generic help or help for a specific topic. Available topics: `comic,remind`
 * `!invite <id>` - Joins the provided YouTube chat, IRC channel or Discord server.
+* `!numbertrivia [<number>]` - Returns trivia for a random number or a specified number if provided.
 * `!playing` - Set which game the bot is playing on Discord.
 * `!reminder <time> | <reminder>` - Sets a reminder.
 * `!stats` - Lists bot statistics.
