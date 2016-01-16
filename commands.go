@@ -186,8 +186,6 @@ func numberTrivia(bot *Bot, num int, notfound bool) (string, error) {
 	r.Header.Set("X-Mashape-Authorization", bot.MashableKey)
 	r.Header.Set("Accept", "text/plain")
 
-	fmt.Println(r)
-
 	resp, err := http.DefaultClient.Do(r)
 	if err != nil {
 		return "", err
@@ -220,7 +218,6 @@ func NumberTriviaCommand(bot *Bot, service Service, message Message, command str
 
 	str, err := numberTrivia(bot, num, notfound)
 	if err != nil {
-		fmt.Println("err", err)
 		service.SendMessage(message.Channel(), "There was an error requesting trivia, sorry!")
 		return
 	}
