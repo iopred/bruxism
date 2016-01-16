@@ -25,9 +25,10 @@ type serviceEntry struct {
 
 // Bot enables registering of Services and Plugins.
 type Bot struct {
-	Services   map[string]*serviceEntry
-	ImgurID    string
-	ImgurAlbum string
+	Services    map[string]*serviceEntry
+	ImgurID     string
+	ImgurAlbum  string
+	MashableKey string
 }
 
 func messageRecover() {

@@ -37,6 +37,10 @@ func matchesCommandString(service Service, commandString string, private bool, m
 }
 
 func matchesCommand(service Service, commandString string, message Message) bool {
+	// Only new messages can trigger commands.
+	if message.Type() != MessageTypeCreate {
+		return false
+	}
 	return matchesCommandString(service, commandString, service.IsPrivate(message), message.Message())
 }
 

@@ -166,11 +166,29 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 
 		p.makeComic(bot, service, message, makeScriptFromMessages(service, message, log[len(log)-lines:]))
 	} else {
-		if len(log) < 10 {
-			p.log[message.Channel()] = append(log, message)
-		} else {
-			p.log[message.Channel()] = append(log[1:], message)
+		switch message.Type() {
+		case MessageTypeCreate:
+			if len(log) < 10 {
+				log = append(log, message)
+			} else {
+				log = append(log[1:], message)
+			}
+		case MessageTypeUpdate:
+			for i, m := range log {
+				if m.MessageID() == message.MessageID() {
+					log[i] = message
+					break
+				}
+			}
+		case MessageTypeDelete:
+			for i, m := range log {
+				if m.MessageID() == message.MessageID() {
+					log = append(log[:i], log[i+1:]...)
+					break
+				}
+			}
 		}
+		p.log[message.Channel()] = log
 	}
 }
 

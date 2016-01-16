@@ -21,6 +21,7 @@ var discordEmail string
 var discordPassword string
 var imgurID string
 var imgurAlbum string
+var mashableKey string
 
 func init() {
 	flag.BoolVar(&youtubeURL, "youtubeuRL", false, "Generates a URL that provides an auth code.")
@@ -34,6 +35,7 @@ func init() {
 	flag.StringVar(&discordPassword, "discordpassword", "", "Discord account password.")
 	flag.StringVar(&imgurID, "imgurid", "", "Imgur client id.")
 	flag.StringVar(&imgurAlbum, "imguralbum", "", "Imgur album id.")
+	flag.StringVar(&mashableKey, "mashablekey", "", "Mashable key.")
 	flag.Parse()
 
 	rand.Seed(time.Now().UnixNano())
@@ -43,6 +45,7 @@ func main() {
 	bot := bruxism.NewBot()
 	bot.ImgurID = imgurID
 	bot.ImgurAlbum = imgurAlbum
+	bot.MashableKey = mashableKey
 
 	youtube := bruxism.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveVideoIDs, youtubeLiveChatIDs)
 
@@ -68,6 +71,7 @@ func main() {
 	cp.AddCommand("stats", bruxism.StatsCommand, bruxism.NewCommandHelp("", "Lists bot statistics."))
 	cp.AddCommand("info", bruxism.StatsCommand, nil)
 	cp.AddCommand("stat", bruxism.StatsCommand, nil)
+	cp.AddCommand("numbertrivia", bruxism.NumberTriviaCommand, bruxism.NumberTriviaHelp)
 
 	bot.RegisterPlugin(youtube, cp)
 	bot.RegisterPlugin(youtube, bruxism.NewSlowModePlugin())

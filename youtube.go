@@ -84,6 +84,11 @@ func (m *LiveChatMessage) IsModerator() bool {
 	return m.AuthorDetails.IsChatOwner || m.AuthorDetails.IsChatModerator
 }
 
+// MessageType returns the type of message.
+func (m *LiveChatMessage) Type() MessageType {
+	return MessageTypeCreate
+}
+
 type fanFunding struct {
 	sync.Mutex
 	Messages map[string]*youtube.LiveChatMessage
@@ -586,4 +591,14 @@ func (yt *YouTube) GetTopLivestreams(count int) ([]*youtube.Video, error) {
 	sort.Sort(videoList)
 
 	return videoList, nil
+}
+
+// SupportsMessageHistory returns if the service supports message history.
+func (yt *YouTube) SupportsMessageHistory() bool {
+	return false
+}
+
+// MessageHistory returns the message history for a channel.
+func (yt *YouTube) MessageHistory(channel string) []Message {
+	return nil
 }

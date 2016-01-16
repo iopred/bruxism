@@ -12,47 +12,63 @@ import (
 const DiscordServiceName string = "Discord"
 
 // DiscordMessage is a Message wrapper around discordgo.Message.
-type DiscordMessage discordgo.Message
+type DiscordMessage struct {
+	DiscordgoMessage *discordgo.Message
+	MessageType      MessageType
+}
 
 // Channel returns the channel id for this message.
 func (m *DiscordMessage) Channel() string {
-	return m.ChannelID
+	return m.DiscordgoMessage.ChannelID
 }
 
 // UserName returns the user name for this message.
 func (m *DiscordMessage) UserName() string {
-	return m.Author.Username
+	if m.DiscordgoMessage.Author == nil {
+		return ""
+	}
+	return m.DiscordgoMessage.Author.Username
 }
 
 // UserID returns the user id for this message.
 func (m *DiscordMessage) UserID() string {
-	return m.Author.ID
+	if m.DiscordgoMessage.Author == nil {
+		return ""
+	}
+	return m.DiscordgoMessage.Author.ID
 }
 
 // UserAvatar returns the avatar url for this message.
 func (m *DiscordMessage) UserAvatar() string {
-	return discordgo.USER_AVATAR(m.Author.ID, m.Author.Avatar)
+	if m.DiscordgoMessage.Author == nil {
+		return ""
+	}
+	return discordgo.USER_AVATAR(m.DiscordgoMessage.Author.ID, m.DiscordgoMessage.Author.Avatar)
 }
 
 // Message returns the message content for this message.
 func (m *DiscordMessage) Message() string {
-	d := discordgo.Message(*m)
-	return d.ContentWithMentionsReplaced()
+	return m.DiscordgoMessage.ContentWithMentionsReplaced()
 }
 
 // RawMessage returns the raw message content for this message.
 func (m *DiscordMessage) RawMessage() string {
-	return m.Content
+	return m.DiscordgoMessage.Content
 }
 
 // MessageID returns the message ID for this message.
 func (m *DiscordMessage) MessageID() string {
-	return m.ID
+	return m.DiscordgoMessage.ID
 }
 
 // IsModerator returns whether or not the sender of this message is a moderator.
 func (m *DiscordMessage) IsModerator() bool {
 	return false
+}
+
+// MessageType returns the type of message.
+func (m *DiscordMessage) Type() MessageType {
+	return m.MessageType
 }
 
 // Discord is a Service provider for Discord.
@@ -72,11 +88,7 @@ func NewDiscord(args ...interface{}) *Discord {
 
 var channelIDRegex = regexp.MustCompile("<#[0-9]*>")
 
-func (d *Discord) onMessage(s *discordgo.Session, message *discordgo.Message) {
-	if message.Content == "" {
-		return
-	}
-
+func (d *Discord) replaceChannelNames(message *discordgo.Message) {
 	message.Content = channelIDRegex.ReplaceAllStringFunc(message.Content, func(str string) string {
 		c, err := d.Session.State.Channel(str[2 : len(str)-1])
 		if err != nil {
@@ -85,8 +97,30 @@ func (d *Discord) onMessage(s *discordgo.Session, message *discordgo.Message) {
 
 		return "#" + c.Name
 	})
+}
 
-	d.messageChan <- (*DiscordMessage)(message)
+func (d *Discord) onMessageCreate(s *discordgo.Session, message *discordgo.Message) {
+	if message.Content == "" {
+		return
+	}
+
+	d.replaceChannelNames(message)
+
+	d.messageChan <- &DiscordMessage{message, MessageTypeCreate}
+}
+
+func (d *Discord) onMessageUpdate(s *discordgo.Session, message *discordgo.Message) {
+	if message.Content == "" {
+		return
+	}
+
+	d.replaceChannelNames(message)
+
+	d.messageChan <- &DiscordMessage{message, MessageTypeUpdate}
+}
+
+func (d *Discord) onMessageDelete(s *discordgo.Session, message *discordgo.Message) {
+	d.messageChan <- &DiscordMessage{message, MessageTypeDelete}
 }
 
 // Name returns the name of the service.
@@ -102,7 +136,10 @@ func (d *Discord) Open() (<-chan Message, error) {
 	if err != nil {
 		return nil, err
 	}
-	d.Session.OnMessageCreate = d.onMessage
+	d.Session.State.MaxMessageCount = 50
+	d.Session.OnMessageCreate = d.onMessageCreate
+	d.Session.OnMessageUpdate = d.onMessageUpdate
+	d.Session.OnMessageDelete = d.onMessageDelete
 
 	return d.messageChan, nil
 }
@@ -200,4 +237,24 @@ func (d *Discord) IsPrivate(message Message) bool {
 // ChannelCount returns the number of channels the bot is in.
 func (d *Discord) ChannelCount() int {
 	return len(d.Session.State.Guilds)
+}
+
+// SupportsMessageHistory returns if the service supports message history.
+func (d *Discord) SupportsMessageHistory() bool {
+	return true
+}
+
+// MessageHistory returns the message history for a channel.
+func (d *Discord) MessageHistory(channel string) []Message {
+	c, err := d.Session.State.Channel(channel)
+	if err != nil {
+		return nil
+	}
+
+	messages := make([]Message, len(c.Messages))
+	for i := 0; i < len(c.Messages); i++ {
+		messages[i] = &DiscordMessage{c.Messages[i], MessageTypeCreate}
+	}
+
+	return messages
 }

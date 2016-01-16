@@ -54,6 +54,11 @@ func (m *IRCMessage) IsModerator() bool {
 	return false
 }
 
+// MessageType returns the type of message.
+func (m *IRCMessage) Type() MessageType {
+	return MessageTypeCreate
+}
+
 // IRC is a Service provider for IRC.
 type IRC struct {
 	host        string
@@ -181,4 +186,14 @@ func (i *IRC) IsPrivate(message Message) bool {
 // ChannelCount returns the number of channels the bot is in.
 func (i *IRC) ChannelCount() int {
 	return len(i.channels)
+}
+
+// SupportsMessageHistory returns if the service supports message history.
+func (i *IRC) SupportsMessageHistory() bool {
+	return false
+}
+
+// MessageHistory returns the message history for a channel.
+func (i *IRC) MessageHistory(channel string) []Message {
+	return nil
 }

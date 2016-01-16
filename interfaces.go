@@ -2,6 +2,14 @@ package bruxism
 
 import "errors"
 
+type MessageType string
+
+const (
+	MessageTypeCreate MessageType = "create"
+	MessageTypeUpdate             = "update"
+	MessageTypeDelete             = "delete"
+)
+
 // Message is a message interface, wraps a single message from a service.
 type Message interface {
 	Channel() string
@@ -12,6 +20,7 @@ type Message interface {
 	RawMessage() string
 	MessageID() string
 	IsModerator() bool
+	Type() MessageType
 }
 
 // ErrAlreadyJoined is an error dispatched on Join if the bot is already joined to the request.
@@ -35,6 +44,8 @@ type Service interface {
 	SupportsMultiline() bool
 	CommandPrefix() string
 	ChannelCount() int
+	SupportsMessageHistory() bool
+	MessageHistory(chanel string) []Message
 }
 
 // LoadFunc is the function signature for a load handler.
