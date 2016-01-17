@@ -71,7 +71,7 @@ func main() {
 	cp.AddCommand("stats", bruxism.StatsCommand, bruxism.NewCommandHelp("", "Lists bot statistics."))
 	cp.AddCommand("info", bruxism.StatsCommand, nil)
 	cp.AddCommand("stat", bruxism.StatsCommand, nil)
-	cp.AddCommand("numbertrivia", bruxism.NumberTriviaCommand, bruxism.NumberTriviaHelp)
+	cp.AddCommand("numbertrivia", bruxism.NumberTriviaCommand, bruxism.NewCommandHelp("[<number>]", "Returns trivia for a random number or a specified number if provided."))
 
 	bot.RegisterPlugin(youtube, cp)
 	bot.RegisterPlugin(youtube, bruxism.NewSlowModePlugin())

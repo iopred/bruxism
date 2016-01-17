@@ -168,11 +168,6 @@ func StatsCommand(bot *Bot, service Service, message Message, command string, pa
 	}
 }
 
-// NumberTriviaHelp will return the help text for the number trivia command.
-func NumberTriviaHelp(bot *Bot, service Service) (string, string) {
-	return "[<number>]", "Returns trivia for a random number or a specified number if provided."
-}
-
 func numberTrivia(bot *Bot, num int, notfound bool) (string, error) {
 	notfoundString := ""
 	if notfound {
