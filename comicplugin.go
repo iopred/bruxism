@@ -166,6 +166,11 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 
 		p.makeComic(bot, service, message, makeScriptFromMessages(service, message, log[len(log)-lines:]))
 	} else {
+		// Don't append commands.
+		if strings.HasPrefix(strings.ToLower(strings.Trim(message.Message(), " ")), strings.ToLower(service.CommandPrefix())) {
+			return
+		}
+
 		switch message.Type() {
 		case MessageTypeCreate:
 			if len(log) < 10 {
