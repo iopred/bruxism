@@ -142,7 +142,7 @@ func StatsCommand(bot *Bot, service Service, message Message, command string, pa
 	}
 	fmt.Fprintf(w, "Go: \t%s\n", runtime.Version())
 	fmt.Fprintf(w, "Uptime: \t%s\n", getDurationString(time.Now().Sub(statsStartTime)))
-	fmt.Fprintf(w, "Memory used: \t%s / %s\n", humanize.Bytes(stats.Alloc), humanize.Bytes(stats.TotalAlloc))
+	fmt.Fprintf(w, "Memory used: \t%s / %s (%s total allocated)\n", humanize.Bytes(stats.Alloc), humanize.Bytes(stats.Sys), humanize.Bytes(stats.TotalAlloc))
 	fmt.Fprintf(w, "Concurrent tasks: \t%d\n", runtime.NumGoroutine())
 	if service.Name() == DiscordServiceName {
 		fmt.Fprintf(w, "Connected servers: \t%d\n", service.ChannelCount())
