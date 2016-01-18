@@ -113,11 +113,7 @@ func InviteCommand(bot *Bot, service Service, message Message, command string, p
 	}
 }
 
-var startTime time.Time
-
-func init() {
-	startTime = time.Now()
-}
+var statsStartTime time.Time = time.Now()
 
 func getDurationString(duration time.Duration) string {
 	return fmt.Sprintf(
@@ -145,7 +141,7 @@ func StatsCommand(bot *Bot, service Service, message Message, command string, pa
 		fmt.Fprintf(w, "Discordgo: \t%s\n", discordgo.VERSION)
 	}
 	fmt.Fprintf(w, "Go: \t%s\n", runtime.Version())
-	fmt.Fprintf(w, "Uptime: \t%s\n", getDurationString(time.Now().Sub(startTime)))
+	fmt.Fprintf(w, "Uptime: \t%s\n", getDurationString(time.Now().Sub(statsStartTime)))
 	fmt.Fprintf(w, "Memory used: \t%s / %s\n", humanize.Bytes(stats.Alloc), humanize.Bytes(stats.TotalAlloc))
 	fmt.Fprintf(w, "Concurrent tasks: \t%d\n", runtime.NumGoroutine())
 	if service.Name() == DiscordServiceName {
@@ -242,12 +238,11 @@ type MTGCard struct {
 var MTGCardMap map[string]*MTGCard = map[string]*MTGCard{}
 var MTGCardNames []string
 
-var TextReplacer *strings.Replacer = strings.NewReplacer("(", "*(", ")", ")*")
-var CostReplacer *strings.Replacer = strings.NewReplacer("{", "", "}", "")
-var RestReplacer *strings.Replacer = strings.NewReplacer("*", "\\*")
+var MTGTextReplacer *strings.Replacer = strings.NewReplacer("(", "*(", ")", ")*")
+var MTGCostReplacer *strings.Replacer = strings.NewReplacer("{", "", "}", "")
+var MTGRestReplacer *strings.Replacer = strings.NewReplacer("*", "\\*")
 
 func init() {
-
 	file, err := os.Open("mtg/AllSets-x.json")
 	if err != nil {
 		fmt.Println(err)
@@ -266,8 +261,8 @@ func init() {
 
 	for _, s := range MTGSets {
 		for _, c := range s.Cards {
-			c.ManaCost = CostReplacer.Replace(c.ManaCost)
-			c.Text = CostReplacer.Replace(c.Text)
+			c.ManaCost = MTGCostReplacer.Replace(c.ManaCost)
+			c.Text = MTGCostReplacer.Replace(c.Text)
 			MTGCardMap[c.Name] = c
 			MTGCardNames = append(MTGCardNames, c.Name)
 		}
@@ -288,17 +283,17 @@ func MTGCommand(bot *Bot, service Service, message Message, command string, part
 
 	rest := ""
 	if card.Power != nil {
-		rest += RestReplacer.Replace(fmt.Sprintf("\n%s/%s", *card.Power, *card.Toughness))
+		rest += MTGRestReplacer.Replace(fmt.Sprintf("\n%s/%s", *card.Power, *card.Toughness))
 	}
 	if card.Loyalty != nil {
-		rest += RestReplacer.Replace(fmt.Sprintf("\n%d", *card.Loyalty))
+		rest += MTGRestReplacer.Replace(fmt.Sprintf("\n%d", *card.Loyalty))
 	}
 	if card.ID != nil {
 		rest += fmt.Sprintf("\n(http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=%d&type=card)", *card.ID)
 	}
 
 	if service.Name() == DiscordServiceName {
-		service.SendMessage(message.Channel(), fmt.Sprintf("**%s** %s\n*%s*\n%s%s", card.Name, card.ManaCost, card.Type, TextReplacer.Replace(card.Text), rest))
+		service.SendMessage(message.Channel(), fmt.Sprintf("**%s** %s\n*%s*\n%s%s", card.Name, card.ManaCost, card.Type, MTGTextReplacer.Replace(card.Text), rest))
 	} else {
 		service.SendMessage(message.Channel(), strings.Replace(fmt.Sprintf("%s. %s. %s. %s%s", card.Name, card.Type, card.ManaCost, card.Text, rest), "\n", " ", -1))
 	}
