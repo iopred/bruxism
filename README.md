@@ -1,5 +1,5 @@
 # Bruxism
-A chat bot for YouTube and Discord.
+A chat bot for YouTube, Discord and IRC.
 
 [![GoDoc](https://godoc.org/github.com/iopred/bruxism?status.svg)](https://godoc.org/github.com/iopred/bruxism)
 [![Go Walker](http://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/iopred/bruxism)

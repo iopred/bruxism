@@ -72,6 +72,7 @@ func main() {
 	cp.AddCommand("info", bruxism.StatsCommand, nil)
 	cp.AddCommand("stat", bruxism.StatsCommand, nil)
 	cp.AddCommand("numbertrivia", bruxism.NumberTriviaCommand, bruxism.NewCommandHelp("[<number>]", "Returns trivia for a random number or a specified number if provided."))
+	cp.AddCommand("mtg", bruxism.MTGCommand, bruxism.NewCommandHelp("<cardname>", "Returns information about a Magic: The Gathering card."))
 
 	bot.RegisterPlugin(youtube, cp)
 	bot.RegisterPlugin(youtube, bruxism.NewSlowModePlugin())
