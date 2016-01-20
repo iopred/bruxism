@@ -17,7 +17,7 @@ type comicPlugin struct {
 
 func (p *comicPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
 	help := []string{
-		commandHelp(service, "comic", "[<1-6>]", "Creates a comic from recent messages.")[0],
+		commandHelp(service, "comic", "[<1-10>]", "Creates a comic from recent messages.")[0],
 		commandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", "Creates a custom comic.")[0],
 		commandHelp(service, "customcomicsimple", "[<id>:] <text> | [<id>:] <text>", "Creates a simple custom comic.")[0],
 	}

@@ -282,14 +282,20 @@ func MTGCommand(bot *Bot, service Service, message Message, command string, part
 	card := MTGCardMap[cardNames[0].Target]
 
 	rest := ""
+	if card.Text != "" {
+		rest += "\n"
+	}
 	if card.Power != nil {
-		rest += MTGRestReplacer.Replace(fmt.Sprintf("\n%s/%s", *card.Power, *card.Toughness))
+		rest += MTGRestReplacer.Replace(fmt.Sprintf("%s/%s", *card.Power, *card.Toughness))
 	}
 	if card.Loyalty != nil {
-		rest += MTGRestReplacer.Replace(fmt.Sprintf("\n%d", *card.Loyalty))
+		rest += MTGRestReplacer.Replace(fmt.Sprintf("%d", *card.Loyalty))
 	}
 	if card.ID != nil {
-		rest += fmt.Sprintf("\n(http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=%d&type=card)", *card.ID)
+		if rest != "" {
+			rest += "\n"
+		}
+		rest += fmt.Sprintf("(http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=%d&type=card)", *card.ID)
 	}
 
 	if service.Name() == DiscordServiceName {
