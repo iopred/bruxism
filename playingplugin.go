@@ -35,7 +35,10 @@ func (p *playingPlugin) Save() ([]byte, error) {
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
-func (p *playingPlugin) helpFunc(bot *Bot, service Service) []string {
+func (p *playingPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
+	if detailed {
+		return nil
+	}
 	return commandHelp(service, "playing", "<game>", fmt.Sprintf("Set which game %s is playing.", service.UserName()))
 }
 

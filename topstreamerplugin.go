@@ -16,7 +16,10 @@ type topStreamersPlugin struct {
 	lastMessage string
 }
 
-func (p *topStreamersPlugin) helpFunc(bot *Bot, service Service) []string {
+func (p *topStreamersPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
+	if detailed {
+		return nil
+	}
 	return commandHelp(service, "topstreamers", "", "List the current top streamers on YouTube Gaming.")
 }
 

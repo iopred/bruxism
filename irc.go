@@ -35,6 +35,11 @@ func (m *IRCMessage) UserAvatar() string {
 
 // Message returns the message content for this message.
 func (m *IRCMessage) Message() string {
+	return m.RawMessage()
+}
+
+// RawMessage returns the raw message content for this message.
+func (m *IRCMessage) RawMessage() string {
 	i := client.Line(*m)
 	return i.Text()
 }
@@ -47,6 +52,11 @@ func (m *IRCMessage) MessageID() string {
 // IsModerator returns whether or not the sender of this message is a moderator.
 func (m *IRCMessage) IsModerator() bool {
 	return false
+}
+
+// MessageType returns the type of message.
+func (m *IRCMessage) Type() MessageType {
+	return MessageTypeCreate
 }
 
 // IRC is a Service provider for IRC.
@@ -127,6 +137,11 @@ func (i *IRC) BanUser(channel, userID string, duration int) error {
 	return nil
 }
 
+// UnbanUser unbans a user.
+func (i *IRC) UnbanUser(channel, userID string) error {
+	return errors.New("Unbanning users not supported on IRC.")
+}
+
 // UserName returns the bots name.
 func (i *IRC) UserName() string {
 	return i.Conn.Me().Nick
@@ -166,4 +181,19 @@ func (i *IRC) CommandPrefix() string {
 // IsPrivate returns whether or not a message was private.
 func (i *IRC) IsPrivate(message Message) bool {
 	return message.UserName() == message.Channel()
+}
+
+// ChannelCount returns the number of channels the bot is in.
+func (i *IRC) ChannelCount() int {
+	return len(i.channels)
+}
+
+// SupportsMessageHistory returns if the service supports message history.
+func (i *IRC) SupportsMessageHistory() bool {
+	return false
+}
+
+// MessageHistory returns the message history for a channel.
+func (i *IRC) MessageHistory(channel string) []Message {
+	return nil
 }

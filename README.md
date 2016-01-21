@@ -1,5 +1,5 @@
 # Bruxism
-A chat bot for YouTube and Discord.
+A chat bot for YouTube, Discord and IRC.
 
 [![GoDoc](https://godoc.org/github.com/iopred/bruxism?status.svg)](https://godoc.org/github.com/iopred/bruxism)
 [![Go Walker](http://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/iopred/bruxism)
@@ -8,13 +8,17 @@ A chat bot for YouTube and Discord.
 
 ## Current support:
 
-* `!comic <lines>` - Creates a comic from the last lines of chat.
-* `!help` - Lists available commands.
-* `!invite <id>` - Joins the provided YouTube chat or Discord server.
+* `!comic [<1-6>]` - Creates a comic from recent messages.
+* `!customcomic [<id>:] <text> | [<id>:] <text>` - Creates a custom comic.
+* `!customcomicsimple [<id>:] <text> | [<id>:] <text>` - Creates a simple custom comic.
+* `!help [<topic>]` - Returns generic help or help for a specific topic. Available topics: `comic,remind`
+* `!invite <id>` - Joins the provided YouTube chat, IRC channel or Discord server.
+* `!numbertrivia [<number>]` - Returns trivia for a random number or a specified number if provided.
 * `!playing` - Set which game the bot is playing on Discord.
-* `!slowmode [<on|off>]` - Turn slow mode on or off, or return the current slow mode state. Slow mode slows down YouTube chat by temporarily banning anyone who speaks.
-* `!streamer <streamername|streamerid>` - Grabs details about a streamer.
-* `!topstreamers` - List the current top streamers on YouTube.
+* `!reminder <time> | <reminder>` - Sets a reminder.
+* `!stats` - Lists bot statistics.
+* `!streamer <streamername|streamerid>` - Grabs details about a YouTube streamer.
+* `!topstreamers` - List the current top streamers on YouTube Gaming.
 
 ## Arguments:
 

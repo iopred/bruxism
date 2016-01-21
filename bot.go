@@ -14,7 +14,8 @@ import (
 	"runtime/debug"
 )
 
-const VersionString string = "0.1.1"
+// VersionString is the current version of the bot
+const VersionString string = "0.3.2"
 
 type serviceEntry struct {
 	Service
@@ -24,8 +25,10 @@ type serviceEntry struct {
 
 // Bot enables registering of Services and Plugins.
 type Bot struct {
-	Services map[string]*serviceEntry
-	ImgurID  string
+	Services    map[string]*serviceEntry
+	ImgurID     string
+	ImgurAlbum  string
+	MashableKey string
 }
 
 func messageRecover() {
@@ -34,7 +37,7 @@ func messageRecover() {
 	}
 }
 
-// New will create a new bot.
+// NewBot will create a new bot.
 func NewBot() *Bot {
 	return &Bot{
 		Services: make(map[string]*serviceEntry, 0),
@@ -137,6 +140,9 @@ func (b *Bot) UploadToImgur(image image.Image, filename string) (string, error) 
 	}
 
 	contentType := bodywriter.FormDataContentType()
+	if b.ImgurAlbum != "" {
+		bodywriter.WriteField("album", b.ImgurAlbum)
+	}
 	bodywriter.Close()
 
 	r, err := http.NewRequest("POST", "https://api.imgur.com/3/image", bodyBuf)

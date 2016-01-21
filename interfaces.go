@@ -2,6 +2,14 @@ package bruxism
 
 import "errors"
 
+type MessageType string
+
+const (
+	MessageTypeCreate MessageType = "create"
+	MessageTypeUpdate             = "update"
+	MessageTypeDelete             = "delete"
+)
+
 // Message is a message interface, wraps a single message from a service.
 type Message interface {
 	Channel() string
@@ -9,11 +17,14 @@ type Message interface {
 	UserID() string
 	UserAvatar() string
 	Message() string
+	RawMessage() string
 	MessageID() string
 	IsModerator() bool
+	Type() MessageType
 }
 
-var AlreadyJoinedError error = errors.New("Already joined.")
+// ErrAlreadyJoined is an error dispatched on Join if the bot is already joined to the request.
+var ErrAlreadyJoined = errors.New("Already joined.")
 
 // Service is a service interface, wraps a single service such as YouTube or Discord.
 type Service interface {
@@ -24,6 +35,7 @@ type Service interface {
 	SendMessage(channel, message string) error
 	DeleteMessage(channel, messageID string) error
 	BanUser(channel, userID string, duration int) error
+	UnbanUser(channel, userID string) error
 	SetPlaying(game string) error
 	Join(join string) error
 	Typing(channel string) error
@@ -31,6 +43,9 @@ type Service interface {
 	IsPrivate(message Message) bool
 	SupportsMultiline() bool
 	CommandPrefix() string
+	ChannelCount() int
+	SupportsMessageHistory() bool
+	MessageHistory(chanel string) []Message
 }
 
 // LoadFunc is the function signature for a load handler.
@@ -40,7 +55,7 @@ type LoadFunc func(*Bot, Service, []byte) error
 type SaveFunc func() ([]byte, error)
 
 // HelpFunc is the function signature for a help handler.
-type HelpFunc func(*Bot, Service) []string
+type HelpFunc func(*Bot, Service, bool) []string
 
 // MessageFunc is the function signature for a message handler.
 type MessageFunc func(*Bot, Service, Message)
@@ -50,6 +65,6 @@ type Plugin interface {
 	Name() string
 	Load(*Bot, Service, []byte) error
 	Save() ([]byte, error)
-	Help(*Bot, Service) []string
+	Help(*Bot, Service, bool) []string
 	Message(*Bot, Service, Message)
 }

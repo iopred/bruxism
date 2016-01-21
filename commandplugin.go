@@ -13,27 +13,58 @@ type CommandHelpFunc func(bot *Bot, service Service) (string, string)
 // CommandMessageFunc is the function signature for bot message commands.
 type CommandMessageFunc func(bot *Bot, service Service, message Message, args string, parts []string)
 
+// NewCommandHelp creates a new Command Help function.
 func NewCommandHelp(args, help string) CommandHelpFunc {
 	return func(bot *Bot, service Service) (string, string) {
 		return args, help
 	}
 }
 
-func matchesCommand(service Service, commandString string, message Message) bool {
-	lowerMessage := strings.ToLower(message.Message())
-	lowerCommand := strings.ToLower(service.CommandPrefix() + commandString)
+func matchesCommandString(service Service, commandString string, private bool, message string) bool {
+	lowerMessage := strings.ToLower(strings.Trim(message, " "))
+	lowerPrefix := strings.ToLower(service.CommandPrefix())
+
+	if strings.HasPrefix(lowerMessage, lowerPrefix) {
+		lowerMessage = lowerMessage[len(lowerPrefix):]
+	} else if !private {
+		return false
+	}
+
+	lowerMessage = strings.Trim(lowerMessage, " ")
+	lowerCommand := strings.ToLower(commandString)
+
 	return lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ")
 }
 
-func parseCommand(service Service, message Message) (string, []string) {
-	m := message.Message()[len(service.CommandPrefix()):]
+func matchesCommand(service Service, commandString string, message Message) bool {
+	// Only new messages can trigger commands.
+	if message.Type() != MessageTypeCreate {
+		return false
+	}
+	return matchesCommandString(service, commandString, service.IsPrivate(message), message.Message())
+}
 
-	parts := strings.Split(m, " ")
+func parseCommandString(service Service, message string) (string, []string) {
+	message = strings.Trim(message, " ")
+
+	lowerMessage := strings.ToLower(message)
+	lowerPrefix := strings.ToLower(service.CommandPrefix())
+
+	if strings.HasPrefix(lowerMessage, lowerPrefix) {
+		message = message[len(lowerPrefix):]
+	}
+	message = strings.Trim(message, " ")
+
+	parts := strings.Split(message, " ")
 	if len(parts) > 1 {
 		rest := parts[1:]
 		return strings.Join(rest, " "), parts[1:]
 	}
 	return "", []string{}
+}
+
+func parseCommand(service Service, message Message) (string, []string) {
+	return parseCommandString(service, message.Message())
 }
 
 func commandHelp(service Service, command, arguments, help string) []string {
@@ -76,7 +107,10 @@ func (p *CommandPlugin) Save() ([]byte, error) {
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
-func (p *CommandPlugin) Help(bot *Bot, service Service) []string {
+func (p *CommandPlugin) Help(bot *Bot, service Service, detailed bool) []string {
+	if detailed {
+		return nil
+	}
 	help := []string{}
 	for commandString, command := range p.commands {
 		if command.help != nil {

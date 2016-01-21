@@ -2,7 +2,6 @@ package bruxism
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"math/rand"
 	"strconv"
@@ -16,17 +15,27 @@ type comicPlugin struct {
 	log map[string][]Message
 }
 
-func (p *comicPlugin) helpFunc(bot *Bot, service Service) []string {
-	ticks := ""
-	if service.Name() == DiscordServiceName {
-		ticks = "`"
+func (p *comicPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
+	help := []string{
+		commandHelp(service, "comic", "[<1-10>]", "Creates a comic from recent messages.")[0],
+		commandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", "Creates a custom comic.")[0],
+		commandHelp(service, "customcomicsimple", "[<id>:] <text> | [<id>:] <text>", "Creates a simple custom comic.")[0],
 	}
 
-	return []string{
-		commandHelp(service, "comic", "[<1-6>]", "Creates a comic from recent messages.")[0],
-		commandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", fmt.Sprintf("Creates a custom comic, eg: %scustomcomic Hello | 1: World!%s", ticks, ticks))[0],
-		commandHelp(service, "customcomicsimple", "[<id>:] <text> | [<id>:] <text>", fmt.Sprintf("Creates a simple custom comic."))[0],
+	if detailed {
+		ticks := ""
+		if service.Name() == DiscordServiceName {
+			ticks = "`"
+		}
+		help = append(help, []string{
+			"Examples:",
+			fmt.Sprintf("%s%scomic 5%s - Creates a comic from the last 5 messages.", ticks, service.CommandPrefix(), ticks),
+			fmt.Sprintf("%s%scustomcomic Hello | 1: World | Yeah!%s - Creates a comic with 3 lines, with the second line being spoken by a different character.", ticks, service.CommandPrefix(), ticks),
+			fmt.Sprintf("%s%scustomcomicsimple Foo | 1: Bar%s - Creates a comic with 2 lines, both spoken by different characters.", ticks, service.CommandPrefix(), ticks),
+		}...)
 	}
+
+	return help
 }
 
 func makeScriptFromMessages(service Service, message Message, messages []Message) *comicgen.Script {
@@ -51,7 +60,7 @@ func makeScriptFromMessages(service Service, message Message, messages []Message
 	}
 	return &comicgen.Script{
 		Messages: script,
-		Author:   fmt.Sprintf("%s and %s", service.UserName(), message.UserName()),
+		Author:   fmt.Sprintf(service.UserName()),
 		Avatars:  avatars,
 		Type:     comicgen.ComicTypeChat,
 	}
@@ -73,7 +82,7 @@ func (p *comicPlugin) makeComic(bot *Bot, service Service, message Message, scri
 				}
 			} else {
 				fmt.Println(err)
-				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the comic to imgur."))
+				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the comic to imgur.", message.UserName()))
 			}
 		}()
 	}
@@ -81,7 +90,6 @@ func (p *comicPlugin) makeComic(bot *Bot, service Service, message Message, scri
 
 func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if service.IsMe(message) {
-		log.Println("Its me, ignore.")
 		return
 	}
 
@@ -131,7 +139,7 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 
 		p.makeComic(bot, service, message, &comicgen.Script{
 			Messages: messages,
-			Author:   fmt.Sprintf("%s and %s", service.UserName(), message.UserName()),
+			Author:   fmt.Sprintf(service.UserName()),
 			Type:     ty,
 		})
 	} else if matchesCommand(service, "comic", message) {
@@ -158,11 +166,34 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 
 		p.makeComic(bot, service, message, makeScriptFromMessages(service, message, log[len(log)-lines:]))
 	} else {
-		if len(log) < 10 {
-			p.log[message.Channel()] = append(log, message)
-		} else {
-			p.log[message.Channel()] = append(log[1:], message)
+		// Don't append commands.
+		if strings.HasPrefix(strings.ToLower(strings.Trim(message.Message(), " ")), strings.ToLower(service.CommandPrefix())) {
+			return
 		}
+
+		switch message.Type() {
+		case MessageTypeCreate:
+			if len(log) < 10 {
+				log = append(log, message)
+			} else {
+				log = append(log[1:], message)
+			}
+		case MessageTypeUpdate:
+			for i, m := range log {
+				if m.MessageID() == message.MessageID() {
+					log[i] = message
+					break
+				}
+			}
+		case MessageTypeDelete:
+			for i, m := range log {
+				if m.MessageID() == message.MessageID() {
+					log = append(log[:i], log[i+1:]...)
+					break
+				}
+			}
+		}
+		p.log[message.Channel()] = log
 	}
 }
 
