@@ -141,6 +141,8 @@ func (d *Discord) Open() (<-chan Message, error) {
 	d.Session.OnMessageUpdate = d.onMessageUpdate
 	d.Session.OnMessageDelete = d.onMessageDelete
 
+	d.Session.Open()
+
 	return d.messageChan, nil
 }
 
