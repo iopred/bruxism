@@ -100,8 +100,8 @@ func (i *IRC) Name() string {
 
 // Open opens the service and returns a channel which all messages will be sent on.
 func (i *IRC) Open() (<-chan Message, error) {
-	i.Conn = client.SimpleClient(i.nick, "Septapus", "Septapus")
-	i.Conn.Config().Version = "Septapus"
+	i.Conn = client.SimpleClient(i.nick, i.nick, i.nick)
+	i.Conn.Config().Version = i.nick
 	i.Conn.Config().QuitMessage = ""
 
 	i.Conn.HandleFunc("connected", i.onConnect)

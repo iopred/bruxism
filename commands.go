@@ -136,7 +136,7 @@ func StatsCommand(bot *Bot, service Service, message Message, command string, pa
 	if service.Name() == DiscordServiceName {
 		fmt.Fprintf(w, "```\n")
 	}
-	fmt.Fprintf(w, "Septapus: \t%s\n", VersionString)
+	fmt.Fprintf(w, "Bruxism: \t%s\n", VersionString)
 	if service.Name() == DiscordServiceName {
 		fmt.Fprintf(w, "Discordgo: \t%s\n", discordgo.VERSION)
 	}
