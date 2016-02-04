@@ -354,8 +354,7 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 	}
 	yt.me = me
 
-	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Mine(true).BroadcastType("persistent").Do())
-	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Mine(true).Do())
+	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Mine(true).BroadcastType("all").Do())
 	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Id(yt.liveVideoIDs).Do())
 
 	if yt.liveChatIDs != "" {

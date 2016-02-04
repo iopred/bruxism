@@ -292,7 +292,7 @@ func MTGCommand(bot *Bot, service Service, message Message, command string, part
 		rest += MTGRestReplacer.Replace(fmt.Sprintf("%d", *card.Loyalty))
 	}
 	if card.ID != nil {
-		if rest != "" {
+		if rest != "" && rest != "\n" {
 			rest += "\n"
 		}
 		rest += fmt.Sprintf("(http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=%d&type=card)", *card.ID)
