@@ -39,14 +39,14 @@ func (p *playingPlugin) helpFunc(bot *Bot, service Service, detailed bool) []str
 	if detailed {
 		return nil
 	}
-	return commandHelp(service, "playing", "<game>", fmt.Sprintf("Set which game %s is playing.", service.UserName()))
+	return CommandHelp(service, "playing", "<game>", fmt.Sprintf("Set which game %s is playing.", service.UserName()))
 }
 
 // Message handler.
 func (p *playingPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
-		if matchesCommand(service, "playing", message) {
-			p.Playing, _ = parseCommand(service, message)
+		if MatchesCommand(service, "playing", message) {
+			p.Playing, _ = ParseCommand(service, message)
 			service.SetPlaying(p.Playing)
 		}
 	}
@@ -55,7 +55,7 @@ func (p *playingPlugin) messageFunc(bot *Bot, service Service, message Message) 
 // NewPlayingPlugin will create a new top streamers plugin.
 func NewPlayingPlugin() Plugin {
 	p := &playingPlugin{}
-	p.message = p.messageFunc
-	p.help = p.helpFunc
+	p.MessageFunc = p.messageFunc
+	p.HelpFunc = p.helpFunc
 	return p
 }

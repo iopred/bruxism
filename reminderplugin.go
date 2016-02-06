@@ -63,7 +63,7 @@ func (p *ReminderPlugin) randomReminder(service Service) string {
 
 func (p *ReminderPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
 	help := []string{
-		commandHelp(service, "reminder", "<time> | <reminder>", "Sets a reminder that is sent after the provided time.")[0],
+		CommandHelp(service, "reminder", "<time> | <reminder>", "Sets a reminder that is sent after the provided time.")[0],
 	}
 	if detailed {
 		help = append(help, []string{
@@ -154,8 +154,8 @@ func (p *ReminderPlugin) AddReminder(reminder *Reminder) error {
 
 func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
-		if matchesCommand(service, "reminder", message) {
-			query, parts := parseCommand(service, message)
+		if MatchesCommand(service, "reminder", message) {
+			query, parts := ParseCommand(service, message)
 
 			if len(parts) == 0 {
 				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder, no time or message. eg: %s", p.randomReminder(service)))
@@ -253,7 +253,7 @@ func NewReminderPlugin() Plugin {
 		SimplePlugin: *NewSimplePlugin("Reminder"),
 		Reminders:    []*Reminder{},
 	}
-	p.message = p.messageFunc
-	p.help = p.helpFunc
+	p.MessageFunc = p.messageFunc
+	p.HelpFunc = p.helpFunc
 	return p
 }

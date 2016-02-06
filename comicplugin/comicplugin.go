@@ -1,4 +1,4 @@
-package bruxism
+package comicplugin
 
 import (
 	"fmt"
@@ -7,24 +7,25 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/iopred/bruxism"
 	"github.com/iopred/comicgen"
 )
 
 type comicPlugin struct {
-	SimplePlugin
-	log map[string][]Message
+	bruxism.SimplePlugin
+	log map[string][]bruxism.Message
 }
 
-func (p *comicPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
+func (p *comicPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, detailed bool) []string {
 	help := []string{
-		commandHelp(service, "comic", "[<1-10>]", "Creates a comic from recent messages.")[0],
-		commandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", "Creates a custom comic.")[0],
-		commandHelp(service, "customcomicsimple", "[<id>:] <text> | [<id>:] <text>", "Creates a simple custom comic.")[0],
+		bruxism.CommandHelp(service, "comic", "[<1-10>]", "Creates a comic from recent messages.")[0],
+		bruxism.CommandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", "Creates a custom comic.")[0],
+		bruxism.CommandHelp(service, "customcomicsimple", "[<id>:] <text> | [<id>:] <text>", "Creates a simple custom comic.")[0],
 	}
 
 	if detailed {
 		ticks := ""
-		if service.Name() == DiscordServiceName {
+		if service.Name() == bruxism.DiscordServiceName {
 			ticks = "`"
 		}
 		help = append(help, []string{
@@ -38,7 +39,7 @@ func (p *comicPlugin) helpFunc(bot *Bot, service Service, detailed bool) []strin
 	return help
 }
 
-func makeScriptFromMessages(service Service, message Message, messages []Message) *comicgen.Script {
+func makeScriptFromMessages(service bruxism.Service, message bruxism.Message, messages []bruxism.Message) *comicgen.Script {
 	speakers := make(map[string]int)
 	avatars := make(map[int]string)
 
@@ -66,8 +67,8 @@ func makeScriptFromMessages(service Service, message Message, messages []Message
 	}
 }
 
-func (p *comicPlugin) makeComic(bot *Bot, service Service, message Message, script *comicgen.Script) {
-	comic := comicgen.NewComicGen("arial", service.Name() != DiscordServiceName)
+func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, script *comicgen.Script) {
+	comic := comicgen.NewComicGen("arial", service.Name() != bruxism.DiscordServiceName)
 	image, err := comic.MakeComic(script)
 	if err != nil {
 		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was an error creating the comic. %s", message.UserName(), err))
@@ -75,7 +76,7 @@ func (p *comicPlugin) makeComic(bot *Bot, service Service, message Message, scri
 		go func() {
 			url, err := bot.UploadToImgur(image, "comic.png")
 			if err == nil {
-				if service.Name() == DiscordServiceName {
+				if service.Name() == bruxism.DiscordServiceName {
 					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic <@%s>: %s", message.UserID(), url))
 				} else {
 					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic %s: %s", message.UserName(), url))
@@ -88,25 +89,25 @@ func (p *comicPlugin) makeComic(bot *Bot, service Service, message Message, scri
 	}
 }
 
-func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
+func (p *comicPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if service.IsMe(message) {
 		return
 	}
 
 	log, ok := p.log[message.Channel()]
 	if !ok {
-		log = []Message{}
+		log = []bruxism.Message{}
 	}
 
-	if matchesCommand(service, "customcomic", message) || matchesCommand(service, "customcomicsimple", message) {
+	if bruxism.MatchesCommand(service, "customcomic", message) || bruxism.MatchesCommand(service, "customcomicsimple", message) {
 		ty := comicgen.ComicTypeChat
-		if matchesCommand(service, "customcomicsimple", message) {
+		if bruxism.MatchesCommand(service, "customcomicsimple", message) {
 			ty = comicgen.ComicTypeSimple
 		}
 
 		service.Typing(message.Channel())
 
-		str, _ := parseCommand(service, message)
+		str, _ := bruxism.ParseCommand(service, message)
 
 		messages := []*comicgen.Message{}
 
@@ -142,7 +143,7 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 			Author:   fmt.Sprintf(service.UserName()),
 			Type:     ty,
 		})
-	} else if matchesCommand(service, "comic", message) {
+	} else if bruxism.MatchesCommand(service, "comic", message) {
 		if len(log) == 0 {
 			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, I don't have enough messages to make a comic yet.", message.UserName()))
 			return
@@ -151,7 +152,7 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 		service.Typing(message.Channel())
 
 		lines := 0
-		linesString, parts := parseCommand(service, message)
+		linesString, parts := bruxism.ParseCommand(service, message)
 		if len(parts) > 0 {
 			lines, _ = strconv.Atoi(linesString)
 		}
@@ -172,20 +173,20 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 		}
 
 		switch message.Type() {
-		case MessageTypeCreate:
+		case bruxism.MessageTypeCreate:
 			if len(log) < 10 {
 				log = append(log, message)
 			} else {
 				log = append(log[1:], message)
 			}
-		case MessageTypeUpdate:
+		case bruxism.MessageTypeUpdate:
 			for i, m := range log {
 				if m.MessageID() == message.MessageID() {
 					log[i] = message
 					break
 				}
 			}
-		case MessageTypeDelete:
+		case bruxism.MessageTypeDelete:
 			for i, m := range log {
 				if m.MessageID() == message.MessageID() {
 					log = append(log[:i], log[i+1:]...)
@@ -197,13 +198,13 @@ func (p *comicPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	}
 }
 
-// NewComicPlugin will create a new top streamers plugin.
-func NewComicPlugin() Plugin {
+// New will create a new top streamers plugin.
+func New() bruxism.Plugin {
 	p := &comicPlugin{
-		SimplePlugin: *NewSimplePlugin("Comic"),
-		log:          make(map[string][]Message),
+		SimplePlugin: *bruxism.NewSimplePlugin("Comic"),
+		log:          make(map[string][]bruxism.Message),
 	}
-	p.message = p.messageFunc
-	p.help = p.helpFunc
+	p.MessageFunc = p.messageFunc
+	p.HelpFunc = p.helpFunc
 	return p
 }

@@ -20,7 +20,7 @@ func NewCommandHelp(args, help string) CommandHelpFunc {
 	}
 }
 
-func matchesCommandString(service Service, commandString string, private bool, message string) bool {
+func MatchesCommandString(service Service, commandString string, private bool, message string) bool {
 	lowerMessage := strings.ToLower(strings.Trim(message, " "))
 	lowerPrefix := strings.ToLower(service.CommandPrefix())
 
@@ -36,15 +36,15 @@ func matchesCommandString(service Service, commandString string, private bool, m
 	return lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ")
 }
 
-func matchesCommand(service Service, commandString string, message Message) bool {
+func MatchesCommand(service Service, commandString string, message Message) bool {
 	// Only new messages can trigger commands.
 	if message.Type() != MessageTypeCreate {
 		return false
 	}
-	return matchesCommandString(service, commandString, service.IsPrivate(message), message.Message())
+	return MatchesCommandString(service, commandString, service.IsPrivate(message), message.Message())
 }
 
-func parseCommandString(service Service, message string) (string, []string) {
+func ParseCommandString(service Service, message string) (string, []string) {
 	message = strings.Trim(message, " ")
 
 	lowerMessage := strings.ToLower(message)
@@ -63,11 +63,11 @@ func parseCommandString(service Service, message string) (string, []string) {
 	return "", []string{}
 }
 
-func parseCommand(service Service, message Message) (string, []string) {
-	return parseCommandString(service, message.Message())
+func ParseCommand(service Service, message Message) (string, []string) {
+	return ParseCommandString(service, message.Message())
 }
 
-func commandHelp(service Service, command, arguments, help string) []string {
+func CommandHelp(service Service, command, arguments, help string) []string {
 	ticks := ""
 	if service.Name() == DiscordServiceName {
 		ticks = "`"
@@ -115,7 +115,7 @@ func (p *CommandPlugin) Help(bot *Bot, service Service, detailed bool) []string 
 	for commandString, command := range p.commands {
 		if command.help != nil {
 			arguments, h := command.help(bot, service)
-			help = append(help, commandHelp(service, commandString, arguments, h)...)
+			help = append(help, CommandHelp(service, commandString, arguments, h)...)
 		}
 	}
 	return help
@@ -127,8 +127,8 @@ func (p *CommandPlugin) Message(bot *Bot, service Service, message Message) {
 	defer messageRecover()
 	if !service.IsMe(message) {
 		for commandString, command := range p.commands {
-			if matchesCommand(service, commandString, message) {
-				args, parts := parseCommand(service, message)
+			if MatchesCommand(service, commandString, message) {
+				args, parts := ParseCommand(service, message)
 				command.message(bot, service, message, args, parts)
 				return
 			}

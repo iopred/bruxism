@@ -33,6 +33,6 @@ func directMessageInviteMessageFunc(bot *Bot, service Service, message Message) 
 // NewDirectMessageInvitePlugin creates a new direct message invite plugin.
 func NewDirectMessageInvitePlugin() Plugin {
 	p := NewSimplePlugin("DirectMessageInvite")
-	p.message = directMessageInviteMessageFunc
+	p.MessageFunc = directMessageInviteMessageFunc
 	return p
 }

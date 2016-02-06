@@ -20,12 +20,12 @@ func (p *topStreamersPlugin) helpFunc(bot *Bot, service Service, detailed bool) 
 	if detailed {
 		return nil
 	}
-	return commandHelp(service, "topstreamers", "", "List the current top streamers on YouTube Gaming.")
+	return CommandHelp(service, "topstreamers", "", "List the current top streamers on YouTube Gaming.")
 }
 
 func (p *topStreamersPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
-		if matchesCommand(service, "topstreamers", message) {
+		if MatchesCommand(service, "topstreamers", message) {
 			n := time.Now()
 			if !n.After(p.lastUpdate.Add(1 * time.Minute)) {
 				if p.lastMessage != "" {
@@ -78,7 +78,7 @@ func NewTopStreamersPlugin(yt *YouTube) Plugin {
 		SimplePlugin: *NewSimplePlugin("TopStreamers"),
 		youTube:      yt,
 	}
-	p.message = p.messageFunc
-	p.help = p.helpFunc
+	p.MessageFunc = p.messageFunc
+	p.HelpFunc = p.helpFunc
 	return p
 }
