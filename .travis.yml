@@ -1,5 +1,7 @@
 language: go
 go: 1.5
 install:
+      - go get github.com/iopred/bruxism/comicplugin
+      - go get github.com/iopred/bruxism/mtgplugin
       - go get github.com/iopred/bruxism
       - go get -v .
