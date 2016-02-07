@@ -3,10 +3,10 @@ package bruxism
 // SimplePlugin is a simple wrapper around a Plugin that can implement handlers by function reference.
 type SimplePlugin struct {
 	name        string
-	LoadFunc    LoadFunc
-	SaveFunc    SaveFunc
-	MessageFunc MessageFunc
-	HelpFunc    HelpFunc
+	LoadFunc    LoadFunc    `json:"-"`
+	SaveFunc    SaveFunc    `json:"-"`
+	MessageFunc MessageFunc `json:"-"`
+	HelpFunc    HelpFunc    `json:"-"`
 }
 
 // Name returns the name of the plugin.
