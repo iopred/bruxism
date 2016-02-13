@@ -2,6 +2,7 @@ package bruxism
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"regexp"
 
@@ -166,6 +167,15 @@ func (d *Discord) SendMessage(channel, message string) error {
 // DeleteMessage deletes a message.
 func (d *Discord) DeleteMessage(channel, messageID string) error {
 	return d.Session.ChannelMessageDelete(channel, messageID)
+}
+
+// SendFile sends a file.
+func (d *Discord) SendFile(channel, name string, r io.Reader) error {
+	if _, err := d.Session.ChannelFileSend(channel, name, r); err != nil {
+		log.Println("Error sending discord message: ", err)
+		return err
+	}
+	return nil
 }
 
 // BanUser bans a user.

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"html"
+	"io"
 	"io/ioutil"
 	"log"
 	"sort"
@@ -396,6 +397,11 @@ func (yt *YouTube) SendMessage(channel, message string) error {
 func (yt *YouTube) DeleteMessage(channel, messageID string) error {
 	yt.DeleteChan <- &youtube.LiveChatMessage{Id: messageID}
 	return nil
+}
+
+// SendFile sends a file.
+func (yt *YouTube) SendFile(channel, name string, r io.Reader) error {
+	return errors.New("Send file not supported.")
 }
 
 // BanUser bans a user.

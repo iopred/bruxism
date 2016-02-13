@@ -2,6 +2,7 @@ package bruxism
 
 import (
 	"errors"
+	"io"
 
 	"github.com/fluffle/goirc/client"
 )
@@ -129,6 +130,11 @@ func (i *IRC) SendMessage(channel, message string) error {
 // DeleteMessage deletes a message.
 func (i *IRC) DeleteMessage(channel, messageID string) error {
 	return errors.New("Deleting messages not supported on IRC.")
+}
+
+// SendFile sends a file.
+func (i *IRC) SendFile(channel, name string, r io.Reader) error {
+	return errors.New("Send file not supported.")
 }
 
 // BanUser bans a user.
