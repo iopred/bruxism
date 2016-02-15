@@ -2,6 +2,8 @@ package bruxism
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 )
 
@@ -33,6 +35,40 @@ func directMessageInviteMessageFunc(bot *Bot, service Service, message Message) 
 // NewDirectMessageInvitePlugin creates a new direct message invite plugin.
 func NewDirectMessageInvitePlugin() Plugin {
 	p := NewSimplePlugin("DirectMessageInvite")
-	p.message = directMessageInviteMessageFunc
+	p.MessageFunc = directMessageInviteMessageFunc
+	return p
+}
+
+func emojiMessageFunc(bot *Bot, service Service, message Message) {
+	if service.Name() == DiscordServiceName && !service.IsMe(message) {
+		if MatchesCommand(service, "emoji", message) {
+			_, parts := ParseCommand(service, message)
+			if len(parts) == 1 {
+				s := strings.TrimSpace(parts[0])
+				for _, r := range s {
+					if f, err := os.Open(fmt.Sprintf("emoji/twitter/%s.png", strconv.FormatInt(int64(r), 16))); err == nil {
+						defer f.Close()
+						service.SendFile(message.Channel(), "emjoi.png", f)
+					}
+					return
+				}
+			}
+
+		}
+	}
+}
+
+func emojiHelpFunc(bot *Bot, service Service, detailed bool) []string {
+	if detailed {
+		return nil
+	}
+	return CommandHelp(service, "emoji", "<emoji>", "Returns a big version of an emoji.")
+}
+
+// NewEmojiPlugin creates a new emoji plugin.
+func NewEmojiPlugin() Plugin {
+	p := NewSimplePlugin("Emoji")
+	p.MessageFunc = emojiMessageFunc
+	p.HelpFunc = emojiHelpFunc
 	return p
 }

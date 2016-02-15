@@ -1,6 +1,9 @@
 package bruxism
 
-import "errors"
+import (
+	"errors"
+	"io"
+)
 
 type MessageType string
 
@@ -34,6 +37,7 @@ type Service interface {
 	IsMe(message Message) bool
 	SendMessage(channel, message string) error
 	DeleteMessage(channel, messageID string) error
+	SendFile(channel, name string, r io.Reader) error
 	BanUser(channel, userID string, duration int) error
 	UnbanUser(channel, userID string) error
 	SetPlaying(game string) error

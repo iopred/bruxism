@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/iopred/bruxism"
+	"github.com/iopred/bruxism/comicplugin"
+	"github.com/iopred/bruxism/mtgplugin"
 )
 
 var youtubeURL bool
@@ -72,27 +74,28 @@ func main() {
 	cp.AddCommand("info", bruxism.StatsCommand, nil)
 	cp.AddCommand("stat", bruxism.StatsCommand, nil)
 	cp.AddCommand("numbertrivia", bruxism.NumberTriviaCommand, bruxism.NewCommandHelp("[<number>]", "Returns trivia for a random number or a specified number if provided."))
-	cp.AddCommand("mtg", bruxism.MTGCommand, bruxism.NewCommandHelp("<cardname>", "Returns information about a Magic: The Gathering card."))
+	cp.AddCommand("mtg", mtgplugin.MTGCommand, bruxism.NewCommandHelp("<cardname>", "Returns information about a Magic: The Gathering card."))
 
 	bot.RegisterPlugin(youtube, cp)
 	bot.RegisterPlugin(youtube, bruxism.NewSlowModePlugin())
 	bot.RegisterPlugin(youtube, bruxism.NewTopStreamersPlugin(youtube))
 	bot.RegisterPlugin(youtube, bruxism.NewStreamerPlugin(youtube))
-	bot.RegisterPlugin(youtube, bruxism.NewComicPlugin())
+	bot.RegisterPlugin(youtube, comicplugin.New())
 	bot.RegisterPlugin(youtube, bruxism.NewReminderPlugin())
 
 	bot.RegisterPlugin(discord, cp)
 	bot.RegisterPlugin(discord, bruxism.NewTopStreamersPlugin(youtube))
 	bot.RegisterPlugin(discord, bruxism.NewStreamerPlugin(youtube))
 	bot.RegisterPlugin(discord, bruxism.NewPlayingPlugin())
-	bot.RegisterPlugin(discord, bruxism.NewComicPlugin())
+	bot.RegisterPlugin(discord, comicplugin.New())
 	bot.RegisterPlugin(discord, bruxism.NewDirectMessageInvitePlugin())
 	bot.RegisterPlugin(discord, bruxism.NewReminderPlugin())
+	bot.RegisterPlugin(discord, bruxism.NewEmojiPlugin())
 
 	bot.RegisterPlugin(synirc, cp)
 	bot.RegisterPlugin(synirc, bruxism.NewTopStreamersPlugin(youtube))
 	bot.RegisterPlugin(synirc, bruxism.NewStreamerPlugin(youtube))
-	bot.RegisterPlugin(synirc, bruxism.NewComicPlugin())
+	bot.RegisterPlugin(synirc, comicplugin.New())
 	bot.RegisterPlugin(synirc, bruxism.NewReminderPlugin())
 
 	c := make(chan os.Signal, 1)

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"html"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -358,8 +359,7 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 	}
 	yt.me = me
 
-	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Mine(true).BroadcastType("persistent").Do())
-	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Mine(true).Do())
+	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Mine(true).BroadcastType("all").Do())
 	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Id(yt.liveVideoIDs).Do())
 
 	if yt.liveChatIDs != "" {
@@ -401,6 +401,11 @@ func (yt *YouTube) SendMessage(channel, message string) error {
 func (yt *YouTube) DeleteMessage(channel, messageID string) error {
 	yt.DeleteChan <- &youtube.LiveChatMessage{Id: messageID}
 	return nil
+}
+
+// SendFile sends a file.
+func (yt *YouTube) SendFile(channel, name string, r io.Reader) error {
+	return errors.New("Send file not supported.")
 }
 
 // BanUser bans a user.

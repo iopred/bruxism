@@ -34,7 +34,7 @@ func (p *slowModePlugin) Help(bot *Bot, service Service, detailed bool) []string
 	if detailed {
 		return nil
 	}
-	return commandHelp(service, "slowmode", "[<on|off>]", "Turn slow mode on or off, or return the current slow mode state.")
+	return CommandHelp(service, "slowmode", "[<on|off>]", "Turn slow mode on or off, or return the current slow mode state.")
 }
 
 // Message handler.
@@ -43,10 +43,10 @@ func (p *slowModePlugin) Message(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
 		messageChannel := message.Channel()
 
-		if matchesCommand(service, "slowmode", message) {
+		if MatchesCommand(service, "slowmode", message) {
 			enabled := p.Enabled[messageChannel]
 
-			_, parts := parseCommand(service, message)
+			_, parts := ParseCommand(service, message)
 
 			if len(parts) == 1 {
 				switch parts[0] {

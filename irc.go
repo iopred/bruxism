@@ -2,6 +2,7 @@ package bruxism
 
 import (
 	"errors"
+	"io"
 
 	"github.com/fluffle/goirc/client"
 )
@@ -100,8 +101,8 @@ func (i *IRC) Name() string {
 
 // Open opens the service and returns a channel which all messages will be sent on.
 func (i *IRC) Open() (<-chan Message, error) {
-	i.Conn = client.SimpleClient(i.nick, "Septapus", "Septapus")
-	i.Conn.Config().Version = "Septapus"
+	i.Conn = client.SimpleClient(i.nick, i.nick, i.nick)
+	i.Conn.Config().Version = i.nick
 	i.Conn.Config().QuitMessage = ""
 
 	i.Conn.HandleFunc("connected", i.onConnect)
@@ -129,6 +130,11 @@ func (i *IRC) SendMessage(channel, message string) error {
 // DeleteMessage deletes a message.
 func (i *IRC) DeleteMessage(channel, messageID string) error {
 	return errors.New("Deleting messages not supported on IRC.")
+}
+
+// SendFile sends a file.
+func (i *IRC) SendFile(channel, name string, r io.Reader) error {
+	return errors.New("Send file not supported.")
 }
 
 // BanUser bans a user.

@@ -2,11 +2,11 @@ package bruxism
 
 // SimplePlugin is a simple wrapper around a Plugin that can implement handlers by function reference.
 type SimplePlugin struct {
-	name    string
-	load    LoadFunc
-	save    SaveFunc
-	message MessageFunc
-	help    HelpFunc
+	name        string
+	LoadFunc    LoadFunc    `json:"-"`
+	SaveFunc    SaveFunc    `json:"-"`
+	MessageFunc MessageFunc `json:"-"`
+	HelpFunc    HelpFunc    `json:"-"`
 }
 
 // Name returns the name of the plugin.
@@ -16,24 +16,24 @@ func (p *SimplePlugin) Name() string {
 
 // Load will load plugin state from a byte array.
 func (p *SimplePlugin) Load(bot *Bot, service Service, data []byte) error {
-	if p.load != nil {
-		return p.load(bot, service, data)
+	if p.LoadFunc != nil {
+		return p.LoadFunc(bot, service, data)
 	}
 	return nil
 }
 
 // Save will save plugin state to a byte array.
 func (p *SimplePlugin) Save() ([]byte, error) {
-	if p.save != nil {
-		return p.save()
+	if p.SaveFunc != nil {
+		return p.SaveFunc()
 	}
 	return nil, nil
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *SimplePlugin) Help(bot *Bot, service Service, detailed bool) []string {
-	if p.help != nil {
-		return p.help(bot, service, detailed)
+	if p.HelpFunc != nil {
+		return p.HelpFunc(bot, service, detailed)
 	}
 	return nil
 }
@@ -41,8 +41,8 @@ func (p *SimplePlugin) Help(bot *Bot, service Service, detailed bool) []string {
 // Message handler.
 func (p *SimplePlugin) Message(bot *Bot, service Service, message Message) {
 	defer messageRecover()
-	if p.message != nil {
-		p.message(bot, service, message)
+	if p.MessageFunc != nil {
+		p.MessageFunc(bot, service, message)
 	}
 }
 

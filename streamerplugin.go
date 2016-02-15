@@ -22,13 +22,13 @@ func (p *streamerPlugin) helpFunc(bot *Bot, service Service, detailed bool) []st
 	if detailed {
 		return nil
 	}
-	return commandHelp(service, "streamer", "<streamername|streamerid>", "Grabs details about a YouTube streamer.")
+	return CommandHelp(service, "streamer", "<streamername|streamerid>", "Grabs details about a YouTube streamer.")
 }
 
 func (p *streamerPlugin) messageFunc(bot *Bot, service Service, message Message) {
 	if !service.IsMe(message) {
-		if matchesCommand(service, "streamer", message) {
-			query, parts := parseCommand(service, message)
+		if MatchesCommand(service, "streamer", message) {
+			query, parts := ParseCommand(service, message)
 
 			if len(parts) == 0 {
 				return
@@ -114,7 +114,7 @@ func NewStreamerPlugin(yt *YouTube) Plugin {
 		youTube:      yt,
 		requests:     make(map[string]*streamerPluginRequest),
 	}
-	p.message = p.messageFunc
-	p.help = p.helpFunc
+	p.MessageFunc = p.messageFunc
+	p.HelpFunc = p.helpFunc
 	return p
 }
