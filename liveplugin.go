@@ -2,8 +2,6 @@ package bruxism
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"strings"
 	"time"
@@ -11,9 +9,12 @@ import (
 
 const livePluginChannelId = ""
 
+type liveChannel struct {
+	live bool
+}
+
 type livePlugin struct {
 	youTube *YouTube
-	Initial bool
 	// Map from UserID -> ChannelID
 	ChannelIDs map[string]string
 	// Map from ChannelID -> Live
@@ -37,62 +38,15 @@ func (p *livePlugin) Load(bot *Bot, service Service, data []byte) error {
 	return nil
 }
 
-type LiveChatStatusListResponse struct {
-	Kind     string `json:"kind"`
-	Etag     string `json:"etag"`
-	PageInfo struct {
-		TotalResults   int `json:"totalResults,omitempty"`
-		ResultsPerPage int `json:"resultsPerPage,omitempty"`
-	} `json:"pageInfo,omitempty"`
-	Items []struct {
-		Kind    string `json:"kind"`
-		Etag    string `json:"etag"`
-		Id      string `json:"id"`
-		Snippet struct {
-			ChannelID string `json:"channelId"`
-		} `json:"snippet"`
-	} `json:"items"`
+func (p *livePlugin) pollChannel(bot *Bot, service Service, id string) {
 }
 
 func (p *livePlugin) poll(bot *Bot, service Service) {
-	channelIDs := make([]string, 0, len(p.ChannelIDs))
-	for channelID := range p.ChannelIDs {
-		channelIDs := append(channelIDs, channelID)
+	for _, channelID := range p.ChannelIDs {
+		go p.pollChannel(bot, service, channelId)
+
+		p.youTube.Service.Videos.List("snippet")
 	}
-	resp, err := p.youTube.Client.Get("https://www.googleapis.com/youtube/v3/liveChat/status?part=id,snippet&channelId=" + strings.Join(channelIDs, ","))
-	if err != nil {
-		return
-	}
-
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-
-	liveChatStatusListResponse := &LiveChatStatusListResponse{}
-	err = json.Unmarshal(body, liveChatStatusListResponse)
-	if err != nil {
-		return
-	}
-
-	NewLive := map[string]bool{}
-
-	for _, i := range liveChatStatusListResponse.Items {
-		NewLive[i.Snippet.ChannelID] = true
-	}
-
-	if !p.Initial {
-		for i := range NewLive {
-			if !p.Live[i] {
-				service.SendMessage(livePluginChannelId, fmt.Sprintf("<@%s> has gone live."))
-			}
-		}
-	}
-
-	p.Live = NewLive
-
-	p.Initial = true
 }
 
 // Run will poll YouTube for channels going live and send messages.

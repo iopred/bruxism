@@ -100,28 +100,28 @@ func (d *Discord) replaceChannelNames(message *discordgo.Message) {
 	})
 }
 
-func (d *Discord) onMessageCreate(s *discordgo.Session, message *discordgo.Message) {
+func (d *Discord) onMessageCreate(s *discordgo.Session, message *discordgo.MessageCreate) {
 	if message.Content == "" {
 		return
 	}
 
-	d.replaceChannelNames(message)
+	d.replaceChannelNames(message.Message)
 
-	d.messageChan <- &DiscordMessage{message, MessageTypeCreate}
+	d.messageChan <- &DiscordMessage{message.Message, MessageTypeCreate}
 }
 
-func (d *Discord) onMessageUpdate(s *discordgo.Session, message *discordgo.Message) {
+func (d *Discord) onMessageUpdate(s *discordgo.Session, message *discordgo.MessageUpdate) {
 	if message.Content == "" {
 		return
 	}
 
-	d.replaceChannelNames(message)
+	d.replaceChannelNames(message.Message)
 
-	d.messageChan <- &DiscordMessage{message, MessageTypeUpdate}
+	d.messageChan <- &DiscordMessage{message.Message, MessageTypeUpdate}
 }
 
-func (d *Discord) onMessageDelete(s *discordgo.Session, message *discordgo.Message) {
-	d.messageChan <- &DiscordMessage{message, MessageTypeDelete}
+func (d *Discord) onMessageDelete(s *discordgo.Session, message *discordgo.MessageDelete) {
+	d.messageChan <- &DiscordMessage{message.Message, MessageTypeDelete}
 }
 
 // Name returns the name of the service.
@@ -138,10 +138,9 @@ func (d *Discord) Open() (<-chan Message, error) {
 		return nil, err
 	}
 	d.Session.State.MaxMessageCount = 50
-	d.Session.OnMessageCreate = d.onMessageCreate
-	d.Session.OnMessageUpdate = d.onMessageUpdate
-	d.Session.OnMessageDelete = d.onMessageDelete
-	d.Session.Open()
+	d.Session.AddHandler(d.onMessageCreate)
+	d.Session.AddHandler(d.onMessageUpdate)
+	d.Session.AddHandler(d.onMessageDelete)
 
 	d.Session.Open()
 
