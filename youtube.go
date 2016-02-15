@@ -6,6 +6,7 @@ import (
 	"html"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"sort"
 	"strings"
 	"sync"
@@ -104,6 +105,7 @@ type YouTube struct {
 	liveChatIDs    string
 	config         *oauth2.Config
 	token          *oauth2.Token
+	Client         *http.Client
 	Service        *youtube.Service
 	messageChan    chan Message
 	InsertChan     chan interface{}
@@ -342,7 +344,9 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 		return nil, err
 	}
 
-	if service, err := youtube.New(yt.config.Client(oauth2.NoContext, yt.token)); err == nil {
+	yt.Client = yt.config.Client(oauth2.NoContext, yt.token)
+
+	if service, err := youtube.New(yt.Client); err == nil {
 		yt.Service = service
 	} else {
 		return nil, err
