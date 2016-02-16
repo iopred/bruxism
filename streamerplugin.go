@@ -104,7 +104,14 @@ func (p *streamerPlugin) streamer(search string, bold bool) (string, error) {
 		b = "**"
 	}
 
-	return fmt.Sprintf("%s%s%s: %s%s videos, %s views.", b, channelList.Items[0].Snippet.Title, b, subscriberCount, humanize.Comma(int64(channelList.Items[0].Statistics.VideoCount)), humanize.Comma(int64(channelList.Items[0].Statistics.ViewCount))), nil
+	liveText := ""
+
+	liveVideos, err := p.youTube.GetLiveVideos(channelList.Items[0].Id)
+	if err == nil && len(liveVideos) > 0 {
+		liveText = fmt.Sprintf(" %sCurrently live: https://gaming.youtube.com/watch?v=%s%s", b, liveVideos[0].Id, b)
+	}
+
+	return fmt.Sprintf("%s%s%s: %s%s videos, %s views.%s", b, channelList.Items[0].Snippet.Title, b, subscriberCount, humanize.Comma(int64(channelList.Items[0].Statistics.VideoCount)), humanize.Comma(int64(channelList.Items[0].Statistics.ViewCount)), liveText), nil
 }
 
 // NewStreamerPlugin will create a new streamer plugin.

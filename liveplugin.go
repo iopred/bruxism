@@ -2,23 +2,26 @@ package bruxism
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 	"time"
 )
 
-const livePluginChannelId = ""
+const livePluginChannelId = "126889593005015040"
 
 type liveChannel struct {
-	live bool
+	UserID    string
+	UserName  string
+	ChannelID string
+	Live      []string
+	Last      time.Time
 }
 
 type livePlugin struct {
 	youTube *YouTube
-	// Map from UserID -> ChannelID
-	ChannelIDs map[string]string
-	// Map from ChannelID -> Live
-	Live map[string]bool
+	// Map from UserID -> liveChannel
+	Live map[string]*liveChannel
 }
 
 // Name returns the name of the plugin.
@@ -38,14 +41,50 @@ func (p *livePlugin) Load(bot *Bot, service Service, data []byte) error {
 	return nil
 }
 
-func (p *livePlugin) pollChannel(bot *Bot, service Service, id string) {
+func (p *livePlugin) pollChannel(bot *Bot, service Service, lc *liveChannel) {
+	liveVideos, err := p.youTube.GetLiveVideos(lc.ChannelID)
+	if err != nil {
+		return
+	}
+
+	live := []string{}
+	for _, v := range liveVideos {
+		live = append(live, v.Id)
+	}
+
+	// If this is the first time getting results, just exit.
+	if lc.Live == nil {
+		lc.Live = live
+		return
+	}
+
+	for _, v := range live {
+		found := false
+		for _, v2 := range lc.Live {
+			if v == v2 {
+				found = true
+				break
+			}
+		}
+		if !found {
+			if lc.Last.Add(30 * time.Minute).Before(time.Now()) {
+				lc.Last = time.Now()
+				if service.Name() == DiscordServiceName {
+					fmt.Println(fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
+					service.SendMessage(livePluginChannelId, fmt.Sprintf("@%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
+				} else {
+					service.SendMessage(livePluginChannelId, fmt.Sprintf("%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserName, v))
+				}
+			}
+		}
+	}
+
+	lc.Live = live
 }
 
 func (p *livePlugin) poll(bot *Bot, service Service) {
-	for _, channelID := range p.ChannelIDs {
-		go p.pollChannel(bot, service, channelId)
-
-		p.youTube.Service.Videos.List("snippet")
+	for _, lc := range p.Live {
+		go p.pollChannel(bot, service, lc)
 	}
 }
 
@@ -53,7 +92,7 @@ func (p *livePlugin) poll(bot *Bot, service Service) {
 func (p *livePlugin) Run(bot *Bot, service Service) {
 	for {
 		p.poll(bot, service)
-		<-time.After(5 * time.Minute)
+		<-time.After(1 * time.Minute)
 	}
 
 }
@@ -70,25 +109,40 @@ func (p *livePlugin) Help(bot *Bot, service Service, detailed bool) []string {
 
 // Message handler.
 func (p *livePlugin) Message(bot *Bot, service Service, message Message) {
-	defer messageRecover()
+	// defer messageRecover()
 	if !service.IsMe(message) && service.IsPrivate(message) {
-		if matchesCommand(service, "setyoutubechannel", message) {
-			query, _ := parseCommand(service, message)
+		if MatchesCommand(service, "setyoutubechannel", message) || MatchesCommand(service, "setchannel", message) {
+			query, _ := ParseCommand(service, message)
 			if len(query) == 24 && strings.Index(query, ",") == -1 {
-				p.ChannelIDs[message.UserID()] = query
-				service.SendMessage(message.Channel(), "Channel ID set.")
+				uid := message.UserID()
+
+				lc, ok := p.Live[uid]
+				if ok {
+					lc.ChannelID = query
+				} else {
+					lc = &liveChannel{
+						UserID:    uid,
+						UserName:  message.UserName(),
+						ChannelID: query,
+						Live:      nil,
+					}
+					p.Live[uid] = lc
+				}
+
+				p.pollChannel(bot, service, lc)
+
+				service.SendMessage(message.Channel(), fmt.Sprintf("YouTube Channel ID set. A message will be posted to %s when you go live.", "https://discord.gg/0huaakl2TuIAkv97"))
 			} else {
-				service.SendMessage(message.Channel(), "Sorry, please provide a YouTube Channel ID. eg: UC392dac34_32fafe2deadbeef")
+				service.SendMessage(message.Channel(), "Sorry, please provide a YouTube Channel ID. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
 			}
 		}
 	}
 }
 
-// NewlivePlugin will create a new slow mode plugin.
-func NewlivePlugin(yt *YouTube) Plugin {
+// NewLivePlugin will create a new slow mode plugin.
+func NewLivePlugin(yt *YouTube) Plugin {
 	return &livePlugin{
-		youTube:    yt,
-		ChannelIDs: map[string]string{},
-		Live:       map[string]bool{},
+		youTube: yt,
+		Live:    map[string]*liveChannel{},
 	}
 }

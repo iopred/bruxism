@@ -91,6 +91,7 @@ func main() {
 	bot.RegisterPlugin(discord, bruxism.NewDirectMessageInvitePlugin())
 	bot.RegisterPlugin(discord, bruxism.NewReminderPlugin())
 	bot.RegisterPlugin(discord, bruxism.NewEmojiPlugin())
+	bot.RegisterPlugin(discord, bruxism.NewLivePlugin(youtube))
 
 	bot.RegisterPlugin(synirc, cp)
 	bot.RegisterPlugin(synirc, bruxism.NewTopStreamersPlugin(youtube))

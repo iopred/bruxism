@@ -588,12 +588,12 @@ func (yt *YouTube) GetVideosByIDList(ids []string) ([]*youtube.Video, error) {
 func (yt *YouTube) GetTopLivestreams(count int) ([]*youtube.Video, error) {
 	ids, err := yt.GetTopLivestreamIDs(count)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	videos, err := yt.GetVideosByIDList(ids)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	videoList := videoList(videos)
@@ -610,4 +610,32 @@ func (yt *YouTube) SupportsMessageHistory() bool {
 // MessageHistory returns the message history for a channel.
 func (yt *YouTube) MessageHistory(channel string) []Message {
 	return nil
+}
+
+// GetLiveVideos gets a list of live videos for a channel
+func (yt *YouTube) GetLiveVideos(channelID string) ([]*youtube.Video, error) {
+	s, err := yt.Service.Search.List("id").ChannelId(channelID).EventType("live").Type("video").Do()
+	if err != nil {
+		return nil, err
+	}
+
+	ids := []string{}
+	for _, sr := range s.Items {
+		ids = append(ids, sr.Id.VideoId)
+	}
+
+	videos, err := yt.GetVideosByIDList(ids)
+	if err != nil {
+		return nil, err
+	}
+
+	liveVideos := []*youtube.Video{}
+
+	for _, v := range videos {
+		if v.LiveStreamingDetails.ActualEndTime == "" {
+			liveVideos = append(liveVideos, v)
+		}
+	}
+
+	return liveVideos, nil
 }
