@@ -75,7 +75,7 @@ func (p *slowModePlugin) Message(bot *Bot, service Service, message Message) {
 					service.SendMessage(messageChannel, "Slow mode is off.")
 				}
 			}
-		} else if p.Enabled[messageChannel] && !message.IsModerator() {
+		} else if p.Enabled[messageChannel] && !service.IsModerator(message) {
 			if err := service.BanUser(messageChannel, message.UserID(), 30); err != nil {
 				log.Println(err)
 			}

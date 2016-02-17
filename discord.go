@@ -62,11 +62,6 @@ func (m *DiscordMessage) MessageID() string {
 	return m.DiscordgoMessage.ID
 }
 
-// IsModerator returns whether or not the sender of this message is a moderator.
-func (m *DiscordMessage) IsModerator() bool {
-	return false
-}
-
 // MessageType returns the type of message.
 func (m *DiscordMessage) Type() MessageType {
 	return m.MessageType
@@ -244,6 +239,19 @@ func (d *Discord) CommandPrefix() string {
 func (d *Discord) IsPrivate(message Message) bool {
 	_, err := d.Session.State.PrivateChannel(message.Channel())
 	return err == nil
+}
+
+// IsModerator returns whether or not the sender of a message is a moderator.
+func (d *Discord) IsModerator(message Message) bool {
+	c, err := d.Session.State.Channel(message.Channel())
+	if err != nil {
+		return false
+	}
+	g, err := d.Session.State.Guild(c.GuildID)
+	if err != nil {
+		return false
+	}
+	return g.OwnerID == message.UserID()
 }
 
 // ChannelCount returns the number of channels the bot is in.

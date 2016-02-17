@@ -22,7 +22,6 @@ type Message interface {
 	Message() string
 	RawMessage() string
 	MessageID() string
-	IsModerator() bool
 	Type() MessageType
 }
 
@@ -45,6 +44,7 @@ type Service interface {
 	Typing(channel string) error
 	PrivateMessage(userID, messageID string) error
 	IsPrivate(message Message) bool
+	IsModerator(message Message) bool
 	SupportsMultiline() bool
 	CommandPrefix() string
 	ChannelCount() int

@@ -50,11 +50,6 @@ func (m *IRCMessage) MessageID() string {
 	return ""
 }
 
-// IsModerator returns whether or not the sender of this message is a moderator.
-func (m *IRCMessage) IsModerator() bool {
-	return false
-}
-
 // MessageType returns the type of message.
 func (m *IRCMessage) Type() MessageType {
 	return MessageTypeCreate
@@ -187,6 +182,11 @@ func (i *IRC) CommandPrefix() string {
 // IsPrivate returns whether or not a message was private.
 func (i *IRC) IsPrivate(message Message) bool {
 	return message.UserName() == message.Channel()
+}
+
+// IsModerator returns whether or not the sender of a message is a moderator.
+func (i *IRC) IsModerator(message Message) bool {
+	return false
 }
 
 // ChannelCount returns the number of channels the bot is in.

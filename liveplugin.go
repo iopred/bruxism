@@ -11,11 +11,12 @@ import (
 const livePluginChannelId = "126889593005015040"
 
 type liveChannel struct {
-	UserID    string
-	UserName  string
-	ChannelID string
-	Live      []string
-	Last      time.Time
+	UserID           string
+	UserName         string
+	ChannelID        string
+	DiscordChannelID string
+	Live             []string
+	Last             time.Time
 }
 
 type livePlugin struct {
@@ -70,10 +71,15 @@ func (p *livePlugin) pollChannel(bot *Bot, service Service, lc *liveChannel) {
 			if lc.Last.Add(30 * time.Minute).Before(time.Now()) {
 				lc.Last = time.Now()
 				if service.Name() == DiscordServiceName {
-					fmt.Println(fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
-					service.SendMessage(livePluginChannelId, fmt.Sprintf("@%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
+					service.SendMessage(livePluginChannelId, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
+					if lc.DiscordChannelID != "" {
+						service.SendMessage(lc.DiscordChannelID, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
+					}
 				} else {
 					service.SendMessage(livePluginChannelId, fmt.Sprintf("%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserName, v))
+					if lc.DiscordChannelID != "" {
+						service.SendMessage(lc.DiscordChannelID, fmt.Sprintf("%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserName, v))
+					}
 				}
 			}
 		}
@@ -109,32 +115,50 @@ func (p *livePlugin) Help(bot *Bot, service Service, detailed bool) []string {
 
 // Message handler.
 func (p *livePlugin) Message(bot *Bot, service Service, message Message) {
-	// defer messageRecover()
-	if !service.IsMe(message) && service.IsPrivate(message) {
-		if MatchesCommand(service, "setyoutubechannel", message) || MatchesCommand(service, "setchannel", message) {
-			query, _ := ParseCommand(service, message)
-			if len(query) == 24 && strings.Index(query, ",") == -1 {
-				uid := message.UserID()
+	defer messageRecover()
+	if !service.IsMe(message) {
+		if service.IsPrivate(message) {
+			if MatchesCommand(service, "setyoutubechannel", message) || MatchesCommand(service, "setchannel", message) {
+				query, _ := ParseCommand(service, message)
+				if len(query) == 24 && strings.Index(query, ",") == -1 {
+					uid := message.UserID()
 
-				lc, ok := p.Live[uid]
-				if ok {
-					lc.ChannelID = query
-				} else {
-					lc = &liveChannel{
-						UserID:    uid,
-						UserName:  message.UserName(),
-						ChannelID: query,
-						Live:      nil,
+					lc, ok := p.Live[uid]
+					if ok {
+						lc.ChannelID = query
+					} else {
+						lc = &liveChannel{
+							UserID:    uid,
+							UserName:  message.UserName(),
+							ChannelID: query,
+							Live:      nil,
+						}
+						p.Live[uid] = lc
 					}
-					p.Live[uid] = lc
+
+					p.pollChannel(bot, service, lc)
+
+					service.SendMessage(message.Channel(), fmt.Sprintf("YouTube Channel ID set. A message will be posted to %s when you go live.", "https://discord.gg/0huaakl2TuIAkv97"))
+				} else {
+					service.SendMessage(message.Channel(), "Sorry, please provide a YouTube Channel ID. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
 				}
-
-				p.pollChannel(bot, service, lc)
-
-				service.SendMessage(message.Channel(), fmt.Sprintf("YouTube Channel ID set. A message will be posted to %s when you go live.", "https://discord.gg/0huaakl2TuIAkv97"))
-			} else {
-				service.SendMessage(message.Channel(), "Sorry, please provide a YouTube Channel ID. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
+			} else if MatchesCommand(service, "setdiscordchannel", message) {
+				for _, lc := range p.Live {
+					if lc.UserID == message.UserID() {
+						query, _ := ParseCommand(service, message)
+						query = strings.TrimSpace(query)
+						if query == livePluginChannelId {
+							service.SendMessage(message.Channel(), "Don't be a copycat.")
+						}
+						lc.DiscordChannelID = query
+						service.SendMessage(message.Channel(), fmt.Sprintf("Discord Channel ID set. A message will be posted to <#%s> when you go live.", query))
+						return
+					}
+				}
+				service.SendMessage(message.Channel(), "You haven't registered a YouTube Channel ID yet. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
 			}
+		} else if MatchesCommand(service, "getdiscordchannel", message) {
+			service.SendMessage(message.Channel(), "This Discord channels ID is: "+message.Channel())
 		}
 	}
 }

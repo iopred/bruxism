@@ -81,11 +81,6 @@ func (m *LiveChatMessage) MessageID() string {
 	return m.Id
 }
 
-// IsModerator returns whether or not the sender of this message is a moderator.
-func (m *LiveChatMessage) IsModerator() bool {
-	return m.AuthorDetails.IsChatOwner || m.AuthorDetails.IsChatModerator
-}
-
 // MessageType returns the type of message.
 func (m *LiveChatMessage) Type() MessageType {
 	return MessageTypeCreate
@@ -518,6 +513,15 @@ func (yt *YouTube) CommandPrefix() string {
 // IsPrivate returns whether or not a message was private.
 func (yt *YouTube) IsPrivate(message Message) bool {
 	return false
+}
+
+// IsModerator returns whether or not the sender of a message is a moderator.
+func (yt *YouTube) IsModerator(message Message) bool {
+	m, ok := message.(*LiveChatMessage)
+	if !ok {
+		return false
+	}
+	return m.AuthorDetails.IsChatOwner || m.AuthorDetails.IsChatModerator
 }
 
 // ChannelCount returns the number of channels the bot is in.
