@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/iopred/bruxism"
-	"github.com/scaleway/scaleway-cli/vendor/github.com/renstrom/fuzzysearch/fuzzy"
+	"github.com/renstrom/fuzzysearch/fuzzy"
 )
 
 type MTGSet struct {
