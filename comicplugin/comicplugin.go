@@ -1,17 +1,22 @@
 package comicplugin
 
 import (
+	"bytes"
 	"fmt"
+	"image/png"
 	"math"
 	"math/rand"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/iopred/bruxism"
 	"github.com/iopred/comicgen"
 )
 
 type comicPlugin struct {
+	sync.Mutex
+
 	bruxism.SimplePlugin
 	log map[string][]bruxism.Message
 }
@@ -74,13 +79,23 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was an error creating the comic. %s", message.UserName(), err))
 	} else {
 		go func() {
+
+			if service.Name() == bruxism.DiscordServiceName {
+
+				b := &bytes.Buffer{}
+				err = png.Encode(b, image)
+				if err != nil {
+					service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your comic.", message.UserName()))
+					return
+				}
+
+				service.SendFile(message.Channel(), "comic.png", b)
+				return
+			}
+
 			url, err := bot.UploadToImgur(image, "comic.png")
 			if err == nil {
-				if service.Name() == bruxism.DiscordServiceName {
-					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic <@%s>: %s", message.UserID(), url))
-				} else {
-					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic %s: %s", message.UserName(), url))
-				}
+				service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic %s: %s", message.UserName(), url))
 			} else {
 				fmt.Println(err)
 				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the comic to imgur.", message.UserName()))
@@ -93,6 +108,9 @@ func (p *comicPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 	if service.IsMe(message) {
 		return
 	}
+
+	p.Lock()
+	defer p.Unlock()
 
 	log, ok := p.log[message.Channel()]
 	if !ok {

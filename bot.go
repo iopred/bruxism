@@ -120,8 +120,6 @@ func (b *Bot) Save() {
 
 // UploadToImgur uploads image data to Imgur and returns the url to it.
 func (b *Bot) UploadToImgur(image image.Image, filename string) (string, error) {
-	log.Println("Beginning upload.")
-
 	if b.ImgurID == "" {
 		return "", errors.New("No Imgur client ID provided.")
 	}

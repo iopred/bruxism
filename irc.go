@@ -101,9 +101,7 @@ func (i *IRC) Open() (<-chan Message, error) {
 	i.Conn.Config().QuitMessage = ""
 
 	i.Conn.HandleFunc("connected", i.onConnect)
-
 	i.Conn.HandleFunc("disconnected", i.onDisconnect)
-
 	i.Conn.HandleFunc(client.PRIVMSG, i.onMessage)
 
 	go i.Conn.ConnectTo(i.host)
