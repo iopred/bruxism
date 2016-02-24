@@ -219,7 +219,7 @@ func (p *comicPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 	}
 }
 
-// New will create a new top streamers plugin.
+// New will create a new comic plugin.
 func New() bruxism.Plugin {
 	p := &comicPlugin{
 		SimplePlugin: *bruxism.NewSimplePlugin("Comic"),
