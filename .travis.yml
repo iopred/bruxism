@@ -2,6 +2,17 @@ language: go
 go: 1.5
 install:
       - go get github.com/iopred/bruxism/comicplugin
+      - go get github.com/iopred/bruxism/directmessageinviteplugin
+      - go get github.com/iopred/bruxism/emojiplugin
+      - go get github.com/iopred/bruxism/inviteplugin
+      - go get github.com/iopred/bruxism/liveplugin
       - go get github.com/iopred/bruxism/mtgplugin
+      - go get github.com/iopred/bruxism/numbertriviaplugin
+      - go get github.com/iopred/bruxism/playingplugin
+      - go get github.com/iopred/bruxism/reminderplugin
+      - go get github.com/iopred/bruxism/slowmodeplugin
+      - go get github.com/iopred/bruxism/statsplugin
+      - go get github.com/iopred/bruxism/streamerplugin
+      - go get github.com/iopred/bruxism/topstreamersplugin
       - go get github.com/iopred/bruxism
       - go get -v .
