@@ -1,4 +1,4 @@
-package bruxism
+package reminderplugin
 
 import (
 	"encoding/json"
@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/iopred/bruxism"
 )
 
 // A Reminder holds data about a specific reminder.
@@ -27,8 +28,8 @@ type Reminder struct {
 // ReminderPlugin is a plugin that reminds users.
 type ReminderPlugin struct {
 	sync.RWMutex
-	SimplePlugin
-	bot       *Bot
+	bruxism.SimplePlugin
+	bot       *bruxism.Bot
 	Reminders []*Reminder
 }
 
@@ -52,18 +53,18 @@ func (p *ReminderPlugin) random(list []string) string {
 	return list[rand.Intn(len(list))]
 }
 
-func (p *ReminderPlugin) randomReminder(service Service) string {
+func (p *ReminderPlugin) randomReminder(service bruxism.Service) string {
 	ticks := ""
-	if service.Name() == DiscordServiceName {
+	if service.Name() == bruxism.DiscordServiceName {
 		ticks = "`"
 	}
 
 	return fmt.Sprintf("%s%sreminder %s | %s%s", ticks, service.CommandPrefix(), p.random(randomTimes), p.random(randomMessages), ticks)
 }
 
-func (p *ReminderPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
+func (p *ReminderPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, detailed bool) []string {
 	help := []string{
-		CommandHelp(service, "reminder", "<time> | <reminder>", "Sets a reminder that is sent after the provided time.")[0],
+		bruxism.CommandHelp(service, "reminder", "<time> | <reminder>", "Sets a reminder that is sent after the provided time.")[0],
 	}
 	if detailed {
 		help = append(help, []string{
@@ -152,10 +153,10 @@ func (p *ReminderPlugin) AddReminder(reminder *Reminder) error {
 	return nil
 }
 
-func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message) {
+func (p *ReminderPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if !service.IsMe(message) {
-		if MatchesCommand(service, "reminder", message) {
-			query, parts := ParseCommand(service, message)
+		if bruxism.MatchesCommand(service, "reminder", message) {
+			query, parts := bruxism.ParseCommand(service, message)
 
 			if len(parts) == 0 {
 				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder, no time or message. eg: %s", p.randomReminder(service)))
@@ -178,7 +179,7 @@ func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message)
 			}
 
 			requester := message.UserName()
-			if service.Name() == DiscordServiceName {
+			if service.Name() == bruxism.DiscordServiceName {
 				requester = fmt.Sprintf("<@%s>", message.UserID())
 			}
 
@@ -203,7 +204,7 @@ func (p *ReminderPlugin) messageFunc(bot *Bot, service Service, message Message)
 }
 
 // SendReminder sends a reminder.
-func (p *ReminderPlugin) SendReminder(service Service, reminder *Reminder) {
+func (p *ReminderPlugin) SendReminder(service bruxism.Service, reminder *Reminder) {
 	if reminder.IsPrivate {
 		service.SendMessage(reminder.Target, fmt.Sprintf("%s you set a reminder: %s", humanize.Time(reminder.StartTime), reminder.Message))
 	} else {
@@ -212,7 +213,7 @@ func (p *ReminderPlugin) SendReminder(service Service, reminder *Reminder) {
 }
 
 // Run will block until a reminder needs to be fired and then fire it.
-func (p *ReminderPlugin) Run(bot *Bot, service Service) {
+func (p *ReminderPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 	for {
 		p.RLock()
 
@@ -232,7 +233,7 @@ func (p *ReminderPlugin) Run(bot *Bot, service Service) {
 }
 
 // Load will load plugin state from a byte array.
-func (p *ReminderPlugin) Load(bot *Bot, service Service, data []byte) error {
+func (p *ReminderPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byte) error {
 	if data != nil {
 		if err := json.Unmarshal(data, p); err != nil {
 			log.Println("Error loading data", err)
@@ -248,9 +249,9 @@ func (p *ReminderPlugin) Save() ([]byte, error) {
 }
 
 // NewReminderPlugin will create a new Reminder plugin.
-func NewReminderPlugin() Plugin {
+func NewReminderPlugin() bruxism.Plugin {
 	p := &ReminderPlugin{
-		SimplePlugin: *NewSimplePlugin("Reminder"),
+		SimplePlugin: *bruxism.NewSimplePlugin("Reminder"),
 		Reminders:    []*Reminder{},
 	}
 	p.MessageFunc = p.messageFunc

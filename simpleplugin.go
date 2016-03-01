@@ -40,7 +40,7 @@ func (p *SimplePlugin) Help(bot *Bot, service Service, detailed bool) []string {
 
 // Message handler.
 func (p *SimplePlugin) Message(bot *Bot, service Service, message Message) {
-	defer messageRecover()
+	defer MessageRecover()
 	if p.MessageFunc != nil {
 		p.MessageFunc(bot, service, message)
 	}

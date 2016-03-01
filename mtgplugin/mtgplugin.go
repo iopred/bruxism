@@ -96,3 +96,5 @@ func MTGCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Messa
 		service.SendMessage(message.Channel(), strings.Replace(fmt.Sprintf("%s. %s. %s. %s%s", card.Name, card.Type, card.ManaCost, card.Text, rest), "\n", " ", -1))
 	}
 }
+
+var MTGHelp = bruxism.NewCommandHelp("<cardname>", "Returns information about a Magic: The Gathering card.")

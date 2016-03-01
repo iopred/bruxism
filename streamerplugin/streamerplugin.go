@@ -1,10 +1,11 @@
-package bruxism
+package streamerplugin
 
 import (
 	"fmt"
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/iopred/bruxism"
 )
 
 type streamerPluginRequest struct {
@@ -13,22 +14,22 @@ type streamerPluginRequest struct {
 }
 
 type streamerPlugin struct {
-	SimplePlugin
-	youTube  *YouTube
+	bruxism.SimplePlugin
+	youTube  *bruxism.YouTube
 	requests map[string]*streamerPluginRequest
 }
 
-func (p *streamerPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
+func (p *streamerPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, detailed bool) []string {
 	if detailed {
 		return nil
 	}
-	return CommandHelp(service, "streamer", "<streamername|streamerid>", "Grabs details about a YouTube streamer.")
+	return bruxism.CommandHelp(service, "streamer", "<streamername|streamerid>", "Grabs details about a YouTube streamer.")
 }
 
-func (p *streamerPlugin) messageFunc(bot *Bot, service Service, message Message) {
+func (p *streamerPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if !service.IsMe(message) {
-		if MatchesCommand(service, "streamer", message) {
-			query, parts := ParseCommand(service, message)
+		if bruxism.MatchesCommand(service, "streamer", message) {
+			query, parts := bruxism.ParseCommand(service, message)
 
 			if len(parts) == 0 {
 				return
@@ -52,7 +53,7 @@ func (p *streamerPlugin) messageFunc(bot *Bot, service Service, message Message)
 
 			r.lastUpdate = n
 
-			m, err := p.streamer(query, service.Name() == DiscordServiceName)
+			m, err := p.streamer(query, service.Name() == bruxism.DiscordServiceName)
 			if err != nil {
 				service.SendMessage(message.Channel(), "There was an error while requesting the streamer, please try again later.")
 				return
@@ -115,9 +116,9 @@ func (p *streamerPlugin) streamer(search string, bold bool) (string, error) {
 }
 
 // NewStreamerPlugin will create a new streamer plugin.
-func NewStreamerPlugin(yt *YouTube) Plugin {
+func NewStreamerPlugin(yt *bruxism.YouTube) bruxism.Plugin {
 	p := &streamerPlugin{
-		SimplePlugin: *NewSimplePlugin("Streamer"),
+		SimplePlugin: *bruxism.NewSimplePlugin("Streamer"),
 		youTube:      yt,
 		requests:     make(map[string]*streamerPluginRequest),
 	}

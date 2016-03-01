@@ -9,7 +9,18 @@ import (
 
 	"github.com/iopred/bruxism"
 	"github.com/iopred/bruxism/comicplugin"
+	"github.com/iopred/bruxism/directmessageinviteplugin"
+	"github.com/iopred/bruxism/emojiplugin"
+	"github.com/iopred/bruxism/inviteplugin"
+	"github.com/iopred/bruxism/liveplugin"
 	"github.com/iopred/bruxism/mtgplugin"
+	"github.com/iopred/bruxism/numbertriviaplugin"
+	"github.com/iopred/bruxism/playingplugin"
+	"github.com/iopred/bruxism/reminderplugin"
+	"github.com/iopred/bruxism/slowmodeplugin"
+	"github.com/iopred/bruxism/statsplugin"
+	"github.com/iopred/bruxism/streamerplugin"
+	"github.com/iopred/bruxism/topstreamersplugin"
 )
 
 var youtubeURL bool
@@ -68,36 +79,36 @@ func main() {
 	cp.AddCommand("help", bruxism.HelpCommand, bruxism.HelpHelp)
 	cp.AddCommand("command", bruxism.HelpCommand, nil)
 	cp.AddCommand("commands", bruxism.HelpCommand, nil)
-	cp.AddCommand("invite", bruxism.InviteCommand, bruxism.InviteHelp)
-	cp.AddCommand("join", bruxism.InviteCommand, nil)
-	cp.AddCommand("stats", bruxism.StatsCommand, bruxism.NewCommandHelp("", "Lists bot statistics."))
-	cp.AddCommand("info", bruxism.StatsCommand, nil)
-	cp.AddCommand("stat", bruxism.StatsCommand, nil)
-	cp.AddCommand("numbertrivia", bruxism.NumberTriviaCommand, bruxism.NewCommandHelp("[<number>]", "Returns trivia for a random number or a specified number if provided."))
-	cp.AddCommand("mtg", mtgplugin.MTGCommand, bruxism.NewCommandHelp("<cardname>", "Returns information about a Magic: The Gathering card."))
+	cp.AddCommand("invite", inviteplugin.InviteCommand, inviteplugin.InviteHelp)
+	cp.AddCommand("join", inviteplugin.InviteCommand, nil)
+	cp.AddCommand("stats", statsplugin.StatsCommand, statsplugin.StatsHelp)
+	cp.AddCommand("info", statsplugin.StatsCommand, nil)
+	cp.AddCommand("stat", statsplugin.StatsCommand, nil)
+	cp.AddCommand("numbertrivia", numbertriviaplugin.NumberTriviaCommand, numbertriviaplugin.NumberTriviaHelp)
+	cp.AddCommand("mtg", mtgplugin.MTGCommand, mtgplugin.MTGHelp)
 
 	bot.RegisterPlugin(youtube, cp)
-	bot.RegisterPlugin(youtube, bruxism.NewSlowModePlugin())
-	bot.RegisterPlugin(youtube, bruxism.NewTopStreamersPlugin(youtube))
-	bot.RegisterPlugin(youtube, bruxism.NewStreamerPlugin(youtube))
+	bot.RegisterPlugin(youtube, slowmodeplugin.NewSlowModePlugin())
+	bot.RegisterPlugin(youtube, topstreamersplugin.NewTopStreamersPlugin(youtube))
+	bot.RegisterPlugin(youtube, streamerplugin.NewStreamerPlugin(youtube))
 	bot.RegisterPlugin(youtube, comicplugin.New())
-	bot.RegisterPlugin(youtube, bruxism.NewReminderPlugin())
+	bot.RegisterPlugin(youtube, reminderplugin.NewReminderPlugin())
 
 	bot.RegisterPlugin(discord, cp)
-	bot.RegisterPlugin(discord, bruxism.NewTopStreamersPlugin(youtube))
-	bot.RegisterPlugin(discord, bruxism.NewStreamerPlugin(youtube))
-	bot.RegisterPlugin(discord, bruxism.NewPlayingPlugin())
+	bot.RegisterPlugin(discord, topstreamersplugin.NewTopStreamersPlugin(youtube))
+	bot.RegisterPlugin(discord, streamerplugin.NewStreamerPlugin(youtube))
+	bot.RegisterPlugin(discord, playingplugin.NewPlayingPlugin())
 	bot.RegisterPlugin(discord, comicplugin.New())
-	bot.RegisterPlugin(discord, bruxism.NewDirectMessageInvitePlugin())
-	bot.RegisterPlugin(discord, bruxism.NewReminderPlugin())
-	bot.RegisterPlugin(discord, bruxism.NewEmojiPlugin())
-	bot.RegisterPlugin(discord, bruxism.NewLivePlugin(youtube))
+	bot.RegisterPlugin(discord, directmessageinviteplugin.NewDirectMessageInvitePlugin())
+	bot.RegisterPlugin(discord, reminderplugin.NewReminderPlugin())
+	bot.RegisterPlugin(discord, emojiplugin.NewEmojiPlugin())
+	bot.RegisterPlugin(discord, liveplugin.NewLivePlugin(youtube))
 
 	bot.RegisterPlugin(synirc, cp)
-	bot.RegisterPlugin(synirc, bruxism.NewTopStreamersPlugin(youtube))
-	bot.RegisterPlugin(synirc, bruxism.NewStreamerPlugin(youtube))
+	bot.RegisterPlugin(synirc, topstreamersplugin.NewTopStreamersPlugin(youtube))
+	bot.RegisterPlugin(synirc, streamerplugin.NewStreamerPlugin(youtube))
 	bot.RegisterPlugin(synirc, comicplugin.New())
-	bot.RegisterPlugin(synirc, bruxism.NewReminderPlugin())
+	bot.RegisterPlugin(synirc, reminderplugin.NewReminderPlugin())
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill)

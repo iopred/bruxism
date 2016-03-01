@@ -79,19 +79,6 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was an error creating the comic. %s", message.UserName(), err))
 	} else {
 		go func() {
-			// Enable this when we detect that file uploads are OK on the channel.
-			if service.Name() == bruxism.DiscordServiceName && false {
-				b := &bytes.Buffer{}
-				err = png.Encode(b, image)
-				if err != nil {
-					service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your comic.", message.UserName()))
-					return
-				}
-
-				service.SendFile(message.Channel(), "comic.png", b)
-				return
-			}
-
 			url, err := bot.UploadToImgur(image, "comic.png")
 			if err == nil {
 				if service.Name() == bruxism.DiscordServiceName {
@@ -100,6 +87,19 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic %s: %s", message.UserName(), url))
 				}
 			} else {
+				// If imgur failed and we're on Discord, try file send instead!
+				if service.Name() == bruxism.DiscordServiceName {
+					b := &bytes.Buffer{}
+					err = png.Encode(b, image)
+					if err != nil {
+						service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your comic.", message.UserName()))
+						return
+					}
+
+					service.SendFile(message.Channel(), "comic.png", b)
+					return
+				}
+
 				fmt.Println(err)
 				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the comic to imgur.", message.UserName()))
 			}

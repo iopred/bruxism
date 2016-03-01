@@ -31,7 +31,7 @@ type Bot struct {
 	MashableKey string
 }
 
-func messageRecover() {
+func MessageRecover() {
 	if r := recover(); r != nil {
 		log.Println("Recovered:", string(debug.Stack()))
 	}

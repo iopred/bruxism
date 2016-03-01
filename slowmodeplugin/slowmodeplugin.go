@@ -1,8 +1,10 @@
-package bruxism
+package slowmodeplugin
 
 import (
 	"encoding/json"
 	"log"
+
+	"github.com/iopred/bruxism"
 )
 
 type slowModePlugin struct {
@@ -15,7 +17,7 @@ func (p *slowModePlugin) Name() string {
 }
 
 // Load will load plugin state from a byte array.
-func (p *slowModePlugin) Load(bot *Bot, service Service, data []byte) error {
+func (p *slowModePlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byte) error {
 	if data != nil {
 		if err := json.Unmarshal(data, p); err != nil {
 			log.Println("Error loading data", err)
@@ -30,23 +32,23 @@ func (p *slowModePlugin) Save() ([]byte, error) {
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
-func (p *slowModePlugin) Help(bot *Bot, service Service, detailed bool) []string {
+func (p *slowModePlugin) Help(bot *bruxism.Bot, service bruxism.Service, detailed bool) []string {
 	if detailed {
 		return nil
 	}
-	return CommandHelp(service, "slowmode", "[<on|off>]", "Turn slow mode on or off, or return the current slow mode state.")
+	return bruxism.CommandHelp(service, "slowmode", "[<on|off>]", "Turn slow mode on or off, or return the current slow mode state.")
 }
 
 // Message handler.
-func (p *slowModePlugin) Message(bot *Bot, service Service, message Message) {
-	defer messageRecover()
+func (p *slowModePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
+	defer bruxism.MessageRecover()
 	if !service.IsMe(message) {
 		messageChannel := message.Channel()
 
-		if MatchesCommand(service, "slowmode", message) {
+		if bruxism.MatchesCommand(service, "slowmode", message) {
 			enabled := p.Enabled[messageChannel]
 
-			_, parts := ParseCommand(service, message)
+			_, parts := bruxism.ParseCommand(service, message)
 
 			if len(parts) == 1 {
 				switch parts[0] {
@@ -84,7 +86,7 @@ func (p *slowModePlugin) Message(bot *Bot, service Service, message Message) {
 }
 
 // NewSlowModePlugin will create a new slow mode plugin.
-func NewSlowModePlugin() Plugin {
+func NewSlowModePlugin() bruxism.Plugin {
 	return &slowModePlugin{
 		Enabled: make(map[string]bool),
 	}

@@ -1,4 +1,4 @@
-package bruxism
+package liveplugin
 
 import (
 	"encoding/json"
@@ -6,6 +6,8 @@ import (
 	"log"
 	"strings"
 	"time"
+
+	"github.com/iopred/bruxism"
 )
 
 const livePluginChannelId = "126889593005015040"
@@ -20,7 +22,7 @@ type liveChannel struct {
 }
 
 type livePlugin struct {
-	youTube *YouTube
+	youTube *bruxism.YouTube
 	// Map from UserID -> liveChannel
 	Live map[string]*liveChannel
 }
@@ -31,7 +33,7 @@ func (p *livePlugin) Name() string {
 }
 
 // Load will load plugin state from a byte array.
-func (p *livePlugin) Load(bot *Bot, service Service, data []byte) error {
+func (p *livePlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byte) error {
 	if data != nil {
 		if err := json.Unmarshal(data, p); err != nil {
 			log.Println("Error loading data", err)
@@ -42,7 +44,7 @@ func (p *livePlugin) Load(bot *Bot, service Service, data []byte) error {
 	return nil
 }
 
-func (p *livePlugin) pollChannel(bot *Bot, service Service, lc *liveChannel) {
+func (p *livePlugin) pollChannel(bot *bruxism.Bot, service bruxism.Service, lc *liveChannel) {
 	liveVideos, err := p.youTube.GetLiveVideos(lc.ChannelID)
 	if err != nil {
 		return
@@ -70,7 +72,7 @@ func (p *livePlugin) pollChannel(bot *Bot, service Service, lc *liveChannel) {
 		if !found {
 			if lc.Last.Add(30 * time.Minute).Before(time.Now()) {
 				lc.Last = time.Now()
-				if service.Name() == DiscordServiceName {
+				if service.Name() == bruxism.DiscordServiceName {
 					service.SendMessage(livePluginChannelId, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
 					if lc.DiscordChannelID != "" {
 						service.SendMessage(lc.DiscordChannelID, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
@@ -88,14 +90,14 @@ func (p *livePlugin) pollChannel(bot *Bot, service Service, lc *liveChannel) {
 	lc.Live = live
 }
 
-func (p *livePlugin) poll(bot *Bot, service Service) {
+func (p *livePlugin) poll(bot *bruxism.Bot, service bruxism.Service) {
 	for _, lc := range p.Live {
 		go p.pollChannel(bot, service, lc)
 	}
 }
 
 // Run will poll YouTube for channels going live and send messages.
-func (p *livePlugin) Run(bot *Bot, service Service) {
+func (p *livePlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 	for {
 		p.poll(bot, service)
 		<-time.After(1 * time.Minute)
@@ -109,17 +111,17 @@ func (p *livePlugin) Save() ([]byte, error) {
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
-func (p *livePlugin) Help(bot *Bot, service Service, detailed bool) []string {
+func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, detailed bool) []string {
 	return nil
 }
 
 // Message handler.
-func (p *livePlugin) Message(bot *Bot, service Service, message Message) {
-	defer messageRecover()
+func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
+	defer bruxism.MessageRecover()
 	if !service.IsMe(message) {
 		if service.IsPrivate(message) {
-			if MatchesCommand(service, "setyoutubechannel", message) || MatchesCommand(service, "setchannel", message) {
-				query, _ := ParseCommand(service, message)
+			if bruxism.MatchesCommand(service, "setyoutubechannel", message) || bruxism.MatchesCommand(service, "setchannel", message) {
+				query, _ := bruxism.ParseCommand(service, message)
 				if len(query) == 24 && strings.Index(query, ",") == -1 {
 					uid := message.UserID()
 
@@ -142,10 +144,10 @@ func (p *livePlugin) Message(bot *Bot, service Service, message Message) {
 				} else {
 					service.SendMessage(message.Channel(), "Sorry, please provide a YouTube Channel ID. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
 				}
-			} else if MatchesCommand(service, "setdiscordchannel", message) {
+			} else if bruxism.MatchesCommand(service, "setdiscordchannel", message) {
 				for _, lc := range p.Live {
 					if lc.UserID == message.UserID() {
-						query, _ := ParseCommand(service, message)
+						query, _ := bruxism.ParseCommand(service, message)
 						query = strings.TrimSpace(query)
 						if query == livePluginChannelId {
 							service.SendMessage(message.Channel(), "Don't be a copycat.")
@@ -157,14 +159,14 @@ func (p *livePlugin) Message(bot *Bot, service Service, message Message) {
 				}
 				service.SendMessage(message.Channel(), "You haven't registered a YouTube Channel ID yet. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
 			}
-		} else if MatchesCommand(service, "getdiscordchannel", message) {
+		} else if bruxism.MatchesCommand(service, "getdiscordchannel", message) {
 			service.SendMessage(message.Channel(), "This Discord channels ID is: "+message.Channel())
 		}
 	}
 }
 
 // NewLivePlugin will create a new slow mode plugin.
-func NewLivePlugin(yt *YouTube) Plugin {
+func NewLivePlugin(yt *bruxism.YouTube) bruxism.Plugin {
 	return &livePlugin{
 		youTube: yt,
 		Live:    map[string]*liveChannel{},

@@ -1,4 +1,4 @@
-package bruxism
+package topstreamersplugin
 
 import (
 	"errors"
@@ -7,25 +7,26 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/iopred/bruxism"
 )
 
 type topStreamersPlugin struct {
-	SimplePlugin
-	youTube     *YouTube
+	bruxism.SimplePlugin
+	youTube     *bruxism.YouTube
 	lastUpdate  time.Time
 	lastMessage string
 }
 
-func (p *topStreamersPlugin) helpFunc(bot *Bot, service Service, detailed bool) []string {
+func (p *topStreamersPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, detailed bool) []string {
 	if detailed {
 		return nil
 	}
-	return CommandHelp(service, "topstreamers", "", "List the current top streamers on YouTube Gaming.")
+	return bruxism.CommandHelp(service, "topstreamers", "", "List the current top streamers on YouTube Gaming.")
 }
 
-func (p *topStreamersPlugin) messageFunc(bot *Bot, service Service, message Message) {
+func (p *topStreamersPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if !service.IsMe(message) {
-		if MatchesCommand(service, "topstreamers", message) {
+		if bruxism.MatchesCommand(service, "topstreamers", message) {
 			n := time.Now()
 			if !n.After(p.lastUpdate.Add(1 * time.Minute)) {
 				if p.lastMessage != "" {
@@ -73,9 +74,9 @@ func (p *topStreamersPlugin) topStreamers(count int) (string, error) {
 }
 
 // NewTopStreamersPlugin will create a new top streamers plugin.
-func NewTopStreamersPlugin(yt *YouTube) Plugin {
+func NewTopStreamersPlugin(yt *bruxism.YouTube) bruxism.Plugin {
 	p := &topStreamersPlugin{
-		SimplePlugin: *NewSimplePlugin("TopStreamers"),
+		SimplePlugin: *bruxism.NewSimplePlugin("TopStreamers"),
 		youTube:      yt,
 	}
 	p.MessageFunc = p.messageFunc
