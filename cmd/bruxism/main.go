@@ -73,7 +73,6 @@ func main() {
 	bot.RegisterService(youtube)
 	bot.RegisterService(discord)
 	bot.RegisterService(synirc)
-	bot.Open()
 
 	cp := bruxism.NewCommandPlugin()
 	cp.AddCommand("help", bruxism.HelpCommand, bruxism.HelpHelp)
@@ -109,6 +108,8 @@ func main() {
 	bot.RegisterPlugin(synirc, streamerplugin.NewStreamerPlugin(youtube))
 	bot.RegisterPlugin(synirc, comicplugin.New())
 	bot.RegisterPlugin(synirc, reminderplugin.NewReminderPlugin())
+
+	bot.Open()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill)

@@ -70,7 +70,6 @@ func (b *Bot) RegisterPlugin(service Service, plugin Plugin) {
 		log.Println("Plugin with that name already registered", plugin.Name())
 	}
 	s.Plugins[plugin.Name()] = plugin
-	plugin.Load(b, service, b.getData(service, plugin))
 }
 
 func (b *Bot) listen(service Service, messageChan <-chan Message) {
@@ -89,7 +88,9 @@ func (b *Bot) listen(service Service, messageChan <-chan Message) {
 func (b *Bot) Open() {
 	for _, service := range b.Services {
 		if messageChan, err := service.Open(); err == nil {
-			log.Println("Started service", service.Name())
+			for _, plugin := range service.Plugins {
+				plugin.Load(b, service, b.getData(service, plugin))
+			}
 			go b.listen(service, messageChan)
 		} else {
 			log.Printf("Error creating service %v: %v\n", service.Name(), err)
