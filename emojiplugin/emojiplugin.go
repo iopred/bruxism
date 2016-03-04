@@ -18,7 +18,7 @@ func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism
 				for _, r := range s {
 					if f, err := os.Open(fmt.Sprintf("emoji/twitter/%s.png", strconv.FormatInt(int64(r), 16))); err == nil {
 						defer f.Close()
-						service.SendFile(message.Channel(), "emjoi.png", f)
+						service.SendFile(message.Channel(), "emoji.png", f)
 					}
 					return
 				}
