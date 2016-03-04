@@ -68,7 +68,7 @@ func main() {
 	} else {
 		discord = bruxism.NewDiscord(discordEmail, discordPassword)
 	}
-	synirc := bruxism.NewIRC("irc.synirc.net", "Septapus", []string{"#septapus"})
+	synirc := bruxism.NewIRC("irc.synirc.net", "Septapus", "", []string{"#septapus"})
 
 	bot.RegisterService(youtube)
 	bot.RegisterService(discord)

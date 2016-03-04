@@ -59,16 +59,18 @@ func (m *IRCMessage) Type() MessageType {
 type IRC struct {
 	host        string
 	nick        string
+	password    string
 	channels    []string
 	Conn        *client.Conn
 	messageChan chan Message
 }
 
 // NewIRC creates a new IRC service.
-func NewIRC(host, nick string, channels []string) *IRC {
+func NewIRC(host, nick, password string, channels []string) *IRC {
 	return &IRC{
 		host:        host,
 		nick:        nick,
+		password:    password,
 		channels:    channels,
 		messageChan: make(chan Message, 200),
 	}
@@ -104,7 +106,7 @@ func (i *IRC) Open() (<-chan Message, error) {
 	i.Conn.HandleFunc("disconnected", i.onDisconnect)
 	i.Conn.HandleFunc(client.PRIVMSG, i.onMessage)
 
-	go i.Conn.ConnectTo(i.host)
+	go i.Conn.ConnectTo(i.host, i.password)
 
 	return i.messageChan, nil
 }
