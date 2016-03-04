@@ -3,11 +3,29 @@ package emojiplugin
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/iopred/bruxism"
 )
+
+func emojiFile(s string) string {
+	found := ""
+	filename := ""
+	for _, r := range s {
+		if filename != "" {
+			filename = fmt.Sprintf("%s-%x", filename, r)
+		} else {
+			filename = fmt.Sprintf("%x", r)
+		}
+
+		if _, err := os.Stat(fmt.Sprintf("emoji/twitter/%s.png", filename)); err == nil {
+			found = filename
+		} else if found != "" {
+			return found
+		}
+	}
+	return found
+}
 
 func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if service.Name() == bruxism.DiscordServiceName && !service.IsMe(message) {
@@ -15,15 +33,18 @@ func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism
 			_, parts := bruxism.ParseCommand(service, message)
 			if len(parts) == 1 {
 				s := strings.TrimSpace(parts[0])
-				for _, r := range s {
-					if f, err := os.Open(fmt.Sprintf("emoji/twitter/%s.png", strconv.FormatInt(int64(r), 16))); err == nil {
-						defer f.Close()
-						service.SendFile(message.Channel(), "emjoi.png", f)
+				for i, _ := range s {
+					filename := emojiFile(s[i:])
+					if filename != "" {
+						if f, err := os.Open(fmt.Sprintf("emoji/twitter/%s.png", filename)); err == nil {
+							defer f.Close()
+							service.SendFile(message.Channel(), "emoji.png", f)
+
+							return
+						}
 					}
-					return
 				}
 			}
-
 		}
 	}
 }
