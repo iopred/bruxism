@@ -101,7 +101,7 @@ func main() {
 	bot.RegisterPlugin(discord, directmessageinviteplugin.NewDirectMessageInvitePlugin())
 	bot.RegisterPlugin(discord, reminderplugin.NewReminderPlugin())
 	bot.RegisterPlugin(discord, emojiplugin.NewEmojiPlugin())
-	bot.RegisterPlugin(discord, liveplugin.NewLivePlugin(youtube))
+	bot.RegisterPlugin(discord, liveplugin.NewLivePlugin(discord, youtube))
 
 	bot.RegisterPlugin(synirc, cp)
 	bot.RegisterPlugin(synirc, topstreamersplugin.NewTopStreamersPlugin(youtube))

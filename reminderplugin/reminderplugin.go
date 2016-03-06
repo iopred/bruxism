@@ -103,19 +103,19 @@ func (p *ReminderPlugin) parseTime(str string) (time.Time, error) {
 		}
 
 		switch {
-		case strings.HasPrefix(split[1], "second"):
+		case strings.HasPrefix(split[1], "s"):
 			return time.Now().Add(time.Duration(i) * time.Second), nil
-		case strings.HasPrefix(split[1], "minute"):
+		case strings.HasPrefix(split[1], "min"):
 			return time.Now().Add(time.Duration(i) * time.Minute), nil
-		case strings.HasPrefix(split[1], "hour"):
+		case strings.HasPrefix(split[1], "h"):
 			return time.Now().Add(time.Duration(i) * time.Hour), nil
-		case strings.HasPrefix(split[1], "day"):
+		case strings.HasPrefix(split[1], "d"):
 			return time.Now().Add(time.Duration(i) * time.Hour * 24), nil
-		case strings.HasPrefix(split[1], "week"):
+		case strings.HasPrefix(split[1], "w"):
 			return time.Now().Add(time.Duration(i) * time.Hour * 24 * 7), nil
-		case strings.HasPrefix(split[1], "month"):
+		case strings.HasPrefix(split[1], "mon"):
 			return time.Now().Add(time.Duration(i) * time.Hour * 24 * 7 * 4), nil
-		case strings.HasPrefix(split[1], "year"):
+		case strings.HasPrefix(split[1], "y"):
 			return time.Now().Add(time.Duration(i) * time.Hour * 24 * 365), nil
 		}
 
