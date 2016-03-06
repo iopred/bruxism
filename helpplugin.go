@@ -8,7 +8,7 @@ import (
 )
 
 // HelpHelp returns help for the help plugin.
-func HelpHelp(bot *Bot, service Service) (string, string) {
+func HelpHelp(bot *Bot, service Service, message Message) (string, string) {
 	ticks := ""
 	if service.Name() == DiscordServiceName {
 		ticks = "`"
@@ -17,7 +17,7 @@ func HelpHelp(bot *Bot, service Service) (string, string) {
 	commands := []string{}
 
 	for _, plugin := range bot.Services[service.Name()].Plugins {
-		t := plugin.Help(bot, service, true)
+		t := plugin.Help(bot, service, message, true)
 
 		if t != nil && len(t) > 0 {
 			commands = append(commands, strings.ToLower(plugin.Name()))
@@ -36,9 +36,9 @@ func HelpCommand(bot *Bot, service Service, message Message, command string, par
 	for _, plugin := range bot.Services[service.Name()].Plugins {
 		var h []string
 		if len(parts) == 0 {
-			h = plugin.Help(bot, service, false)
+			h = plugin.Help(bot, service, message, false)
 		} else if len(parts) == 1 && strings.ToLower(parts[0]) == strings.ToLower(plugin.Name()) {
-			h = plugin.Help(bot, service, true)
+			h = plugin.Help(bot, service, message, true)
 		}
 		if h != nil && len(h) > 0 {
 			help = append(help, h...)

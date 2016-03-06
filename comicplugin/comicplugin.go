@@ -21,7 +21,7 @@ type comicPlugin struct {
 	log map[string][]bruxism.Message
 }
 
-func (p *comicPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, detailed bool) []string {
+func (p *comicPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	help := []string{
 		bruxism.CommandHelp(service, "comic", "[<1-10>]", "Creates a comic from recent messages.")[0],
 		bruxism.CommandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", "Creates a custom comic.")[0],

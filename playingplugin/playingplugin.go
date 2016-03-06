@@ -37,7 +37,7 @@ func (p *playingPlugin) Save() ([]byte, error) {
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
-func (p *playingPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, detailed bool) []string {
+func (p *playingPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	if detailed {
 		return nil
 	}

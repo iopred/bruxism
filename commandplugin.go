@@ -8,14 +8,14 @@ import (
 const commandDelimeter = "!"
 
 // CommandHelpFunc is the function signature for command help methods.
-type CommandHelpFunc func(bot *Bot, service Service) (string, string)
+type CommandHelpFunc func(bot *Bot, service Service, message Message) (string, string)
 
 // CommandMessageFunc is the function signature for bot message commands.
 type CommandMessageFunc func(bot *Bot, service Service, message Message, args string, parts []string)
 
 // NewCommandHelp creates a new Command Help function.
 func NewCommandHelp(args, help string) CommandHelpFunc {
-	return func(bot *Bot, service Service) (string, string) {
+	return func(bot *Bot, service Service, message Message) (string, string) {
 		return args, help
 	}
 }
@@ -107,14 +107,14 @@ func (p *CommandPlugin) Save() ([]byte, error) {
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
-func (p *CommandPlugin) Help(bot *Bot, service Service, detailed bool) []string {
+func (p *CommandPlugin) Help(bot *Bot, service Service, message Message, detailed bool) []string {
 	if detailed {
 		return nil
 	}
 	help := []string{}
 	for commandString, command := range p.commands {
 		if command.help != nil {
-			arguments, h := command.help(bot, service)
+			arguments, h := command.help(bot, service, message)
 			help = append(help, CommandHelp(service, commandString, arguments, h)...)
 		}
 	}

@@ -59,7 +59,7 @@ type LoadFunc func(*Bot, Service, []byte) error
 type SaveFunc func() ([]byte, error)
 
 // HelpFunc is the function signature for a help handler.
-type HelpFunc func(*Bot, Service, bool) []string
+type HelpFunc func(*Bot, Service, Message, bool) []string
 
 // MessageFunc is the function signature for a message handler.
 type MessageFunc func(*Bot, Service, Message)
@@ -69,6 +69,6 @@ type Plugin interface {
 	Name() string
 	Load(*Bot, Service, []byte) error
 	Save() ([]byte, error)
-	Help(*Bot, Service, bool) []string
+	Help(*Bot, Service, Message, bool) []string
 	Message(*Bot, Service, Message)
 }

@@ -111,7 +111,7 @@ func (p *livePlugin) Save() ([]byte, error) {
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
-func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, detailed bool) []string {
+func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	return nil
 }
 

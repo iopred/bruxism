@@ -62,7 +62,7 @@ func (p *ReminderPlugin) randomReminder(service bruxism.Service) string {
 	return fmt.Sprintf("%s%sreminder %s | %s%s", ticks, service.CommandPrefix(), p.random(randomTimes), p.random(randomMessages), ticks)
 }
 
-func (p *ReminderPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, detailed bool) []string {
+func (p *ReminderPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	help := []string{
 		bruxism.CommandHelp(service, "reminder", "<time> | <reminder>", "Sets a reminder that is sent after the provided time.")[0],
 	}

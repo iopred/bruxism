@@ -19,7 +19,7 @@ type streamerPlugin struct {
 	requests map[string]*streamerPluginRequest
 }
 
-func (p *streamerPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, detailed bool) []string {
+func (p *streamerPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	if detailed {
 		return nil
 	}

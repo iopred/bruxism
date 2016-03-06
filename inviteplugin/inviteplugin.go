@@ -15,7 +15,7 @@ func discordInviteID(id string) string {
 }
 
 // InviteHelp will return the help text for the invite command.
-func InviteHelp(bot *bruxism.Bot, service bruxism.Service) (string, string) {
+func InviteHelp(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) (string, string) {
 	switch service.Name() {
 	case bruxism.DiscordServiceName:
 		return "<discordinvite>", "Joins the provided Discord server."
