@@ -9,13 +9,9 @@ A chat bot for YouTube, Discord and IRC.
 
 Commands are prefixed with `!` on YouTube and IRC, and `@BotName ` on Discord.
 
-* `comic [<1-6>]` - Creates a comic from recent messages.
-* `customcomic [<id>:] <text> | [<id>:] <text>` - Creates a custom comic.
-* `customcomicsimple [<id>:] <text> | [<id>:] <text>` - Creates a simple custom comic.
-* `emoji <emoji>` - Returns a big version of an emoji.
+* `emoji <emoji>` - Returns a big version of an emoji. Please read the README in emojiplugin for installation notes.
 * `help [<topic>]` - Returns generic help or help for a specific topic. Available topics: `comic,remind`
 * `invite <id>` - Provides invite URL for the bot.
-* `mtg <cardname>` - Returns information about a Magic: The Gathering card.
 * `numbertrivia [<number>]` - Returns trivia for a random number or a specified number if provided.
 * `playing` - Set which game the bot is playing on Discord. Only enabled for bot owner.
 * `reminder <time> | <reminder>` - Sets a reminder.
