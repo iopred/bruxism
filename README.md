@@ -30,12 +30,15 @@ Also supports direct invites on Discord and support for announcing streamers goi
 ### Installation:
 
 `go get github.com/iopred/bruxism/cmd/bruxism`
+
 `go install github.com/iopred/bruxism/cmd/bruxism`
+
 `cd $GOPATH/bin`
 
 ### Setup
 
 You must first generate a YouTube Oauth token in the [Google Developer Console](https://console.developers.google.com/).
+
 Go to Credentials and download the JSON config file and save it in `$GOPATH/bin` as `youtubeoauth2config.json`
 
 `bruxism -youtubeurl`
@@ -48,16 +51,17 @@ Now the bot can be run:
 
 `bruxism`
 
-### Run as a discord bot
+### Run as a Discord bot
 
 `bruxism -discordemail <discord email> -discordpassword <discord password>`
 
 It is suggested that you set `-discordowneruserid` as this adds restrictions to `playingplugin`.
+
 It is suggested that you set `-discordapplicationclientid` if you are running a bot account, this will make `inviteplugin` function correctly.
 
 ### Run as an IRC bot
 
-`bruxism -ircserver <irc server> -ircusername <irc username>`
+`bruxism -ircserver <irc server> -ircusername <irc username>` -ircchannels <#channel1,#channel2>`
 
 ## Arguments:
 
