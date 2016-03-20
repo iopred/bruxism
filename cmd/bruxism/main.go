@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bwmarrin/bruxins/musicplugin"
 	"github.com/iopred/bruxism"
 	"github.com/iopred/bruxism/comicplugin"
 	"github.com/iopred/bruxism/directmessageinviteplugin"
@@ -119,7 +118,6 @@ func main() {
 		bot.RegisterPlugin(discord, reminderplugin.NewReminderPlugin())
 		bot.RegisterPlugin(discord, emojiplugin.NewEmojiPlugin())
 		bot.RegisterPlugin(discord, liveplugin.NewLivePlugin(discord, youtube))
-		bot.RegisterPlugin(discord, musicplugin.New(discord))
 	}
 
 	// Register the IRC service if we have an IRC server and Username.
