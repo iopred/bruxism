@@ -17,7 +17,7 @@ type MTGSet struct {
 	Cards []*MTGCard `json:"cards"`
 }
 
-// MTGSet is a struct containing all the information on a card from MTG.
+// MTGCard is a struct containing all the information on a card from MTG.
 type MTGCard struct {
 	Name      string  `json:"name"`
 	ManaCost  string  `json:"manaCost"`

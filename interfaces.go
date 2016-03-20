@@ -11,9 +11,9 @@ type MessageType string
 const (
 	// MessageTypeCreate is the message type for message creation.
 	MessageTypeCreate MessageType = "create"
-	// MessageTypeCreate is the message type for message updates.
+	// MessageTypeUpdate is the message type for message updates.
 	MessageTypeUpdate = "update"
-	// MessageTypeCreate is the message type for message deletion.
+	// MessageTypeDelete is the message type for message deletion.
 	MessageTypeDelete = "delete"
 )
 
