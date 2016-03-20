@@ -55,9 +55,13 @@ Now the bot can be run:
 
 `bruxism -discordemail <discord email> -discordpassword <discord password>`
 
-It is suggested that you set `-discordowneruserid` as this adds restrictions to `playingplugin`.
+Discord has recently rolled out Bot accounts. To run Bruxism as a Bot:
+
+`bruxism -discordtoken <discord token>`
 
 It is suggested that you set `-discordapplicationclientid` if you are running a bot account, this will make `inviteplugin` function correctly.
+
+It is suggested that you set `-discordowneruserid` as this prevents anyone from calling `playingplugin`.
 
 ### Run as an IRC bot
 
