@@ -30,7 +30,7 @@ func (p *topStreamersPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Servi
 			n := time.Now()
 			if !n.After(p.lastUpdate.Add(1 * time.Minute)) {
 				if p.lastMessage != "" {
-					service.SendMessage(message.Channel(), fmt.Sprintf("%v *Last updated %v.*", p.lastMessage, humanize.Time(p.lastUpdate)))
+					service.SendMessage(message.Channel(), fmt.Sprintf("%s *Last updated %s.*", p.lastMessage, humanize.Time(p.lastUpdate)))
 				}
 				return
 			}
@@ -64,13 +64,13 @@ func (p *topStreamersPlugin) topStreamers(count int) (string, error) {
 	channels := []string{}
 
 	for i, video := range videoList {
-		channels = append(channels, fmt.Sprintf("%v (%v)", video.Snippet.ChannelTitle, humanize.Comma(int64(video.LiveStreamingDetails.ConcurrentViewers))))
+		channels = append(channels, fmt.Sprintf("%s (%s)", video.Snippet.ChannelTitle, humanize.Comma(int64(video.LiveStreamingDetails.ConcurrentViewers))))
 		if i >= count {
 			break
 		}
 	}
 
-	return fmt.Sprintf("Current YouTube Gaming top streamers: %v.", strings.Join(channels, ", ")), nil
+	return fmt.Sprintf("Current YouTube Gaming top streamers: %s.", strings.Join(channels, ", ")), nil
 }
 
 // NewTopStreamersPlugin will create a new top streamers plugin.

@@ -44,7 +44,7 @@ func (p *streamerPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, 
 			n := time.Now()
 			if !n.After(r.lastUpdate.Add(60 * time.Minute)) {
 				if r.lastMessage != "" {
-					service.SendMessage(message.Channel(), fmt.Sprintf("%v *Last updated %v.*", r.lastMessage, humanize.Time(r.lastUpdate)))
+					service.SendMessage(message.Channel(), fmt.Sprintf("%s *Last updated %s.*", r.lastMessage, humanize.Time(r.lastUpdate)))
 				}
 				return
 			}

@@ -50,7 +50,7 @@ func (m *IRCMessage) MessageID() string {
 	return ""
 }
 
-// MessageType returns the type of message.
+// Type returns the type of message.
 func (m *IRCMessage) Type() MessageType {
 	return MessageTypeCreate
 }
@@ -177,6 +177,11 @@ func (i *IRC) SupportsMultiline() bool {
 // CommandPrefix returns the command prefix for the service.
 func (i *IRC) CommandPrefix() string {
 	return "!"
+}
+
+// IsBotOwner returns whether or not a message sender was the owner of the bot.
+func (i *IRC) IsBotOwner(message Message) bool {
+	return false
 }
 
 // IsPrivate returns whether or not a message was private.

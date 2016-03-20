@@ -16,18 +16,25 @@ func discordInviteID(id string) string {
 
 func directMessageInviteMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if service.Name() == bruxism.DiscordServiceName && !service.IsMe(message) && service.IsPrivate(message) {
+		discord := service.(*bruxism.Discord)
+
 		messageMessage := message.Message()
 		id := discordInviteID(messageMessage)
 		if id != messageMessage && strings.HasPrefix(messageMessage, "http") {
-			if err := service.Join(id); err != nil {
-				if err == bruxism.ErrAlreadyJoined {
-					service.PrivateMessage(message.UserID(), "I have already joined that server.")
+
+			if discord.ApplicationClientID != "" {
+				service.PrivateMessage(message.UserID(), fmt.Sprintf("Please visit https://discordapp.com/oauth2/authorize?client_id=%s&scope=bot to add Septapus to your server.", discord.ApplicationClientID))
+			} else {
+				if err := service.Join(id); err != nil {
+					if err == bruxism.ErrAlreadyJoined {
+						service.PrivateMessage(message.UserID(), "I have already joined that server.")
+						return
+					}
+					fmt.Printf("Error joining %s %v", service.Name(), err)
 					return
 				}
-				fmt.Printf("Error joining %v %v", service.Name(), err)
-				return
+				service.PrivateMessage(message.UserID(), "I have joined that server.")
 			}
-			service.PrivateMessage(message.UserID(), "I have joined that server.")
 		}
 	}
 }

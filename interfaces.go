@@ -5,12 +5,16 @@ import (
 	"io"
 )
 
+// MessageType is a type used to determine the CRUD state of a message.
 type MessageType string
 
 const (
+	// MessageTypeCreate is the message type for message creation.
 	MessageTypeCreate MessageType = "create"
-	MessageTypeUpdate             = "update"
-	MessageTypeDelete             = "delete"
+	// MessageTypeCreate is the message type for message updates.
+	MessageTypeUpdate = "update"
+	// MessageTypeCreate is the message type for message deletion.
+	MessageTypeDelete = "delete"
 )
 
 // Message is a message interface, wraps a single message from a service.
@@ -43,6 +47,7 @@ type Service interface {
 	Join(join string) error
 	Typing(channel string) error
 	PrivateMessage(userID, messageID string) error
+	IsBotOwner(message Message) bool
 	IsPrivate(message Message) bool
 	IsModerator(message Message) bool
 	SupportsMultiline() bool

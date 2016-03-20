@@ -2,39 +2,80 @@
 A chat bot for YouTube, Discord and IRC.
 
 [![GoDoc](https://godoc.org/github.com/iopred/bruxism?status.svg)](https://godoc.org/github.com/iopred/bruxism)
-[![Go Walker](http://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/iopred/bruxism)
 [![Go report](http://goreportcard.com/badge/iopred/bruxism)](http://goreportcard.com/report/iopred/bruxism)
 [![Build Status](https://travis-ci.org/iopred/bruxism.svg?branch=master)](https://travis-ci.org/iopred/bruxism)
 
-## Current support:
+## Current plugin support:
 
-* `!comic [<1-6>]` - Creates a comic from recent messages.
-* `!customcomic [<id>:] <text> | [<id>:] <text>` - Creates a custom comic.
-* `!customcomicsimple [<id>:] <text> | [<id>:] <text>` - Creates a simple custom comic.
-* `!emoji <emoji>` - Returns a big version of an emoji.
-* `!help [<topic>]` - Returns generic help or help for a specific topic. Available topics: `comic,remind`
-* `!invite <id>` - Joins the provided YouTube chat, IRC channel or Discord server.
-* `!mtg <cardname>` - Returns information about a Magic: The Gathering card.
-* `!numbertrivia [<number>]` - Returns trivia for a random number or a specified number if provided.
-* `!playing` - Set which game the bot is playing on Discord.
-* `!reminder <time> | <reminder>` - Sets a reminder.
-* `!stats` - Lists bot statistics.
-* `!streamer <streamername|streamerid>` - Grabs details about a YouTube streamer.
-* `!topstreamers` - List the current top streamers on YouTube Gaming.
+Commands are prefixed with `!` on YouTube and IRC, and `@BotName ` on Discord.
+
+* `comic [<1-6>]` - Creates a comic from recent messages.
+* `customcomic [<id>:] <text> | [<id>:] <text>` - Creates a custom comic.
+* `customcomicsimple [<id>:] <text> | [<id>:] <text>` - Creates a simple custom comic.
+* `emoji <emoji>` - Returns a big version of an emoji.
+* `help [<topic>]` - Returns generic help or help for a specific topic. Available topics: `comic,remind`
+* `invite <id>` - Provides invite URL for the bot.
+* `mtg <cardname>` - Returns information about a Magic: The Gathering card.
+* `numbertrivia [<number>]` - Returns trivia for a random number or a specified number if provided.
+* `playing` - Set which game the bot is playing on Discord. Only enabled for bot owner.
+* `reminder <time> | <reminder>` - Sets a reminder.
+* `stats` - Lists bot statistics.
+* `streamer <streamername|streamerid>` - Grabs details about a YouTube streamer.
+* `topstreamers` - List the current top streamers on YouTube Gaming.
 
 Also supports direct invites on Discord and support for announcing streamers going live on YouTube Gaming.
+
+## Usage:
+
+### Installation:
+
+`go get github.com/iopred/bruxism/cmd/bruxism`
+`go install github.com/iopred/bruxism/cmd/bruxism`
+`cd $GOPATH/bin`
+
+### Setup
+
+You must first generate a YouTube Oauth token in the [Google Developer Console](https://console.developers.google.com/).
+Go to Credentials and download the JSON config file and save it in `$GOPATH/bin` as `youtubeoauth2config.json`
+
+`bruxism -youtubeurl`
+
+You will then be given a URL (and copied to clipboard), visit that URL and copy the code, then run:
+
+`bruxism -youtubeauth <AUTH CODE>`
+
+Now the bot can be run:
+
+`bruxism`
+
+### Run as a discord bot
+
+`bruxism -discordemail <discord email> -discordpassword <discord password>`
+
+It is suggested that you set `-discordowneruserid` as this adds restrictions to `playingplugin`.
+It is suggested that you set `-discordapplicationclientid` if you are running a bot account, this will make `inviteplugin` function correctly.
+
+### Run as an IRC bot
+
+`bruxism -ircserver <irc server> -ircusername <irc username>`
 
 ## Arguments:
 
 * `youtubeurl` - Outputs a new OAuth URL for YouTube and then exits.
-* `youtubeauth` - Sets the YouTube OAuth Response, this will generate a OAuth token.
-* `youtubeconfig` - The filename for your YouTube OAuth client. (Download JSON in Google Developers Console -> Credentials).
-* `youtubetoken` - The filename for your OAuth token.
+* `youtubeauth` - Exchanges the provided auth code for an oauth2 token.
+* `youtubeconfig` - The filename for your YouTube OAuth client JSON. (Download JSON in Google Developers Console -> Credentials).
+* `youtubetoken` - The filename to store the oauth2 token.
+* `youtubelivevideoids` - Comma separated list of video id's to poll.
 * `youtubelivechatids` - An additional comma separated list of YouTube Live Chat ID's to listen on. By default the bot listens to all the live broadcasts on the primary account.
-* `discordemail` - Sets the Discord email address.
-* `discordpassword` - Sets the Discord password.
-* `imgurid` - Sets the Imgur client id
+* `discordtoken` - Sets the Discord token.
+* `discordemail` - Sets the Discord account email.
+* `discordpassword` - Sets the Discord account password.
+* `discordclientid` - Sets the Discord client id.
+* `ircserver` - Sets the IRC server.
+* `ircusername` - Sets the IRC user name.
+* `ircpassword` - Sets the IRC password.
+* `ircchannels` - Comma separated list of IRC channels.
+* `imgurid` - Sets the Imgur client id, used for uploading images to imgur.
+* `imgurAlbum` - Sets an optional the Imgur album id, used for uploading images to imgur.
+* `mashablekey` - Sets the mashable oauth key.
 
-eg:
-
-`bruxism -youtubelivechatids <comma separated list of chat ids> -discordemail <discord email> -discordpassword <discord password> -imgurid <imgur id>`

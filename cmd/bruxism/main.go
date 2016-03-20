@@ -5,8 +5,10 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
+	"github.com/bwmarrin/bruxins/musicplugin"
 	"github.com/iopred/bruxism"
 	"github.com/iopred/bruxism/comicplugin"
 	"github.com/iopred/bruxism/directmessageinviteplugin"
@@ -32,6 +34,12 @@ var youtubeLiveChatIDs string
 var discordToken string
 var discordEmail string
 var discordPassword string
+var discordApplicationClientID string
+var discordOwnerUserID string
+var ircServer string
+var ircUsername string
+var ircPassword string
+var ircChannels string
 var imgurID string
 var imgurAlbum string
 var mashableKey string
@@ -41,11 +49,17 @@ func init() {
 	flag.StringVar(&youtubeAuth, "youtubeauth", "", "Exchanges the provided auth code for an oauth2 token.")
 	flag.StringVar(&youtubeConfigFilename, "youtubeconfig", "youtubeoauth2config.json", "The filename that contains the oauth2 config.")
 	flag.StringVar(&youtubeTokenFilename, "youtubetoken", "youtubeoauth2token.json", "The filename to store the oauth2 token.")
-	flag.StringVar(&youtubeLiveVideoIDs, "youtubelivevideoids", "", "Additional video id's to poll.")
-	flag.StringVar(&youtubeLiveChatIDs, "youtubelivechatids", "", "Additional chat id's to poll.")
+	flag.StringVar(&youtubeLiveVideoIDs, "youtubelivevideoids", "", "Comma separated list of video id's to poll.")
+	flag.StringVar(&youtubeLiveChatIDs, "youtubelivechatids", "", "Comma separated list of chat id's to poll.")
 	flag.StringVar(&discordToken, "discordtoken", "", "Discord token.")
 	flag.StringVar(&discordEmail, "discordemail", "", "Discord account email.")
 	flag.StringVar(&discordPassword, "discordpassword", "", "Discord account password.")
+	flag.StringVar(&discordOwnerUserID, "discordowneruserid", "", "Discord owner user id.")
+	flag.StringVar(&discordApplicationClientID, "discordapplicationclientid", "", "Discord application client id.")
+	flag.StringVar(&ircServer, "ircserver", "", "IRC server.")
+	flag.StringVar(&ircUsername, "ircusername", "", "IRC user name.")
+	flag.StringVar(&ircPassword, "ircpassword", "", "IRC password.")
+	flag.StringVar(&ircChannels, "ircchannels", "", "Comma separated list of IRC channels.")
 	flag.StringVar(&imgurID, "imgurid", "", "Imgur client id.")
 	flag.StringVar(&imgurAlbum, "imguralbum", "", "Imgur album id.")
 	flag.StringVar(&mashableKey, "mashablekey", "", "Mashable key.")
@@ -55,25 +69,13 @@ func init() {
 }
 
 func main() {
+	// Set our variables.
 	bot := bruxism.NewBot()
 	bot.ImgurID = imgurID
 	bot.ImgurAlbum = imgurAlbum
 	bot.MashableKey = mashableKey
 
-	youtube := bruxism.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveVideoIDs, youtubeLiveChatIDs)
-
-	var discord *bruxism.Discord
-	if discordToken != "" {
-		discord = bruxism.NewDiscord(discordToken)
-	} else {
-		discord = bruxism.NewDiscord(discordEmail, discordPassword)
-	}
-	synirc := bruxism.NewIRC("irc.synirc.net", "Septapus", "", []string{"#septapus"})
-
-	bot.RegisterService(youtube)
-	bot.RegisterService(discord)
-	bot.RegisterService(synirc)
-
+	// Generally CommandPlugins don't hold state, so we share one instance of the command plugin for all services.
 	cp := bruxism.NewCommandPlugin()
 	cp.AddCommand("help", bruxism.HelpCommand, bruxism.HelpHelp)
 	cp.AddCommand("command", bruxism.HelpCommand, nil)
@@ -86,6 +88,9 @@ func main() {
 	cp.AddCommand("numbertrivia", numbertriviaplugin.NumberTriviaCommand, numbertriviaplugin.NumberTriviaHelp)
 	cp.AddCommand("mtg", mtgplugin.MTGCommand, mtgplugin.MTGHelp)
 
+	youtube := bruxism.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveVideoIDs, youtubeLiveChatIDs)
+	bot.RegisterService(youtube)
+
 	bot.RegisterPlugin(youtube, cp)
 	bot.RegisterPlugin(youtube, slowmodeplugin.NewSlowModePlugin())
 	bot.RegisterPlugin(youtube, topstreamersplugin.NewTopStreamersPlugin(youtube))
@@ -93,24 +98,46 @@ func main() {
 	bot.RegisterPlugin(youtube, comicplugin.New())
 	bot.RegisterPlugin(youtube, reminderplugin.NewReminderPlugin())
 
-	bot.RegisterPlugin(discord, cp)
-	bot.RegisterPlugin(discord, topstreamersplugin.NewTopStreamersPlugin(youtube))
-	bot.RegisterPlugin(discord, streamerplugin.NewStreamerPlugin(youtube))
-	bot.RegisterPlugin(discord, playingplugin.NewPlayingPlugin())
-	bot.RegisterPlugin(discord, comicplugin.New())
-	bot.RegisterPlugin(discord, directmessageinviteplugin.NewDirectMessageInvitePlugin())
-	bot.RegisterPlugin(discord, reminderplugin.NewReminderPlugin())
-	bot.RegisterPlugin(discord, emojiplugin.NewEmojiPlugin())
-	bot.RegisterPlugin(discord, liveplugin.NewLivePlugin(discord, youtube))
+	// Register the Discord service if we have an email or token.
+	if (discordEmail != "" && discordPassword != "") || discordToken != "" {
+		var discord *bruxism.Discord
+		if discordToken != "" {
+			discord = bruxism.NewDiscord(discordToken)
+		} else {
+			discord = bruxism.NewDiscord(discordEmail, discordPassword)
+		}
+		discord.ApplicationClientID = discordApplicationClientID
+		discord.OwnerUserID = discordOwnerUserID
+		bot.RegisterService(discord)
 
-	bot.RegisterPlugin(synirc, cp)
-	bot.RegisterPlugin(synirc, topstreamersplugin.NewTopStreamersPlugin(youtube))
-	bot.RegisterPlugin(synirc, streamerplugin.NewStreamerPlugin(youtube))
-	bot.RegisterPlugin(synirc, comicplugin.New())
-	bot.RegisterPlugin(synirc, reminderplugin.NewReminderPlugin())
+		bot.RegisterPlugin(discord, cp)
+		bot.RegisterPlugin(discord, topstreamersplugin.NewTopStreamersPlugin(youtube))
+		bot.RegisterPlugin(discord, streamerplugin.NewStreamerPlugin(youtube))
+		bot.RegisterPlugin(discord, playingplugin.NewPlayingPlugin())
+		bot.RegisterPlugin(discord, comicplugin.New())
+		bot.RegisterPlugin(discord, directmessageinviteplugin.NewDirectMessageInvitePlugin())
+		bot.RegisterPlugin(discord, reminderplugin.NewReminderPlugin())
+		bot.RegisterPlugin(discord, emojiplugin.NewEmojiPlugin())
+		bot.RegisterPlugin(discord, liveplugin.NewLivePlugin(discord, youtube))
+		bot.RegisterPlugin(discord, musicplugin.New(discord))
+	}
 
+	// Register the IRC service if we have an IRC server and Username.
+	if ircServer != "" && ircUsername != "" {
+		irc := bruxism.NewIRC(ircServer, ircUsername, ircPassword, strings.Split(ircChannels, ","))
+		bot.RegisterService(irc)
+
+		bot.RegisterPlugin(irc, cp)
+		bot.RegisterPlugin(irc, topstreamersplugin.NewTopStreamersPlugin(youtube))
+		bot.RegisterPlugin(irc, streamerplugin.NewStreamerPlugin(youtube))
+		bot.RegisterPlugin(irc, comicplugin.New())
+		bot.RegisterPlugin(irc, reminderplugin.NewReminderPlugin())
+	}
+
+	// Start all our services.
 	bot.Open()
 
+	// Wait for a termination signal, while saving the bot state every minute. Save on close.
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill)
 
@@ -124,4 +151,6 @@ func main() {
 			bot.Save()
 		}
 	}
+
+	bot.Save()
 }

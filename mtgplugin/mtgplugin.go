@@ -12,10 +12,12 @@ import (
 	"github.com/renstrom/fuzzysearch/fuzzy"
 )
 
+// MTGSet is a struct containing all the information on a set of MTG.
 type MTGSet struct {
 	Cards []*MTGCard `json:"cards"`
 }
 
+// MTGSet is a struct containing all the information on a card from MTG.
 type MTGCard struct {
 	Name      string  `json:"name"`
 	ManaCost  string  `json:"manaCost"`
@@ -27,12 +29,20 @@ type MTGCard struct {
 	Loyalty   *int    `json:"loyalty"`
 }
 
-var MTGCardMap map[string]*MTGCard = map[string]*MTGCard{}
+// MTGCardMap is a map from card name to card.
+var MTGCardMap = map[string]*MTGCard{}
+
+// MTGCardNames is an array of card names
 var MTGCardNames []string
 
-var MTGTextReplacer *strings.Replacer = strings.NewReplacer("(", "*(", ")", ")*")
-var MTGCostReplacer *strings.Replacer = strings.NewReplacer("{", "", "}", "")
-var MTGRestReplacer *strings.Replacer = strings.NewReplacer("*", "\\*")
+// MTGTextReplacer is a replacer for styling text content of cards.
+var MTGTextReplacer = strings.NewReplacer("(", "*(", ")", ")*")
+
+// MTGCostReplacer is a replacer for styling text content of card costs.
+var MTGCostReplacer = strings.NewReplacer("{", "", "}", "")
+
+// MTGRestReplacer is a replacer for styling card info.
+var MTGRestReplacer = strings.NewReplacer("*", "\\*")
 
 func init() {
 	file, err := os.Open("mtg/AllSets-x.json")
@@ -97,4 +107,5 @@ func MTGCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Messa
 	}
 }
 
+// MTGHelp is the help for the MTG plugin.
 var MTGHelp = bruxism.NewCommandHelp("<cardname>", "Returns information about a Magic: The Gathering card.")

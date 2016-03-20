@@ -41,6 +41,12 @@ func (p *playingPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, mess
 	if detailed {
 		return nil
 	}
+
+	discord := service.(*bruxism.Discord)
+	if discord.OwnerUserID != "" && !service.IsBotOwner(message) {
+		return nil
+	}
+
 	return bruxism.CommandHelp(service, "playing", "<game>", fmt.Sprintf("Set which game %s is playing.", service.UserName()))
 }
 
@@ -48,6 +54,11 @@ func (p *playingPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, mess
 func (p *playingPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if !service.IsMe(message) {
 		if bruxism.MatchesCommand(service, "playing", message) {
+			discord := service.(*bruxism.Discord)
+			if discord.OwnerUserID != "" && !service.IsBotOwner(message) {
+				return
+			}
+
 			p.Playing, _ = bruxism.ParseCommand(service, message)
 			service.SetPlaying(p.Playing)
 		}

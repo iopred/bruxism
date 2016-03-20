@@ -14,7 +14,7 @@ import (
 	"github.com/iopred/discordgo"
 )
 
-var statsStartTime time.Time = time.Now()
+var statsStartTime = time.Now()
 
 func getDurationString(duration time.Duration) string {
 	return fmt.Sprintf(
@@ -69,4 +69,5 @@ func StatsCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mes
 	}
 }
 
+// StatsHelp is the help for the stats command.
 var StatsHelp = bruxism.NewCommandHelp("", "Lists bot statistics.")

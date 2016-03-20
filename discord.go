@@ -62,7 +62,7 @@ func (m *DiscordMessage) MessageID() string {
 	return m.DiscordgoMessage.ID
 }
 
-// MessageType returns the type of message.
+// Type returns the type of message.
 func (m *DiscordMessage) Type() MessageType {
 	return m.MessageType
 }
@@ -70,8 +70,11 @@ func (m *DiscordMessage) Type() MessageType {
 // Discord is a Service provider for Discord.
 type Discord struct {
 	args        []interface{}
-	Session     *discordgo.Session
 	messageChan chan Message
+
+	Session             *discordgo.Session
+	OwnerUserID         string
+	ApplicationClientID string
 }
 
 // NewDiscord creates a new discord service.
@@ -132,6 +135,7 @@ func (d *Discord) Open() (<-chan Message, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	d.Session.State.MaxMessageCount = 50
 	d.Session.AddHandler(d.onMessageCreate)
 	d.Session.AddHandler(d.onMessageUpdate)
@@ -233,6 +237,11 @@ func (d *Discord) SupportsMultiline() bool {
 // CommandPrefix returns the command prefix for the service.
 func (d *Discord) CommandPrefix() string {
 	return fmt.Sprintf("@%s ", d.UserName())
+}
+
+// IsBotOwner returns whether or not a message sender was the owner of the bot.
+func (d *Discord) IsBotOwner(message Message) bool {
+	return message.UserID() == d.OwnerUserID
 }
 
 // IsPrivate returns whether or not a message was private.

@@ -81,7 +81,7 @@ func (m *LiveChatMessage) MessageID() string {
 	return m.Id
 }
 
-// MessageType returns the type of message.
+// Type returns the type of message.
 func (m *LiveChatMessage) Type() MessageType {
 	return MessageTypeCreate
 }
@@ -215,7 +215,7 @@ func (yt *YouTube) generateOauthURLAndExit() {
 	// for the scopes specified above.
 	url := yt.config.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 	clipboard.WriteAll(url)
-	log.Fatalln("Visit the following URL to generate an auth code, then rerun with -auth=<code> (It has also been copied to your clipboard):\n%v", url)
+	log.Fatalln("Visit the following URL to generate an auth code, then rerun with -auth=<code> (It has also been copied to your clipboard):\n%s", url)
 }
 
 func (yt *YouTube) createConfig() error {
@@ -508,6 +508,11 @@ func (yt *YouTube) SupportsMultiline() bool {
 // CommandPrefix returns the command prefix for the service.
 func (yt *YouTube) CommandPrefix() string {
 	return "!"
+}
+
+// IsBotOwner returns whether or not a message sender was the owner of the bot.
+func (yt *YouTube) IsBotOwner(message Message) bool {
+	return false
 }
 
 // IsPrivate returns whether or not a message was private.

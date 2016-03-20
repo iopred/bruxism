@@ -10,8 +10,8 @@ import (
 	"github.com/iopred/bruxism"
 )
 
-const livePluginGuildId = "126798577153474560"
-const livePluginChannelId = "126889593005015040"
+const livePluginGuildID = "126798577153474560"
+const livePluginChannelID = "126889593005015040"
 
 type liveChannel struct {
 	UserID           string
@@ -75,12 +75,12 @@ func (p *livePlugin) pollChannel(bot *bruxism.Bot, service bruxism.Service, lc *
 			if lc.Last.Add(30 * time.Minute).Before(time.Now()) {
 				lc.Last = time.Now()
 				if service.Name() == bruxism.DiscordServiceName {
-					service.SendMessage(livePluginChannelId, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
+					service.SendMessage(livePluginChannelID, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
 					if lc.DiscordChannelID != "" {
 						service.SendMessage(lc.DiscordChannelID, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
 					}
 				} else {
-					service.SendMessage(livePluginChannelId, fmt.Sprintf("%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserName, v))
+					service.SendMessage(livePluginChannelID, fmt.Sprintf("%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserName, v))
 					if lc.DiscordChannelID != "" {
 						service.SendMessage(lc.DiscordChannelID, fmt.Sprintf("%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserName, v))
 					}
@@ -115,15 +115,16 @@ func (p *livePlugin) Save() ([]byte, error) {
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	c, err := p.discord.Session.State.Channel(message.Channel())
-	if err != nil || c.GuildID != livePluginGuildId {
+	if err != nil || c.GuildID != livePluginGuildID {
 		return nil
 	}
 
 	if detailed {
 		return []string{
-			fmt.Sprintf("Announces when you go live in <#%s> as well as an optional channel.", livePluginChannelId),
+			fmt.Sprintf("Announces when you go live in <#%s> as well as an optional channel.", livePluginChannelID),
 			bruxism.CommandHelp(service, "setyoutubechannel", "<youtube channel id>", "Sets your youtube channel id.")[0],
-			bruxism.CommandHelp(service, "setdiscordchannel", "", "Will announce you going live in this channel.")[0],
+			bruxism.CommandHelp(service, "setdiscordchannel", "", "Will additionally announce you going live in this channel.")[0],
+			bruxism.CommandHelp(service, "unsetdiscordchannel", "", "Disables additional live announcement of channel.")[0],
 			"Example:",
 			fmt.Sprintf("`%ssetyoutubechannel UC392dac34_32fafe2deadbeef`", service.CommandPrefix()),
 		}
@@ -166,17 +167,25 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 			for _, lc := range p.Live {
 				if lc.UserID == message.UserID() {
 					c, err := p.discord.Session.State.Channel(messageChannel)
-					if err == nil || c.GuildID == livePluginGuildId {
-						service.SendMessage(messageChannel, fmt.Sprintf("Live messages are sent in <#%s>. Use this on your own server.", livePluginChannelId))
+					if err != nil || c.GuildID == livePluginGuildID {
+						service.SendMessage(messageChannel, fmt.Sprintf("Live messages are sent in <#%s>. Use this on your own server.", livePluginChannelID))
 						return
 					}
 
 					lc.DiscordChannelID = messageChannel
-					service.SendMessage(messageChannel, fmt.Sprintf("Discord Channel ID set. A message will be sent here when you go live.", messageChannel))
+					service.SendMessage(messageChannel, fmt.Sprintf("Discord Channel ID set. A message will be sent here when you go live."))
 					return
 				}
 			}
 			service.SendMessage(message.Channel(), "You haven't registered a YouTube Channel ID yet. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
+		} else if bruxism.MatchesCommand(service, "unsetdiscordchannel", message) {
+			for _, lc := range p.Live {
+				if lc.UserID == message.UserID() {
+					lc.DiscordChannelID = ""
+					service.SendMessage(messageChannel, fmt.Sprintf("Discord Channel ID unset. messages will not be sent hire when you go live."))
+					return
+				}
+			}
 		}
 	}
 }

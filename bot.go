@@ -15,7 +15,7 @@ import (
 )
 
 // VersionString is the current version of the bot
-const VersionString string = "0.4"
+const VersionString string = "0.5"
 
 type serviceEntry struct {
 	Service
@@ -31,6 +31,7 @@ type Bot struct {
 	MashableKey string
 }
 
+// MessageRecover is the default panic handler for bruxism.
 func MessageRecover() {
 	if r := recover(); r != nil {
 		log.Println("Recovered:", string(debug.Stack()))
@@ -91,9 +92,9 @@ func (b *Bot) Open() {
 			for _, plugin := range service.Plugins {
 				plugin.Load(b, service, b.getData(service, plugin))
 			}
-			go b.listen(service, messageChan)
+			go b.listen(service.Service, messageChan)
 		} else {
-			log.Printf("Error creating service %v: %v\n", service.Name(), err)
+			log.Printf("Error creating service %s: %v\n", service.Name(), err)
 		}
 	}
 }
@@ -109,10 +110,10 @@ func (b *Bot) Save() {
 		}
 		for _, plugin := range service.Plugins {
 			if data, err := plugin.Save(); err != nil {
-				log.Printf("Error saving plugin %v %v. %v", serviceName, plugin.Name(), err)
+				log.Printf("Error saving plugin %s %s. %v", serviceName, plugin.Name(), err)
 			} else if data != nil {
 				if err := ioutil.WriteFile(serviceName+"/"+plugin.Name(), data, os.ModePerm); err != nil {
-					log.Printf("Error saving plugin %v %v. %v", serviceName, plugin.Name(), err)
+					log.Printf("Error saving plugin %s %s. %v", serviceName, plugin.Name(), err)
 				}
 			}
 		}

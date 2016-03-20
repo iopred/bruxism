@@ -20,6 +20,8 @@ func NewCommandHelp(args, help string) CommandHelpFunc {
 	}
 }
 
+// MatchesCommandString returns true if a message matches a command.
+// Commands will be matched ignoring case with a prefix if they are not private messages.
 func MatchesCommandString(service Service, commandString string, private bool, message string) bool {
 	lowerMessage := strings.ToLower(strings.Trim(message, " "))
 	lowerPrefix := strings.ToLower(service.CommandPrefix())
@@ -36,6 +38,7 @@ func MatchesCommandString(service Service, commandString string, private bool, m
 	return lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ")
 }
 
+// MatchesCommand returns true if a message matches a command.
 func MatchesCommand(service Service, commandString string, message Message) bool {
 	// Only new messages can trigger commands.
 	if message.Type() != MessageTypeCreate {
@@ -44,6 +47,7 @@ func MatchesCommand(service Service, commandString string, message Message) bool
 	return MatchesCommandString(service, commandString, service.IsPrivate(message), message.Message())
 }
 
+// ParseCommandString will strip all prefixes from a message string, and return that string, and a space separated tokenized version of that string.
 func ParseCommandString(service Service, message string) (string, []string) {
 	message = strings.Trim(message, " ")
 
@@ -63,10 +67,15 @@ func ParseCommandString(service Service, message string) (string, []string) {
 	return "", []string{}
 }
 
+// ParseCommand parses a message.
 func ParseCommand(service Service, message Message) (string, []string) {
 	return ParseCommandString(service, message.Message())
 }
 
+// CommandHelp is a helper message that creates help text for a command.
+// eg. CommandHelp(service, "foo", "<bar>", "Foo bar baz") will return:
+//     !foo <bar> - Foo bar baz
+// The string is automatatically styled in Discord.
 func CommandHelp(service Service, command, arguments, help string) []string {
 	ticks := ""
 	if service.Name() == DiscordServiceName {
@@ -124,7 +133,7 @@ func (p *CommandPlugin) Help(bot *Bot, service Service, message Message, detaile
 // Message handler.
 // Iterates over the registered commands and executes them if the message matches.
 func (p *CommandPlugin) Message(bot *Bot, service Service, message Message) {
-	defer MessageRecover()
+	// defer MessageRecover()
 	if !service.IsMe(message) {
 		for commandString, command := range p.commands {
 			if MatchesCommand(service, commandString, message) {

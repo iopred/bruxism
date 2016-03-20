@@ -33,7 +33,7 @@ func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism
 			_, parts := bruxism.ParseCommand(service, message)
 			if len(parts) == 1 {
 				s := strings.TrimSpace(parts[0])
-				for i, _ := range s {
+				for i := range s {
 					filename := emojiFile(s[i:])
 					if filename != "" {
 						if f, err := os.Open(fmt.Sprintf("emoji/twitter/%s.png", filename)); err == nil {

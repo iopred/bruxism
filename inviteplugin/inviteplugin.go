@@ -18,6 +18,11 @@ func discordInviteID(id string) string {
 func InviteHelp(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) (string, string) {
 	switch service.Name() {
 	case bruxism.DiscordServiceName:
+		discord := service.(*bruxism.Discord)
+
+		if discord.ApplicationClientID != "" {
+			return "", fmt.Sprintf("Returns a URL to add %s to your server.", service.UserName())
+		}
 		return "<discordinvite>", "Joins the provided Discord server."
 	case bruxism.YouTubeServiceName:
 		return "<livechatid>", "Joins the provided YouTube chat by id (this may be hard to find)."
@@ -27,6 +32,15 @@ func InviteHelp(bot *bruxism.Bot, service bruxism.Service, message bruxism.Messa
 
 // InviteCommand is a command for accepting an invite to a channel.
 func InviteCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, command string, parts []string) {
+	if service.Name() == bruxism.DiscordServiceName {
+		discord := service.(*bruxism.Discord)
+
+		if discord.ApplicationClientID != "" {
+			service.SendMessage(message.Channel(), fmt.Sprintf("Please visit https://discordapp.com/oauth2/authorize?client_id=%s&scope=bot to add %s to your server.", discord.ApplicationClientID, service.UserName()))
+			return
+		}
+	}
+
 	if len(parts) == 1 {
 		join := parts[0]
 		if service.Name() == bruxism.DiscordServiceName {
@@ -37,7 +51,7 @@ func InviteCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Me
 				service.PrivateMessage(message.UserID(), "I have already joined that server.")
 				return
 			}
-			fmt.Printf("Error joining %v %v", service.Name(), err)
+			fmt.Printf("Error joining %s %v", service.Name(), err)
 		} else if service.Name() == bruxism.DiscordServiceName {
 			service.PrivateMessage(message.UserID(), "I have joined that server.")
 		}
