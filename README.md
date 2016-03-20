@@ -65,7 +65,7 @@ It is suggested that you set `-discordowneruserid` as this prevents anyone from 
 
 ### Run as an IRC bot
 
-`bruxism -ircserver <irc server> -ircusername <irc username>` -ircchannels <#channel1,#channel2>`
+`bruxism -ircserver <irc server> -ircusername <irc username> -ircchannels <#channel1,#channel2>`
 
 ## Arguments:
 
