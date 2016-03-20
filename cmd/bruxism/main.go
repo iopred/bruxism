@@ -9,12 +9,9 @@ import (
 	"time"
 
 	"github.com/iopred/bruxism"
-	"github.com/iopred/bruxism/comicplugin"
 	"github.com/iopred/bruxism/directmessageinviteplugin"
 	"github.com/iopred/bruxism/emojiplugin"
 	"github.com/iopred/bruxism/inviteplugin"
-	"github.com/iopred/bruxism/liveplugin"
-	"github.com/iopred/bruxism/mtgplugin"
 	"github.com/iopred/bruxism/numbertriviaplugin"
 	"github.com/iopred/bruxism/playingplugin"
 	"github.com/iopred/bruxism/reminderplugin"
@@ -84,8 +81,9 @@ func main() {
 	cp.AddCommand("stats", statsplugin.StatsCommand, statsplugin.StatsHelp)
 	cp.AddCommand("info", statsplugin.StatsCommand, nil)
 	cp.AddCommand("stat", statsplugin.StatsCommand, nil)
-	cp.AddCommand("numbertrivia", numbertriviaplugin.NumberTriviaCommand, numbertriviaplugin.NumberTriviaHelp)
-	cp.AddCommand("mtg", mtgplugin.MTGCommand, mtgplugin.MTGHelp)
+	if bot.MashableKey != "" {
+		cp.AddCommand("numbertrivia", numbertriviaplugin.NumberTriviaCommand, numbertriviaplugin.NumberTriviaHelp)
+	}
 
 	youtube := bruxism.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveVideoIDs, youtubeLiveChatIDs)
 	bot.RegisterService(youtube)
@@ -94,7 +92,6 @@ func main() {
 	bot.RegisterPlugin(youtube, slowmodeplugin.NewSlowModePlugin())
 	bot.RegisterPlugin(youtube, topstreamersplugin.NewTopStreamersPlugin(youtube))
 	bot.RegisterPlugin(youtube, streamerplugin.NewStreamerPlugin(youtube))
-	bot.RegisterPlugin(youtube, comicplugin.New())
 	bot.RegisterPlugin(youtube, reminderplugin.NewReminderPlugin())
 
 	// Register the Discord service if we have an email or token.
@@ -113,11 +110,9 @@ func main() {
 		bot.RegisterPlugin(discord, topstreamersplugin.NewTopStreamersPlugin(youtube))
 		bot.RegisterPlugin(discord, streamerplugin.NewStreamerPlugin(youtube))
 		bot.RegisterPlugin(discord, playingplugin.NewPlayingPlugin())
-		bot.RegisterPlugin(discord, comicplugin.New())
 		bot.RegisterPlugin(discord, directmessageinviteplugin.NewDirectMessageInvitePlugin())
 		bot.RegisterPlugin(discord, reminderplugin.NewReminderPlugin())
 		bot.RegisterPlugin(discord, emojiplugin.NewEmojiPlugin())
-		bot.RegisterPlugin(discord, liveplugin.NewLivePlugin(discord, youtube))
 	}
 
 	// Register the IRC service if we have an IRC server and Username.
@@ -128,7 +123,6 @@ func main() {
 		bot.RegisterPlugin(irc, cp)
 		bot.RegisterPlugin(irc, topstreamersplugin.NewTopStreamersPlugin(youtube))
 		bot.RegisterPlugin(irc, streamerplugin.NewStreamerPlugin(youtube))
-		bot.RegisterPlugin(irc, comicplugin.New())
 		bot.RegisterPlugin(irc, reminderplugin.NewReminderPlugin())
 	}
 
