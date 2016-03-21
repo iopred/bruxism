@@ -190,8 +190,8 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 	}
 }
 
-// NewLivePlugin will create a new slow mode plugin.
-func NewLivePlugin(d *bruxism.Discord, yt *bruxism.YouTube) bruxism.Plugin {
+// New will create a new slow mode plugin.
+func New(d *bruxism.Discord, yt *bruxism.YouTube) bruxism.Plugin {
 	return &livePlugin{
 		discord: d,
 		youTube: yt,

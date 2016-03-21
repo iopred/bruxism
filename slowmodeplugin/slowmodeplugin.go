@@ -85,8 +85,8 @@ func (p *slowModePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 	}
 }
 
-// NewSlowModePlugin will create a new slow mode plugin.
-func NewSlowModePlugin() bruxism.Plugin {
+// New will create a new slow mode plugin.
+func New() bruxism.Plugin {
 	return &slowModePlugin{
 		Enabled: make(map[string]bool),
 	}

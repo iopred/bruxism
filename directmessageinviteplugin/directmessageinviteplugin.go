@@ -40,8 +40,8 @@ func directMessageInviteMessageFunc(bot *bruxism.Bot, service bruxism.Service, m
 	}
 }
 
-// NewDirectMessageInvitePlugin creates a new direct message invite plugin.
-func NewDirectMessageInvitePlugin() bruxism.Plugin {
+// New creates a new direct message invite plugin.
+func New() bruxism.Plugin {
 	p := bruxism.NewSimplePlugin("DirectMessageInvite")
 	p.MessageFunc = directMessageInviteMessageFunc
 	return p

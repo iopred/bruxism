@@ -23,7 +23,7 @@ func NewCommandHelp(args, help string) CommandHelpFunc {
 // MatchesCommandString returns true if a message matches a command.
 // Commands will be matched ignoring case with a prefix if they are not private messages.
 func MatchesCommandString(service Service, commandString string, private bool, message string) bool {
-	lowerMessage := strings.ToLower(strings.Trim(message, " "))
+	lowerMessage := strings.ToLower(strings.TrimSpace(message))
 	lowerPrefix := strings.ToLower(service.CommandPrefix())
 
 	if strings.HasPrefix(lowerMessage, lowerPrefix) {
@@ -32,7 +32,7 @@ func MatchesCommandString(service Service, commandString string, private bool, m
 		return false
 	}
 
-	lowerMessage = strings.Trim(lowerMessage, " ")
+	lowerMessage = strings.TrimSpace(lowerMessage)
 	lowerCommand := strings.ToLower(commandString)
 
 	return lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ")
@@ -49,7 +49,7 @@ func MatchesCommand(service Service, commandString string, message Message) bool
 
 // ParseCommandString will strip all prefixes from a message string, and return that string, and a space separated tokenized version of that string.
 func ParseCommandString(service Service, message string) (string, []string) {
-	message = strings.Trim(message, " ")
+	message = strings.TrimSpace(message)
 
 	lowerMessage := strings.ToLower(message)
 	lowerPrefix := strings.ToLower(service.CommandPrefix())
@@ -57,7 +57,7 @@ func ParseCommandString(service Service, message string) (string, []string) {
 	if strings.HasPrefix(lowerMessage, lowerPrefix) {
 		message = message[len(lowerPrefix):]
 	}
-	message = strings.Trim(message, " ")
+	message = strings.TrimSpace(message)
 
 	parts := strings.Split(message, " ")
 	if len(parts) > 1 {

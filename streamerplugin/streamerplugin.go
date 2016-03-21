@@ -115,8 +115,8 @@ func (p *streamerPlugin) streamer(search string, bold bool) (string, error) {
 	return fmt.Sprintf("%s%s%s: %s%s videos, %s views.%s", b, channelList.Items[0].Snippet.Title, b, subscriberCount, humanize.Comma(int64(channelList.Items[0].Statistics.VideoCount)), humanize.Comma(int64(channelList.Items[0].Statistics.ViewCount)), liveText), nil
 }
 
-// NewStreamerPlugin will create a new streamer plugin.
-func NewStreamerPlugin(yt *bruxism.YouTube) bruxism.Plugin {
+// New will create a new streamer plugin.
+func New(yt *bruxism.YouTube) bruxism.Plugin {
 	p := &streamerPlugin{
 		SimplePlugin: *bruxism.NewSimplePlugin("Streamer"),
 		youTube:      yt,

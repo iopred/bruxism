@@ -56,8 +56,8 @@ func emojiHelpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Me
 	return bruxism.CommandHelp(service, "emoji", "<emoji>", "Returns a big version of an emoji.")
 }
 
-// NewEmojiPlugin creates a new emoji plugin.
-func NewEmojiPlugin() bruxism.Plugin {
+// New creates a new emoji plugin.
+func New() bruxism.Plugin {
 	p := bruxism.NewSimplePlugin("Emoji")
 	p.MessageFunc = emojiMessageFunc
 	p.HelpFunc = emojiHelpFunc

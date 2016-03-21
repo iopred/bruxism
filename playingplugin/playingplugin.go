@@ -65,8 +65,8 @@ func (p *playingPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, m
 	}
 }
 
-// NewPlayingPlugin will create a new top streamers plugin.
-func NewPlayingPlugin() bruxism.Plugin {
+// New will create a new top streamers plugin.
+func New() bruxism.Plugin {
 	p := &playingPlugin{}
 	p.MessageFunc = p.messageFunc
 	p.HelpFunc = p.helpFunc

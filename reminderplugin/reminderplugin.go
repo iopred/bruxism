@@ -248,8 +248,8 @@ func (p *ReminderPlugin) Save() ([]byte, error) {
 	return json.Marshal(p)
 }
 
-// NewReminderPlugin will create a new Reminder plugin.
-func NewReminderPlugin() bruxism.Plugin {
+// New will create a new Reminder plugin.
+func New() bruxism.Plugin {
 	p := &ReminderPlugin{
 		SimplePlugin: *bruxism.NewSimplePlugin("Reminder"),
 		Reminders:    []*Reminder{},
