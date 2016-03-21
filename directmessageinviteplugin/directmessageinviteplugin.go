@@ -23,7 +23,7 @@ func directMessageInviteMessageFunc(bot *bruxism.Bot, service bruxism.Service, m
 		if id != messageMessage && strings.HasPrefix(messageMessage, "http") {
 
 			if discord.ApplicationClientID != "" {
-				service.PrivateMessage(message.UserID(), fmt.Sprintf("Please visit https://discordapp.com/oauth2/authorize?client_id=%s&scope=bot to add Septapus to your server.", discord.ApplicationClientID))
+				service.PrivateMessage(message.UserID(), fmt.Sprintf("Please visit https://discordapp.com/oauth2/authorize?client_id=%s&scope=bot to add %s to your server.", discord.ApplicationClientID, service.UserName()))
 			} else {
 				if err := service.Join(id); err != nil {
 					if err == bruxism.ErrAlreadyJoined {
