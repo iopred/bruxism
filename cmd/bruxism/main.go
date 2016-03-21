@@ -10,6 +10,7 @@ import (
 
 	"github.com/iopred/bruxism"
 	"github.com/iopred/bruxism/directmessageinviteplugin"
+	"github.com/iopred/bruxism/discordavatarplugin"
 	"github.com/iopred/bruxism/emojiplugin"
 	"github.com/iopred/bruxism/inviteplugin"
 	"github.com/iopred/bruxism/numbertriviaplugin"
@@ -89,10 +90,10 @@ func main() {
 	bot.RegisterService(youtube)
 
 	bot.RegisterPlugin(youtube, cp)
-	bot.RegisterPlugin(youtube, slowmodeplugin.NewSlowModePlugin())
-	bot.RegisterPlugin(youtube, topstreamersplugin.NewTopStreamersPlugin(youtube))
-	bot.RegisterPlugin(youtube, streamerplugin.NewStreamerPlugin(youtube))
-	bot.RegisterPlugin(youtube, reminderplugin.NewReminderPlugin())
+	bot.RegisterPlugin(youtube, slowmodeplugin.New())
+	bot.RegisterPlugin(youtube, topstreamersplugin.New(youtube))
+	bot.RegisterPlugin(youtube, streamerplugin.New(youtube))
+	bot.RegisterPlugin(youtube, reminderplugin.New())
 
 	// Register the Discord service if we have an email or token.
 	if (discordEmail != "" && discordPassword != "") || discordToken != "" {
@@ -107,12 +108,13 @@ func main() {
 		bot.RegisterService(discord)
 
 		bot.RegisterPlugin(discord, cp)
-		bot.RegisterPlugin(discord, topstreamersplugin.NewTopStreamersPlugin(youtube))
-		bot.RegisterPlugin(discord, streamerplugin.NewStreamerPlugin(youtube))
-		bot.RegisterPlugin(discord, playingplugin.NewPlayingPlugin())
-		bot.RegisterPlugin(discord, directmessageinviteplugin.NewDirectMessageInvitePlugin())
-		bot.RegisterPlugin(discord, reminderplugin.NewReminderPlugin())
-		bot.RegisterPlugin(discord, emojiplugin.NewEmojiPlugin())
+		bot.RegisterPlugin(discord, topstreamersplugin.New(youtube))
+		bot.RegisterPlugin(discord, streamerplugin.New(youtube))
+		bot.RegisterPlugin(discord, playingplugin.New())
+		bot.RegisterPlugin(discord, directmessageinviteplugin.New())
+		bot.RegisterPlugin(discord, reminderplugin.New())
+		bot.RegisterPlugin(discord, emojiplugin.New())
+		bot.RegisterPlugin(discord, discordavatarplugin.New())
 	}
 
 	// Register the IRC service if we have an IRC server and Username.
@@ -121,9 +123,9 @@ func main() {
 		bot.RegisterService(irc)
 
 		bot.RegisterPlugin(irc, cp)
-		bot.RegisterPlugin(irc, topstreamersplugin.NewTopStreamersPlugin(youtube))
-		bot.RegisterPlugin(irc, streamerplugin.NewStreamerPlugin(youtube))
-		bot.RegisterPlugin(irc, reminderplugin.NewReminderPlugin())
+		bot.RegisterPlugin(irc, topstreamersplugin.New(youtube))
+		bot.RegisterPlugin(irc, streamerplugin.New(youtube))
+		bot.RegisterPlugin(irc, reminderplugin.New())
 	}
 
 	// Start all our services.
