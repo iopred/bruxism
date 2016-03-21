@@ -2,6 +2,7 @@ package inviteplugin
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/iopred/bruxism"
@@ -51,7 +52,7 @@ func InviteCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Me
 				service.PrivateMessage(message.UserID(), "I have already joined that server.")
 				return
 			}
-			fmt.Printf("Error joining %s %v", service.Name(), err)
+			log.Println("Error joining %s %v", service.Name(), err)
 		} else if service.Name() == bruxism.DiscordServiceName {
 			service.PrivateMessage(message.UserID(), "I have joined that server.")
 		}

@@ -2,6 +2,7 @@ package directmessageinviteplugin
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/iopred/bruxism"
@@ -30,7 +31,7 @@ func directMessageInviteMessageFunc(bot *bruxism.Bot, service bruxism.Service, m
 						service.PrivateMessage(message.UserID(), "I have already joined that server.")
 						return
 					}
-					fmt.Printf("Error joining %s %v", service.Name(), err)
+					log.Println("Error joining %s %v", service.Name(), err)
 					return
 				}
 				service.PrivateMessage(message.UserID(), "I have joined that server.")

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"sort"
 	"strings"
@@ -47,7 +48,7 @@ var MTGRestReplacer = strings.NewReplacer("*", "\\*")
 func init() {
 	file, err := os.Open("mtg/AllSets-x.json")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 	defer file.Close()
@@ -57,7 +58,7 @@ func init() {
 	d := json.NewDecoder(bufio.NewReader(file))
 	err = d.Decode(&MTGSets)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image/png"
+	"log"
 	"math"
 	"math/rand"
 	"strconv"
@@ -100,7 +101,7 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 					return
 				}
 
-				fmt.Println(err)
+				log.Println("Error uploading comic: ", err)
 				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the comic to imgur.", message.UserName()))
 			}
 		}()
