@@ -27,6 +27,13 @@ func emojiFile(s string) string {
 	return found
 }
 
+func emojiLoadFunc(bot *bruxism.Bot, service bruxism.Service, data []byte) error {
+	if service.Name() != bruxism.DiscordServiceName {
+		panic("Emoji Plugin only supports Discord.")
+	}
+	return nil
+}
+
 func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if service.Name() == bruxism.DiscordServiceName && !service.IsMe(message) {
 		if bruxism.MatchesCommand(service, "emoji", message) {
@@ -59,6 +66,7 @@ func emojiHelpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Me
 // New creates a new emoji plugin.
 func New() bruxism.Plugin {
 	p := bruxism.NewSimplePlugin("Emoji")
+	p.LoadFunc = emojiLoadFunc
 	p.MessageFunc = emojiMessageFunc
 	p.HelpFunc = emojiHelpFunc
 	return p

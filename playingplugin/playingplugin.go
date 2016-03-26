@@ -20,6 +20,10 @@ func (p *playingPlugin) Name() string {
 
 // Load will load plugin state from a byte array.
 func (p *playingPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byte) error {
+	if service.Name() != bruxism.DiscordServiceName {
+		panic("Playing Plugin only supports Discord.")
+	}
+
 	if data != nil {
 		if err := json.Unmarshal(data, p); err != nil {
 			log.Println("Error loading data", err)

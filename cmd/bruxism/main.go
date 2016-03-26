@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/iopred/bruxism"
+	"github.com/iopred/bruxism/carbonitexplugin"
 	"github.com/iopred/bruxism/directmessageinviteplugin"
 	"github.com/iopred/bruxism/discordavatarplugin"
 	"github.com/iopred/bruxism/emojiplugin"
@@ -40,6 +41,7 @@ var ircChannels string
 var imgurID string
 var imgurAlbum string
 var mashableKey string
+var carbonitexKey string
 
 func init() {
 	flag.BoolVar(&youtubeURL, "youtubeurl", false, "Generates a URL that provides an auth code.")
@@ -60,6 +62,7 @@ func init() {
 	flag.StringVar(&imgurID, "imgurid", "", "Imgur client id.")
 	flag.StringVar(&imgurAlbum, "imguralbum", "", "Imgur album id.")
 	flag.StringVar(&mashableKey, "mashablekey", "", "Mashable key.")
+	flag.StringVar(&carbonitexKey, "carbonitexkey", "", "Carbonitex key for discord server count tracking.")
 	flag.Parse()
 
 	rand.Seed(time.Now().UnixNano())
@@ -115,6 +118,9 @@ func main() {
 		bot.RegisterPlugin(discord, reminderplugin.New())
 		bot.RegisterPlugin(discord, emojiplugin.New())
 		bot.RegisterPlugin(discord, discordavatarplugin.New())
+		if carbonitexKey != "" {
+			bot.RegisterPlugin(discord, carbonitexplugin.New(carbonitexKey))
+		}
 	}
 
 	// Register the IRC service if we have an IRC server and Username.
