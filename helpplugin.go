@@ -55,8 +55,14 @@ func HelpCommand(bot *Bot, service Service, message Message, command string, par
 	}
 
 	if service.SupportsMultiline() {
-		if err := service.SendMessage(message.Channel(), strings.Join(help, "\n")); err != nil {
-			log.Println(err)
+		if service.Name() == DiscordServiceName {
+			if err := service.PrivateMessage(message.UserID(), strings.Join(help, "\n")); err != nil {
+				log.Println(err)
+			}
+		} else {
+			if err := service.SendMessage(message.Channel(), strings.Join(help, "\n")); err != nil {
+				log.Println(err)
+			}
 		}
 	} else {
 		for _, h := range help {

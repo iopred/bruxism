@@ -136,7 +136,6 @@ func (d *Discord) Open() (<-chan Message, error) {
 		return nil, err
 	}
 
-	d.Session.State.MaxMessageCount = 50
 	d.Session.AddHandler(d.onMessageCreate)
 	d.Session.AddHandler(d.onMessageUpdate)
 	d.Session.AddHandler(d.onMessageDelete)

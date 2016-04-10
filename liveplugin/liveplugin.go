@@ -26,7 +26,8 @@ type livePlugin struct {
 	discord *bruxism.Discord
 	youTube *bruxism.YouTube
 	// Map from UserID -> liveChannel
-	Live map[string]*liveChannel
+	Live        map[string]*liveChannel
+	LastVideoId string
 }
 
 // Name returns the name of the plugin.
@@ -72,17 +73,21 @@ func (p *livePlugin) pollChannel(bot *bruxism.Bot, service bruxism.Service, lc *
 			}
 		}
 		if !found {
-			if lc.Last.Add(30 * time.Minute).Before(time.Now()) {
+			if lc.Last.Add(6 * time.Hour).Before(time.Now()) {
 				lc.Last = time.Now()
-				if service.Name() == bruxism.DiscordServiceName {
-					service.SendMessage(livePluginChannelID, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
-					if lc.DiscordChannelID != "" {
-						service.SendMessage(lc.DiscordChannelID, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
-					}
-				} else {
-					service.SendMessage(livePluginChannelID, fmt.Sprintf("%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserName, v))
-					if lc.DiscordChannelID != "" {
-						service.SendMessage(lc.DiscordChannelID, fmt.Sprintf("%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserName, v))
+
+				if p.LastVideoId != v {
+					p.LastVideoId = v
+					if service.Name() == bruxism.DiscordServiceName {
+						service.SendMessage(livePluginChannelID, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
+						if lc.DiscordChannelID != "" {
+							service.SendMessage(lc.DiscordChannelID, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
+						}
+					} else {
+						service.SendMessage(livePluginChannelID, fmt.Sprintf("%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserName, v))
+						if lc.DiscordChannelID != "" {
+							service.SendMessage(lc.DiscordChannelID, fmt.Sprintf("%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserName, v))
+						}
 					}
 				}
 			}
