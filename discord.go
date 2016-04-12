@@ -245,8 +245,8 @@ func (d *Discord) IsBotOwner(message Message) bool {
 
 // IsPrivate returns whether or not a message was private.
 func (d *Discord) IsPrivate(message Message) bool {
-	_, err := d.Session.State.PrivateChannel(message.Channel())
-	return err == nil
+	c, err := d.Session.State.PrivateChannel(message.Channel())
+	return err == nil && c.IsPrivate
 }
 
 // IsModerator returns whether or not the sender of a message is a moderator.
