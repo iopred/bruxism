@@ -1,9 +1,9 @@
 package carbonitexplugin
 
 import (
-	"bytes"
-	"encoding/json"
+	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/iopred/bruxism"
@@ -23,20 +23,11 @@ func (p *carbonitexPlugin) carbonitexPluginLoadFunc(bot *bruxism.Bot, service br
 	return nil
 }
 
-// Run will poll YouTube for channels going live and send messages.
 func (p *carbonitexPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 	for {
-		<-time.After(10 * time.Second)
+		<-time.After(30 * time.Second)
 
-		body, err := json.Marshal(struct {
-			Key         string `json:"key"`
-			ServerCount int    `json:"servercount"`
-		}{p.key, service.ChannelCount()})
-		if err != nil {
-			return
-		}
-
-		http.Post("https://www.carbonitex.net/discord/data/botdata.php", "application/json", bytes.NewBuffer(body))
+		http.PostForm("https://www.carbonitex.net/discord/data/botdata.php", url.Values{"key": {p.key}, "servercount": {fmt.Sprintf("%d", service.ChannelCount())}})
 
 		<-time.After(55 * time.Minute)
 	}
