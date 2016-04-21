@@ -6,6 +6,7 @@ install:
     - go get github.com/iopred/bruxism/carbonitexplugin
     - go get github.com/iopred/bruxism/comicplugin
     - go get github.com/iopred/bruxism/directmessageinviteplugin
+    - go get github.com/iopred/bruxism/discordavatarplugin
     - go get github.com/iopred/bruxism/emojiplugin
     - go get github.com/iopred/bruxism/inviteplugin
     - go get github.com/iopred/bruxism/liveplugin
