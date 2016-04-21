@@ -83,3 +83,6 @@ It is suggested that you set `-discordowneruserid` as this prevents anyone from 
 * `imgurAlbum` - Sets an optional the Imgur album id, used for uploading images to imgur.
 * `mashablekey` - Sets the mashable oauth key.
 
+## Special Thanks
+
+[Bruce Marriner](https://github.com/bwmarrin/discordgo) - For DiscordGo and the Music Plugin.
