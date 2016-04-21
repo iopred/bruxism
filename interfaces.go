@@ -50,6 +50,7 @@ type Service interface {
 	IsBotOwner(message Message) bool
 	IsPrivate(message Message) bool
 	IsModerator(message Message) bool
+	SupportsPrivateMessages() bool
 	SupportsMultiline() bool
 	CommandPrefix() string
 	ChannelCount() int

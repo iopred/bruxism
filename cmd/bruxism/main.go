@@ -77,9 +77,6 @@ func main() {
 
 	// Generally CommandPlugins don't hold state, so we share one instance of the command plugin for all services.
 	cp := bruxism.NewCommandPlugin()
-	cp.AddCommand("help", bruxism.HelpCommand, bruxism.HelpHelp)
-	cp.AddCommand("command", bruxism.HelpCommand, nil)
-	cp.AddCommand("commands", bruxism.HelpCommand, nil)
 	cp.AddCommand("invite", inviteplugin.InviteCommand, inviteplugin.InviteHelp)
 	cp.AddCommand("join", inviteplugin.InviteCommand, nil)
 	cp.AddCommand("stats", statsplugin.StatsCommand, statsplugin.StatsHelp)

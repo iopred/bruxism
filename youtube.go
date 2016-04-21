@@ -500,6 +500,11 @@ func (yt *YouTube) Typing(channel string) error {
 	return errors.New("Tying is not supported on YouTube.")
 }
 
+// SupportsPrivateMessages returns whether the service supports private messages.
+func (yt *YouTube) SupportsPrivateMessages() bool {
+	return false
+}
+
 // SupportsMultiline returns whether the service supports multiline messages.
 func (yt *YouTube) SupportsMultiline() bool {
 	return false

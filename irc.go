@@ -169,6 +169,11 @@ func (i *IRC) PrivateMessage(userID, message string) error {
 	return i.SendMessage(userID, message)
 }
 
+// SupportsPrivateMessages returns whether the service supports private messages.
+func (i *IRC) SupportsPrivateMessages() bool {
+	return true
+}
+
 // SupportsMultiline returns whether the service supports multiline messages.
 func (i *IRC) SupportsMultiline() bool {
 	return false

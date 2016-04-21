@@ -46,8 +46,7 @@ func (p *playingPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, mess
 		return nil
 	}
 
-	discord := service.(*bruxism.Discord)
-	if discord.OwnerUserID != "" && !service.IsBotOwner(message) {
+	if !service.IsBotOwner(message) {
 		return nil
 	}
 
@@ -58,8 +57,7 @@ func (p *playingPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, mess
 func (p *playingPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if !service.IsMe(message) {
 		if bruxism.MatchesCommand(service, "playing", message) {
-			discord := service.(*bruxism.Discord)
-			if discord.OwnerUserID != "" && !service.IsBotOwner(message) {
+			if !service.IsBotOwner(message) {
 				return
 			}
 

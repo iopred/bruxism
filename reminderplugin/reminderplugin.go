@@ -47,6 +47,7 @@ var randomMessages = []string{
 	"take pizza out of the oven",
 	"check my email",
 	"feed the baby",
+	"play some quake",
 }
 
 func (p *ReminderPlugin) random(list []string) string {
@@ -59,12 +60,12 @@ func (p *ReminderPlugin) randomReminder(service bruxism.Service) string {
 		ticks = "`"
 	}
 
-	return fmt.Sprintf("%s%sreminder %s | %s%s", ticks, service.CommandPrefix(), p.random(randomTimes), p.random(randomMessages), ticks)
+	return fmt.Sprintf("%s%sreminder %s %s%s", ticks, service.CommandPrefix(), p.random(randomTimes), p.random(randomMessages), ticks)
 }
 
 func (p *ReminderPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	help := []string{
-		bruxism.CommandHelp(service, "reminder", "<time> | <reminder>", "Sets a reminder that is sent after the provided time.")[0],
+		bruxism.CommandHelp(service, "reminder", "<time> <reminder>", "Sets a reminder that is sent after the provided time.")[0],
 	}
 	if detailed {
 		help = append(help, []string{
@@ -76,51 +77,47 @@ func (p *ReminderPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, mes
 	return help
 }
 
-func (p *ReminderPlugin) parseTime(str string) (time.Time, error) {
-	str = strings.ToLower(strings.Trim(str, " "))
-	if str == "tomorrow" {
-		return time.Now().Add(1 * time.Hour * 24), nil
+func (p *ReminderPlugin) parseReminder(parts []string) (time.Time, string, error) {
+	if parts[0] == "tomorrow" {
+		return time.Now().Add(1 * time.Hour * 24), strings.Join(parts[1:], " "), nil
 	}
 
-	split := strings.Split(str, " ")
-	if len(split) == 2 {
-		if split[0] == "next" {
-			switch split[1] {
-			case "week":
-				return time.Now().Add(1 * time.Hour * 24 * 7), nil
-			case "month":
-				return time.Now().Add(1 * time.Hour * 24 * 7 * 4), nil
-			case "year":
-				return time.Now().Add(1 * time.Hour * 24 * 365), nil
-			default:
-				return time.Time{}, errors.New("Invalid next.")
-			}
+	if parts[0] == "next" {
+		switch parts[1] {
+		case "week":
+			return time.Now().Add(1 * time.Hour * 24 * 7), strings.Join(parts[2:], " "), nil
+		case "month":
+			return time.Now().Add(1 * time.Hour * 24 * 7 * 4), strings.Join(parts[2:], " "), nil
+		case "year":
+			return time.Now().Add(1 * time.Hour * 24 * 365), strings.Join(parts[2:], " "), nil
+		default:
+			return time.Time{}, "", errors.New("Invalid next.")
 		}
-
-		i, err := strconv.Atoi(split[0])
-		if err != nil {
-			return time.Time{}, err
-		}
-
-		switch {
-		case strings.HasPrefix(split[1], "s"):
-			return time.Now().Add(time.Duration(i) * time.Second), nil
-		case strings.HasPrefix(split[1], "min"):
-			return time.Now().Add(time.Duration(i) * time.Minute), nil
-		case strings.HasPrefix(split[1], "h"):
-			return time.Now().Add(time.Duration(i) * time.Hour), nil
-		case strings.HasPrefix(split[1], "d"):
-			return time.Now().Add(time.Duration(i) * time.Hour * 24), nil
-		case strings.HasPrefix(split[1], "w"):
-			return time.Now().Add(time.Duration(i) * time.Hour * 24 * 7), nil
-		case strings.HasPrefix(split[1], "mon"):
-			return time.Now().Add(time.Duration(i) * time.Hour * 24 * 7 * 4), nil
-		case strings.HasPrefix(split[1], "y"):
-			return time.Now().Add(time.Duration(i) * time.Hour * 24 * 365), nil
-		}
-
 	}
-	return time.Time{}, errors.New("Invalid string.")
+
+	i, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return time.Time{}, "", err
+	}
+
+	switch {
+	case strings.HasPrefix(parts[1], "sec"):
+		return time.Now().Add(time.Duration(i) * time.Second), strings.Join(parts[2:], " "), nil
+	case strings.HasPrefix(parts[1], "min"):
+		return time.Now().Add(time.Duration(i) * time.Minute), strings.Join(parts[2:], " "), nil
+	case strings.HasPrefix(parts[1], "hour"):
+		return time.Now().Add(time.Duration(i) * time.Hour), strings.Join(parts[2:], " "), nil
+	case strings.HasPrefix(parts[1], "day"):
+		return time.Now().Add(time.Duration(i) * time.Hour * 24), strings.Join(parts[2:], " "), nil
+	case strings.HasPrefix(parts[1], "week"):
+		return time.Now().Add(time.Duration(i) * time.Hour * 24 * 7), strings.Join(parts[2:], " "), nil
+	case strings.HasPrefix(parts[1], "month"):
+		return time.Now().Add(time.Duration(i) * time.Hour * 24 * 7 * 4), strings.Join(parts[2:], " "), nil
+	case strings.HasPrefix(parts[1], "year"):
+		return time.Now().Add(time.Duration(i) * time.Hour * 24 * 365), strings.Join(parts[2:], " "), nil
+	}
+
+	return time.Time{}, "", errors.New("Invalid string.")
 }
 
 // AddReminder adds a reminder.
@@ -155,21 +152,15 @@ func (p *ReminderPlugin) AddReminder(reminder *Reminder) error {
 
 func (p *ReminderPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if !service.IsMe(message) {
-		if bruxism.MatchesCommand(service, "reminder", message) {
-			query, parts := bruxism.ParseCommand(service, message)
+		if bruxism.MatchesCommand(service, "remind", message) {
+			_, parts := bruxism.ParseCommand(service, message)
 
-			if len(parts) == 0 {
+			if len(parts) < 2 {
 				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder, no time or message. eg: %s", p.randomReminder(service)))
 				return
 			}
 
-			split := strings.Split(query, "|")
-			if len(split) != 2 {
-				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder. eg: %s", p.randomReminder(service)))
-				return
-			}
-
-			t, err := p.parseTime(strings.Trim(split[0], " "))
+			t, r, err := p.parseReminder(parts)
 
 			now := time.Now()
 
@@ -178,19 +169,22 @@ func (p *ReminderPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, 
 				return
 			}
 
+			if r == "" {
+				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder, no message. eg: %s", p.randomReminder(service)))
+				return
+			}
+
 			requester := message.UserName()
 			if service.Name() == bruxism.DiscordServiceName {
 				requester = fmt.Sprintf("<@%s>", message.UserID())
 			}
-
-			raw := strings.Split(message.RawMessage(), "|")
 
 			err = p.AddReminder(&Reminder{
 				StartTime: now,
 				Time:      t,
 				Requester: requester,
 				Target:    message.Channel(),
-				Message:   strings.Trim(raw[len(raw)-1], " "),
+				Message:   r,
 				IsPrivate: service.IsPrivate(message),
 			})
 			if err != nil {

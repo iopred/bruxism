@@ -64,4 +64,4 @@ func NumberTriviaCommand(bot *bruxism.Bot, service bruxism.Service, message brux
 }
 
 // NumberTriviaHelp is the help for the number trivia plugin.
-var NumberTriviaHelp = bruxism.NewCommandHelp("[<number>]", "Returns trivia for a random number or a specified number if provided.")
+var NumberTriviaHelp = bruxism.NewCommandHelp("[number]", "Returns trivia for a random number, or a specified number if provided.")

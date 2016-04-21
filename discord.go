@@ -228,6 +228,11 @@ func (d *Discord) PrivateMessage(userID, message string) error {
 	return d.SendMessage(c.ID, message)
 }
 
+// SupportsPrivateMessages returns whether the service supports private messages.
+func (d *Discord) SupportsPrivateMessages() bool {
+	return true
+}
+
 // SupportsMultiline returns whether the service supports multiline messages.
 func (d *Discord) SupportsMultiline() bool {
 	return true

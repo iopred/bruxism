@@ -42,7 +42,7 @@ func avatarHelpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.M
 	if detailed {
 		return nil
 	}
-	return bruxism.CommandHelp(service, "avatar", "[<@username>]", "Returns a big version of an avatar.")
+	return bruxism.CommandHelp(service, "avatar", "[@username]", "Returns a big version of your avatar, or a users avatar if provided.")
 }
 
 // New creates a new discordavatar plugin.

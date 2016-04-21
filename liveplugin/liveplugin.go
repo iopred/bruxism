@@ -120,7 +120,7 @@ func (p *livePlugin) Save() ([]byte, error) {
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	c, err := p.discord.Session.State.Channel(message.Channel())
-	if err != nil || c.GuildID != livePluginGuildID {
+	if (err != nil || c.GuildID != livePluginGuildID) && !service.IsPrivate(message) {
 		return nil
 	}
 
@@ -128,7 +128,7 @@ func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bru
 		return []string{
 			fmt.Sprintf("Announces when you go live in <#%s> as well as an optional channel.", livePluginChannelID),
 			bruxism.CommandHelp(service, "setyoutubechannel", "<youtube channel id>", "Sets your youtube channel id.")[0],
-			bruxism.CommandHelp(service, "setdiscordchannel", "", "Will additionally announce you going live in this channel.")[0],
+			bruxism.CommandHelp(service, "setdiscordchannel", "", fmt.Sprintf("%s will also announce you going live in this channel.", service.UserName()))[0],
 			bruxism.CommandHelp(service, "unsetdiscordchannel", "", "Disables additional live announcement of channel.")[0],
 			"Example:",
 			fmt.Sprintf("`%ssetyoutubechannel UC392dac34_32fafe2deadbeef`", service.CommandPrefix()),
@@ -164,7 +164,7 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 
 				p.pollChannel(bot, service, lc)
 
-				service.SendMessage(messageChannel, fmt.Sprintf("YouTube Channel ID set. A message will be posted to %s when you go live.", "https://discord.gg/0huaakl2TuIAkv97"))
+				service.SendMessage(messageChannel, fmt.Sprintf("YouTube Channel ID set. A message will be posted to <#%s> when you go live.", livePluginChannelID))
 			} else {
 				service.SendMessage(messageChannel, "Sorry, please provide a YouTube Channel ID. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
 			}

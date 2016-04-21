@@ -1,14 +1,27 @@
 package bruxism
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sort"
 	"strings"
 )
 
-// HelpHelp returns help for the help plugin.
-func HelpHelp(bot *Bot, service Service, message Message) (string, string) {
+type helpPlugin struct {
+	Private map[string]bool
+}
+
+func (p *helpPlugin) Name() string {
+	return "Help"
+}
+
+func (p *helpPlugin) Help(bot *Bot, service Service, message Message, detailed bool) []string {
+	privs := service.SupportsPrivateMessages() && !service.IsPrivate(message) && (service.IsBotOwner(message) || service.IsModerator(message))
+	if detailed && !privs {
+		return nil
+	}
+
 	ticks := ""
 	if service.Name() == DiscordServiceName {
 		ticks = "`"
@@ -17,58 +30,125 @@ func HelpHelp(bot *Bot, service Service, message Message) (string, string) {
 	commands := []string{}
 
 	for _, plugin := range bot.Services[service.Name()].Plugins {
-		t := plugin.Help(bot, service, message, true)
+		hasDetailed := false
 
-		if t != nil && len(t) > 0 {
+		if plugin == p {
+			hasDetailed = privs
+		} else {
+			t := plugin.Help(bot, service, message, true)
+			hasDetailed = t != nil && len(t) > 0
+		}
+
+		if hasDetailed {
 			commands = append(commands, strings.ToLower(plugin.Name()))
 		}
 	}
 
 	sort.Strings(commands)
 
-	return "[<topic>]", fmt.Sprintf("Returns generic help or help for a specific topic. Available topics: %s%s%s", ticks, strings.Join(commands, ", "), ticks)
+	help := []string{
+		CommandHelp(service, "help", "[topic]", fmt.Sprintf("Returns help for a specific topic. Available topics: %s%s%s", ticks, strings.Join(commands, ", "), ticks))[0],
+	}
+
+	if detailed {
+		help = append(help, []string{
+			CommandHelp(service, "setprivatehelp", "", "Sets help text to be sent through private messages in this channel.")[0],
+			CommandHelp(service, "setpublichelp", "", "Sets the default help behavior for this channel.")[0],
+		}...)
+	}
+
+	return help
 }
 
-// HelpCommand is a command for returning help text for all registered plugins on a service.
-func HelpCommand(bot *Bot, service Service, message Message, command string, parts []string) {
-	help := []string{}
+func (p *helpPlugin) Message(bot *Bot, service Service, message Message) {
+	if !service.IsMe(message) {
+		if MatchesCommand(service, "help", message) || MatchesCommand(service, "command", message) {
+			_, parts := ParseCommand(service, message)
 
-	for _, plugin := range bot.Services[service.Name()].Plugins {
-		var h []string
-		if len(parts) == 0 {
-			h = plugin.Help(bot, service, message, false)
-		} else if len(parts) == 1 && strings.ToLower(parts[0]) == strings.ToLower(plugin.Name()) {
-			h = plugin.Help(bot, service, message, true)
-		}
-		if h != nil && len(h) > 0 {
-			help = append(help, h...)
-		}
-	}
+			help := []string{}
 
-	if len(parts) == 0 {
-		sort.Strings(help)
-		help = append([]string{fmt.Sprintf("All commands can be used in private messages without the `%s` prefix.", service.CommandPrefix())}, help...)
-	}
-
-	if len(parts) != 0 && len(help) == 0 {
-		help = []string{fmt.Sprintf("Unknown topic: %s", parts[0])}
-	}
-
-	if service.SupportsMultiline() {
-		if service.Name() == DiscordServiceName {
-			if err := service.PrivateMessage(message.UserID(), strings.Join(help, "\n")); err != nil {
-				log.Println(err)
+			for _, plugin := range bot.Services[service.Name()].Plugins {
+				var h []string
+				if len(parts) == 0 {
+					h = plugin.Help(bot, service, message, false)
+				} else if len(parts) == 1 && strings.ToLower(parts[0]) == strings.ToLower(plugin.Name()) {
+					h = plugin.Help(bot, service, message, true)
+				}
+				if h != nil && len(h) > 0 {
+					help = append(help, h...)
+				}
 			}
-		} else {
-			if err := service.SendMessage(message.Channel(), strings.Join(help, "\n")); err != nil {
-				log.Println(err)
+
+			if len(parts) == 0 {
+				sort.Strings(help)
+				help = append([]string{fmt.Sprintf("All commands can be used in private messages without the `%s` prefix.", service.CommandPrefix())}, help...)
 			}
-		}
-	} else {
-		for _, h := range help {
-			if err := service.SendMessage(message.Channel(), h); err != nil {
-				log.Println(err)
+
+			if len(parts) != 0 && len(help) == 0 {
+				help = []string{fmt.Sprintf("Unknown topic: %s", parts[0])}
 			}
+
+			if p.Private[message.Channel()] {
+				service.SendMessage(message.Channel(), "Help has been sent via private message.")
+				if service.SupportsMultiline() {
+					service.PrivateMessage(message.UserID(), strings.Join(help, "\n"))
+				} else {
+					for _, h := range help {
+						if err := service.PrivateMessage(message.UserID(), h); err != nil {
+							break
+						}
+					}
+				}
+			} else {
+				if service.SupportsMultiline() {
+					service.SendMessage(message.Channel(), strings.Join(help, "\n"))
+				} else {
+					for _, h := range help {
+						if err := service.SendMessage(message.Channel(), h); err != nil {
+							break
+						}
+					}
+				}
+			}
+		} else if MatchesCommand(service, "setprivatehelp", message) && service.SupportsPrivateMessages() && !service.IsPrivate(message) {
+			if !service.IsBotOwner(message) && !service.IsModerator(message) {
+				return
+			}
+
+			p.Private[message.Channel()] = true
+
+			service.PrivateMessage(message.UserID(), fmt.Sprintf("Help text in <#%s> will be sent through private messages.", message.Channel()))
+		} else if MatchesCommand(service, "setpublichelp", message) && service.SupportsPrivateMessages() && !service.IsPrivate(message) {
+			if !service.IsBotOwner(message) && !service.IsModerator(message) {
+				return
+			}
+
+			p.Private[message.Channel()] = false
+
+			service.PrivateMessage(message.UserID(), fmt.Sprintf("Help text in <#%s> will be sent publically.", message.Channel()))
 		}
 	}
+}
+
+// Load will load plugin state from a byte array.
+func (p *helpPlugin) Load(bot *Bot, service Service, data []byte) error {
+	if data != nil {
+		if err := json.Unmarshal(data, p); err != nil {
+			log.Println("Error loading data", err)
+		}
+	}
+	return nil
+}
+
+// Save will save plugin state to a byte array.
+func (p *helpPlugin) Save() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+// NeHelpPlugin will create a new help plugin.
+func NewHelpPlugin() Plugin {
+	p := &helpPlugin{
+		Private: make(map[string]bool),
+	}
+	return p
 }

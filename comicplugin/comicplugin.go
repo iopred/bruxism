@@ -24,21 +24,17 @@ type comicPlugin struct {
 
 func (p *comicPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	help := []string{
-		bruxism.CommandHelp(service, "comic", "[<1-10>]", "Creates a comic from recent messages.")[0],
-		bruxism.CommandHelp(service, "customcomic", "[<id>:] <text> | [<id>:] <text>", "Creates a custom comic.")[0],
-		bruxism.CommandHelp(service, "customcomicsimple", "[<id>:] <text> | [<id>:] <text>", "Creates a simple custom comic.")[0],
+		bruxism.CommandHelp(service, "comic", "[1-10]", "Creates a comic from recent messages, or a number of messages if provided.")[0],
 	}
 
 	if detailed {
-		ticks := ""
-		if service.Name() == bruxism.DiscordServiceName {
-			ticks = "`"
-		}
 		help = append(help, []string{
+			bruxism.CommandHelp(service, "customcomic", "[id:] <text> | [id:] <text>", "Creates a custom comic.")[0],
+			bruxism.CommandHelp(service, "customcomicsimple", "[id:] <text> | [id:] <text>", "Creates a simple custom comic.")[0],
 			"Examples:",
-			fmt.Sprintf("%s%scomic 5%s - Creates a comic from the last 5 messages.", ticks, service.CommandPrefix(), ticks),
-			fmt.Sprintf("%s%scustomcomic Hello | 1: World | Yeah!%s - Creates a comic with 3 lines, with the second line being spoken by a different character.", ticks, service.CommandPrefix(), ticks),
-			fmt.Sprintf("%s%scustomcomicsimple Foo | 1: Bar%s - Creates a comic with 2 lines, both spoken by different characters.", ticks, service.CommandPrefix(), ticks),
+			bruxism.CommandHelp(service, "comic", "5", "Creates a comic from the last 5 messages")[0],
+			bruxism.CommandHelp(service, "customcomic", "Hello | 1: World | Yeah", "Creates a comic with 3 lines, with the second line being spoken by a different character.")[0],
+			bruxism.CommandHelp(service, "customcomicsimple", "Foo | 1: Bar", "Creates a comic with 2 lines, both spoken by different characters.")[0],
 		}...)
 	}
 

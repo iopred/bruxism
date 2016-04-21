@@ -3,7 +3,6 @@ package statsplugin
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"runtime"
 	"strings"
 	"text/tabwriter"
@@ -56,14 +55,12 @@ func StatsCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mes
 	out := buf.String() + "\nBuilt with love by iopred."
 
 	if service.SupportsMultiline() {
-		if err := service.SendMessage(message.Channel(), out); err != nil {
-			log.Println(err)
-		}
+		service.SendMessage(message.Channel(), out)
 	} else {
 		lines := strings.Split(out, "\n")
 		for _, line := range lines {
 			if err := service.SendMessage(message.Channel(), line); err != nil {
-				log.Println(err)
+				break
 			}
 		}
 	}
