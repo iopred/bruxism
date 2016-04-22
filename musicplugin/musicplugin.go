@@ -189,6 +189,7 @@ func (p *MusicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 	case "join":
 		if !service.IsBotOwner(message) {
 			service.SendMessage(message.Channel(), "Sorry, only bot owner can join, please ask him to run this command.")
+			return
 		}
 		// join the voice channel of the caller or the provided channel ID
 
@@ -225,6 +226,7 @@ func (p *MusicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		// leave voice channel for this Guild
 		if !service.IsBotOwner(message) {
 			service.SendMessage(message.Channel(), "Sorry, only bot owner can leave, please ask him to run this command.")
+			return
 		}
 
 		if !vcok {
