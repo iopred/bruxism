@@ -23,9 +23,7 @@ type comicPlugin struct {
 }
 
 func (p *comicPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
-	help := []string{
-		bruxism.CommandHelp(service, "comic", "[1-10]", "Creates a comic from recent messages, or a number of messages if provided.")[0],
-	}
+	help := bruxism.CommandHelp(service, "comic", "[1-10]", "Creates a comic from recent messages, or a number of messages if provided.")
 
 	if detailed {
 		help = append(help, []string{
@@ -76,7 +74,14 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was an error creating the comic. %s", message.UserName(), err))
 	} else {
 		go func() {
-			url, err := bot.UploadToImgur(image, "comic.png")
+			b := &bytes.Buffer{}
+			err = png.Encode(b, image)
+			if err != nil {
+				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your comic.", message.UserName()))
+				return
+			}
+
+			url, err := bot.UploadToImgur(b, "comic.png")
 			if err == nil {
 				if service.Name() == bruxism.DiscordServiceName {
 					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic <@%s>: %s", message.UserID(), url))
@@ -86,13 +91,6 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 			} else {
 				// If imgur failed and we're on Discord, try file send instead!
 				if service.Name() == bruxism.DiscordServiceName {
-					b := &bytes.Buffer{}
-					err = png.Encode(b, image)
-					if err != nil {
-						service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your comic.", message.UserName()))
-						return
-					}
-
 					service.SendFile(message.Channel(), "comic.png", b)
 					return
 				}

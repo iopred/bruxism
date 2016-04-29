@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"image"
-	"image/png"
+	"io"
 	"io/ioutil"
 	"log"
 	"mime/multipart"
@@ -122,7 +121,7 @@ func (b *Bot) Save() {
 }
 
 // UploadToImgur uploads image data to Imgur and returns the url to it.
-func (b *Bot) UploadToImgur(image image.Image, filename string) (string, error) {
+func (b *Bot) UploadToImgur(re io.Reader, filename string) (string, error) {
 	if b.ImgurID == "" {
 		return "", errors.New("No Imgur client ID provided.")
 	}
@@ -135,7 +134,7 @@ func (b *Bot) UploadToImgur(image image.Image, filename string) (string, error) 
 		return "", err
 	}
 
-	err = png.Encode(writer, image)
+	io.Copy(writer, re)
 	if err != nil {
 		return "", err
 	}
