@@ -10,7 +10,6 @@ import (
 
 	"github.com/iopred/bruxism"
 	"github.com/iopred/bruxism/carbonitexplugin"
-	"github.com/iopred/bruxism/chartplugin"
 	"github.com/iopred/bruxism/directmessageinviteplugin"
 	"github.com/iopred/bruxism/discordavatarplugin"
 	"github.com/iopred/bruxism/emojiplugin"
@@ -94,7 +93,6 @@ func main() {
 	bot.RegisterPlugin(youtube, slowmodeplugin.New())
 	bot.RegisterPlugin(youtube, topstreamersplugin.New(youtube))
 	bot.RegisterPlugin(youtube, streamerplugin.New(youtube))
-	bot.RegisterPlugin(youtube, chartplugin.New())
 	bot.RegisterPlugin(youtube, reminderplugin.New())
 
 	// Register the Discord service if we have an email or token.
@@ -113,7 +111,6 @@ func main() {
 		bot.RegisterPlugin(discord, topstreamersplugin.New(youtube))
 		bot.RegisterPlugin(discord, streamerplugin.New(youtube))
 		bot.RegisterPlugin(discord, playingplugin.New())
-		bot.RegisterPlugin(discord, chartplugin.New())
 		bot.RegisterPlugin(discord, directmessageinviteplugin.New())
 		bot.RegisterPlugin(discord, reminderplugin.New())
 		bot.RegisterPlugin(discord, emojiplugin.New())
@@ -131,7 +128,6 @@ func main() {
 		bot.RegisterPlugin(irc, cp)
 		bot.RegisterPlugin(irc, topstreamersplugin.New(youtube))
 		bot.RegisterPlugin(irc, streamerplugin.New(youtube))
-		bot.RegisterPlugin(irc, chartplugin.New())
 		bot.RegisterPlugin(irc, reminderplugin.New())
 	}
 

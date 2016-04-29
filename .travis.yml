@@ -4,7 +4,6 @@ go:
     - 1.6
 install:
     - go get github.com/iopred/bruxism/carbonitexplugin
-    - go get github.com/iopred/bruxism/chartplugin
     - go get github.com/iopred/bruxism/comicplugin
     - go get github.com/iopred/bruxism/directmessageinviteplugin
     - go get github.com/iopred/bruxism/discordavatarplugin
