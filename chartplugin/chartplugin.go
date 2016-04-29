@@ -11,6 +11,7 @@ import (
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/plotutil"
+	"github.com/gonum/plot/vg"
 	"github.com/iopred/bruxism"
 )
 
@@ -130,11 +131,17 @@ func (p *chartPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 		pl.Y.Min = -0.5
 		pl.Y.Max = float64(num) + 0.5
 
-		err = plotutil.AddLinePoints(pl, pts)
+		lpLine, lpPoints, err := plotter.NewLinePoints(pts)
 		if err != nil {
 			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your chart.", message.UserName()))
-			return
 		}
+		lpLine.Color = plotutil.Color(rand.Int())
+		lpLine.Width = vg.Points(1 + 0.5*rand.Float64())
+		lpLine.Dashes = plotutil.Dashes(rand.Int())
+		lpPoints.Shape = plotutil.Shape(rand.Int())
+		lpPoints.Color = lpLine.Color
+
+		pl.Add(lpLine, lpPoints)
 
 		w, err := pl.WriterTo(320, 240, "png")
 		if err != nil {
