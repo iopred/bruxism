@@ -134,7 +134,7 @@ func (b *Bot) UploadToImgur(re io.Reader, filename string) (string, error) {
 		return "", err
 	}
 
-	io.Copy(writer, re)
+	_, err = io.Copy(writer, re)
 	if err != nil {
 		return "", err
 	}
