@@ -10,11 +10,7 @@ import (
 
 	"github.com/iopred/bruxism"
 	"github.com/iopred/bruxism/carbonitexplugin"
-<<<<<<< HEAD
-=======
 	"github.com/iopred/bruxism/chartplugin"
-	"github.com/iopred/bruxism/comicplugin"
->>>>>>> 650e7aa... Chart plugin.
 	"github.com/iopred/bruxism/directmessageinviteplugin"
 	"github.com/iopred/bruxism/discordavatarplugin"
 	"github.com/iopred/bruxism/emojiplugin"
