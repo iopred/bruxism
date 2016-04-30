@@ -98,12 +98,39 @@ func (d *Discord) replaceChannelNames(message *discordgo.Message) {
 	})
 }
 
+var roleIDRegex = regexp.MustCompile("<@&[0-9]*>")
+
+func (d *Discord) replaceRoleNames(message *discordgo.Message) {
+	message.Content = roleIDRegex.ReplaceAllStringFunc(message.Content, func(str string) string {
+		roleID := str[3 : len(str)-1]
+
+		c, err := d.Session.State.Channel(message.ChannelID)
+		if err != nil {
+			return str
+		}
+
+		g, err := d.Session.State.Guild(c.GuildID)
+		if err != nil {
+			return str
+		}
+
+		for _, r := range g.Roles {
+			if r.ID == roleID {
+				return "@" + r.Name
+			}
+		}
+
+		return str
+	})
+}
+
 func (d *Discord) onMessageCreate(s *discordgo.Session, message *discordgo.MessageCreate) {
 	if message.Content == "" {
 		return
 	}
 
 	d.replaceChannelNames(message.Message)
+	d.replaceRoleNames(message.Message)
 
 	d.messageChan <- &DiscordMessage{message.Message, MessageTypeCreate}
 }
