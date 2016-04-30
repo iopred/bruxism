@@ -64,7 +64,7 @@ func emojiHelpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Me
 	help := bruxism.CommandHelp(service, "emoji", "<emoji>", "Returns a big version of an emoji.")
 
 	if detailed {
-		help = append(help, bruxism.CommandHelp(service, "hugemoji", "<emoji>", "Returns a huge version of an emoji."))
+		help = append(help, bruxism.CommandHelp(service, "hugemoji", "<emoji>", "Returns a huge version of an emoji.")[0])
 	}
 
 	return help
