@@ -8,7 +8,7 @@ import (
 	"github.com/iopred/bruxism"
 )
 
-func emojiFile(s string) string {
+func emojiFile(base, s string) string {
 	found := ""
 	filename := ""
 	for _, r := range s {
@@ -18,7 +18,7 @@ func emojiFile(s string) string {
 			filename = fmt.Sprintf("%x", r)
 		}
 
-		if _, err := os.Stat(fmt.Sprintf("emoji/twitter/%s.png", filename)); err == nil {
+		if _, err := os.Stat(fmt.Sprintf("%s/%s.png", base, filename)); err == nil {
 			found = filename
 		} else if found != "" {
 			return found
@@ -36,14 +36,18 @@ func emojiLoadFunc(bot *bruxism.Bot, service bruxism.Service, data []byte) error
 
 func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if service.Name() == bruxism.DiscordServiceName && !service.IsMe(message) {
-		if bruxism.MatchesCommand(service, "emoji", message) {
+		if bruxism.MatchesCommand(service, "emoji", message) || bruxism.MatchesCommand(service, "humoji", message) {
+			base := "emoji/twitter"
+			if bruxism.MatchesCommand(service, "hugemoji", message) {
+				base = "emoji/twitterhuge"
+			}
 			_, parts := bruxism.ParseCommand(service, message)
 			if len(parts) == 1 {
 				s := strings.TrimSpace(parts[0])
 				for i := range s {
-					filename := emojiFile(s[i:])
+					filename := emojiFile(base, s[i:])
 					if filename != "" {
-						if f, err := os.Open(fmt.Sprintf("emoji/twitter/%s.png", filename)); err == nil {
+						if f, err := os.Open(fmt.Sprintf("%s/%s.png", base, filename)); err == nil {
 							defer f.Close()
 							service.SendFile(message.Channel(), "emoji.png", f)
 
