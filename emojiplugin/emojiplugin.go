@@ -61,10 +61,13 @@ func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism
 }
 
 func emojiHelpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
+	help := bruxism.CommandHelp(service, "emoji", "<emoji>", "Returns a big version of an emoji.")
+
 	if detailed {
-		return nil
+		help = append(help, bruxism.CommandHelp(service, "hugemoji", "<emoji>", "Returns a huge version of an emoji."))
 	}
-	return bruxism.CommandHelp(service, "emoji", "<emoji>", "Returns a big version of an emoji.")
+
+	return help
 }
 
 // New creates a new emoji plugin.
