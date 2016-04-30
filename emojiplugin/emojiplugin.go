@@ -36,7 +36,7 @@ func emojiLoadFunc(bot *bruxism.Bot, service bruxism.Service, data []byte) error
 
 func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if service.Name() == bruxism.DiscordServiceName && !service.IsMe(message) {
-		if bruxism.MatchesCommand(service, "emoji", message) || bruxism.MatchesCommand(service, "humoji", message) {
+		if bruxism.MatchesCommand(service, "emoji", message) || bruxism.MatchesCommand(service, "hugemoji", message) {
 			base := "emoji/twitter"
 			if bruxism.MatchesCommand(service, "hugemoji", message) {
 				base = "emoji/twitterhuge"
