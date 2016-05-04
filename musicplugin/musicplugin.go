@@ -81,6 +81,9 @@ func (p *MusicPlugin) Name() string {
 
 // Load will load plugin state from a byte array.
 func (p *MusicPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byte) (err error) {
+	if service.Name() != bruxism.DiscordServiceName {
+		panic("Music Plugin only supports Discord.")
+	}
 
 	if data != nil {
 		if err = json.Unmarshal(data, p); err != nil {
@@ -88,18 +91,22 @@ func (p *MusicPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byt
 		}
 	}
 
-	// Join all registered voice channels and start the playback queue
-	for _, v := range p.VoiceConnections {
-		if v.ChannelID == "" {
-			continue
+	discord := service.(*bruxism.Discord)
+
+	discord.Session.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
+		// Join all registered voice channels and start the playback queue
+		for _, v := range p.VoiceConnections {
+			if v.ChannelID == "" {
+				continue
+			}
+			vc, err := p.join(v.ChannelID)
+			if err != nil {
+				log.Println("musicplugin: join channel err:", err)
+				continue
+			}
+			p.gostart(vc)
 		}
-		vc, err := p.join(v.ChannelID)
-		if err != nil {
-			log.Println("musicplugin: join channel err:", err)
-			continue
-		}
-		p.gostart(vc)
-	}
+	})
 	return nil
 }
 

@@ -15,6 +15,7 @@ import (
 	"github.com/iopred/bruxism/emojiplugin"
 	"github.com/iopred/bruxism/inviteplugin"
 	"github.com/iopred/bruxism/numbertriviaplugin"
+	"github.com/iopred/bruxism/playedplugin"
 	"github.com/iopred/bruxism/playingplugin"
 	"github.com/iopred/bruxism/reminderplugin"
 	"github.com/iopred/bruxism/slowmodeplugin"
@@ -110,6 +111,7 @@ func main() {
 		bot.RegisterPlugin(discord, cp)
 		bot.RegisterPlugin(discord, topstreamersplugin.New(youtube))
 		bot.RegisterPlugin(discord, streamerplugin.New(youtube))
+		bot.RegisterPlugin(discord, playedplugin.New())
 		bot.RegisterPlugin(discord, playingplugin.New())
 		bot.RegisterPlugin(discord, directmessageinviteplugin.New())
 		bot.RegisterPlugin(discord, reminderplugin.New())

@@ -90,7 +90,7 @@ func (b *Bot) Open() {
 	for _, service := range b.Services {
 		if messageChan, err := service.Open(); err == nil {
 			for _, plugin := range service.Plugins {
-				plugin.Load(b, service, b.getData(service, plugin))
+				plugin.Load(b, service.Service, b.getData(service, plugin))
 			}
 			go b.listen(service.Service, messageChan)
 		} else {

@@ -628,6 +628,10 @@ func (yt *YouTube) MessageHistory(channel string) []Message {
 
 // GetLiveVideos gets a list of live videos for a channel
 func (yt *YouTube) GetLiveVideos(channelID string) ([]*youtube.Video, error) {
+	if yt.Service == nil {
+		return nil, errors.New("Service not available.")
+	}
+
 	s, err := yt.Service.Search.List("id").ChannelId(channelID).EventType("live").Type("video").Do()
 	if err != nil {
 		return nil, err

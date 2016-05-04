@@ -13,6 +13,7 @@ install:
     - go get github.com/iopred/bruxism/liveplugin
     - go get github.com/iopred/bruxism/mtgplugin
     - go get github.com/iopred/bruxism/numbertriviaplugin
+    - go get github.com/iopred/bruxism/playedplugin
     - go get github.com/iopred/bruxism/playingplugin
     - go get github.com/iopred/bruxism/reminderplugin
     - go get github.com/iopred/bruxism/slowmodeplugin
