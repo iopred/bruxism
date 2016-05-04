@@ -194,7 +194,7 @@ func (p *playedPlugin) Message(bot *bruxism.Bot, service bruxism.Service, messag
 			messageText := fmt.Sprintf("First seen %s.\n", humanize.Time(u.FirstSeen))
 			for i = 0; i < len(pes) && i < 5; i++ {
 				pe := pes[i]
-				messageText += fmt.Sprintf("%s: %.0f hours, %.0f minutes, %.0f seconds\n", pe.Name, pe.Duration.Hours(), pe.Duration.Minutes(), pe.Duration.Seconds())
+				messageText += fmt.Sprintf("%s: %s\n", pe.Name, pe.Duration.String())
 			}
 			service.SendMessage(message.Channel(), messageText)
 		}
