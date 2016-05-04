@@ -24,7 +24,7 @@ type byDuration []*playedEntry
 
 func (a byDuration) Len() int           { return len(a) }
 func (a byDuration) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byDuration) Less(i, j int) bool { return a[i].Duration < a[j].Duration }
+func (a byDuration) Less(i, j int) bool { return a[i].Duration >= a[j].Duration }
 
 type playedUser struct {
 	Entries     map[string]*playedEntry
