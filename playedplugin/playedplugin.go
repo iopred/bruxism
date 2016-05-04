@@ -175,6 +175,11 @@ func (p *playedPlugin) Message(bot *bruxism.Bot, service bruxism.Service, messag
 				return
 			}
 
+			if len(u.Entries) == 0 {
+				service.SendMessage(message.Channel(), "I haven't seen anything played by that user.")
+				return
+			}
+
 			u.Update(u.Current, time.Now())
 
 			pes := make(byDuration, len(u.Entries))
