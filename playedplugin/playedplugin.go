@@ -180,6 +180,7 @@ func (p *playedPlugin) Message(bot *bruxism.Bot, service bruxism.Service, messag
 				return
 			}
 
+			lc := humanize.Time(u.LastChanged)
 			u.Update(u.Current, time.Now())
 
 			pes := make(byDuration, len(u.Entries))
@@ -191,10 +192,10 @@ func (p *playedPlugin) Message(bot *bruxism.Bot, service bruxism.Service, messag
 
 			sort.Sort(pes)
 
-			messageText := fmt.Sprintf("First seen %s.\n", humanize.Time(u.FirstSeen))
+			messageText := fmt.Sprintf("*First seen %s, last update %s*\n", humanize.Time(u.FirstSeen), lc)
 			for i = 0; i < len(pes) && i < 5; i++ {
 				pe := pes[i]
-				messageText += fmt.Sprintf("%s: %s\n", pe.Name, pe.Duration.String())
+				messageText += fmt.Sprintf("**%s**: %s\n", pe.Name, pe.Duration.String())
 			}
 			service.SendMessage(message.Channel(), messageText)
 		}
