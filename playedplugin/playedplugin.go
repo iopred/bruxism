@@ -76,7 +76,6 @@ func (p *playedPlugin) Save() ([]byte, error) {
 }
 
 func (p *playedPlugin) Update(user string, entry string) {
-	fmt.Println(user, entry)
 	p.Lock()
 	defer p.Unlock()
 
