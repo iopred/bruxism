@@ -206,8 +206,10 @@ func (p *playedPlugin) Message(bot *bruxism.Bot, service bruxism.Service, messag
 				}
 
 				minutes := int(du / time.Minute)
-				ds += fmt.Sprintf("%dm ", minutes)
-				du -= time.Duration(minutes) * time.Minute
+				if minutes > 0 || len(ds) > 0 {
+					ds += fmt.Sprintf("%dm ", minutes)
+					du -= time.Duration(minutes) * time.Minute
+				}
 
 				seconds := int(du / time.Second)
 				ds += fmt.Sprintf("%ds", seconds)
