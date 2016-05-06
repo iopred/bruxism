@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/iopred/bruxism"
 )
 
 type playingPlugin struct {
 	bruxism.SimplePlugin
-	Playing string
+	Game string
+	URL  string
 }
 
 // Name returns the name of the plugin.
@@ -30,7 +32,7 @@ func (p *playingPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []b
 		}
 	}
 
-	service.SetPlaying(p.Playing)
+	service.(*bruxism.Discord).Session.UpdateStatus(0, p.Game, p.URL)
 
 	return nil
 }
@@ -50,7 +52,7 @@ func (p *playingPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, mess
 		return nil
 	}
 
-	return bruxism.CommandHelp(service, "playing", "<game>", fmt.Sprintf("Set which game %s is playing.", service.UserName()))
+	return bruxism.CommandHelp(service, "playing", "<game>, <url>", fmt.Sprintf("Set which game %s is playing.", service.UserName()))
 }
 
 // Message handler.
@@ -60,9 +62,18 @@ func (p *playingPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, m
 			if !service.IsBotOwner(message) {
 				return
 			}
+			query, _ := bruxism.ParseCommand(service, message)
 
-			p.Playing, _ = bruxism.ParseCommand(service, message)
-			service.SetPlaying(p.Playing)
+			split := strings.Split(query, ",")
+
+			p.Game = split[0]
+			if len(split) > 1 {
+				p.URL = split[1]
+			} else {
+				p.URL = ""
+			}
+
+			service.(*bruxism.Discord).Session.UpdateStatus(0, p.Game, p.URL)
 		}
 	}
 }

@@ -435,11 +435,6 @@ func (yt *YouTube) UserName() string {
 	return yt.me.Snippet.Title
 }
 
-// SetPlaying will set the current game being played by the bot.
-func (yt *YouTube) SetPlaying(game string) error {
-	return errors.New("Set playing not supported on YouTube.")
-}
-
 // PrivateMessage will send a private message to a user.
 func (yt *YouTube) PrivateMessage(userID, message string) error {
 	return errors.New("Private messages not supported on YouTube.")

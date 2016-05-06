@@ -221,11 +221,6 @@ func (d *Discord) UserName() string {
 	return d.Session.State.User.Username
 }
 
-// SetPlaying will set the current game being played by the bot.
-func (d *Discord) SetPlaying(game string) error {
-	return d.Session.UpdateStatus(0, game)
-}
-
 // Join accept an invite or return an error.
 // If AlreadyJoinedError is return, @me has already accepted that invite.
 func (d *Discord) Join(join string) error {

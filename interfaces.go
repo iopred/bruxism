@@ -43,7 +43,6 @@ type Service interface {
 	SendFile(channel, name string, r io.Reader) error
 	BanUser(channel, userID string, duration int) error
 	UnbanUser(channel, userID string) error
-	SetPlaying(game string) error
 	Join(join string) error
 	Typing(channel string) error
 	PrivateMessage(userID, messageID string) error

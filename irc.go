@@ -148,11 +148,6 @@ func (i *IRC) UserName() string {
 	return i.Conn.Me().Nick
 }
 
-// SetPlaying will set the current game being played by the bot.
-func (i *IRC) SetPlaying(game string) error {
-	return errors.New("Set playing not supported on IRC.")
-}
-
 // Join will join a channel.
 func (i *IRC) Join(join string) error {
 	i.Conn.Join(join)
