@@ -25,14 +25,20 @@ type comicPlugin struct {
 func (p *comicPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	help := bruxism.CommandHelp(service, "comic", "[1-10]", "Creates a comic from recent messages, or a number of messages if provided.")
 
+	ticks := ""
+	if service.Name() == bruxism.DiscordServiceName {
+		ticks = "`"
+	}
 	if detailed {
 		help = append(help, []string{
-			bruxism.CommandHelp(service, "customcomic", "[id:] <text> | [id:] <text>", "Creates a custom comic.")[0],
+			bruxism.CommandHelp(service, "customcomic", "[id|name:] <text> | [id|name:] <text>", fmt.Sprintf("Creates a custom comic. Available names: %s%s%s", ticks, strings.Join(comicgen.CharacterNames, ", "), ticks))[0],
 			bruxism.CommandHelp(service, "customcomicsimple", "[id:] <text> | [id:] <text>", "Creates a simple custom comic.")[0],
 			"Examples:",
 			bruxism.CommandHelp(service, "comic", "5", "Creates a comic from the last 5 messages")[0],
-			bruxism.CommandHelp(service, "customcomic", "Hello | 1: World | Yeah", "Creates a comic with 3 lines, with the second line being spoken by a different character.")[0],
-			bruxism.CommandHelp(service, "customcomicsimple", "Foo | 1: Bar", "Creates a comic with 2 lines, both spoken by different characters.")[0],
+			bruxism.CommandHelp(service, "customcomic", "A | B | C", "Creates a comic with 3 lines.")[0],
+			bruxism.CommandHelp(service, "customcomic", "0: Hi! | 1: Hello! | 0: Goodbye.", "Creates a comic with 3 lines, the second line spoken by a different character")[0],
+			bruxism.CommandHelp(service, "customcomic", "tiki: Hi! | jordy: Hello! | tiki: Goodbye.", "Creates a comic with 3 lines, containing tiki and jordy.")[0],
+			bruxism.CommandHelp(service, "customcomicsimple", "0: Foo | 1: Bar", "Creates a comic with 2 lines, both spoken by different characters.")[0],
 		}...)
 	}
 
@@ -133,10 +139,17 @@ func (p *comicPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 
 			text := ""
 			speaker := 0
+			author := ""
 			if strings.Index(line, ":") != -1 {
 				lineSplit := strings.Split(line, ":")
 
-				speaker, _ = strconv.Atoi(strings.Trim(lineSplit[0], " "))
+				author = strings.ToLower(strings.Trim(lineSplit[0], " "))
+
+				var err error
+				speaker, err = strconv.Atoi(author)
+				if err != nil {
+					speaker = -1
+				}
 
 				text = strings.Trim(lineSplit[1], " ")
 			} else {
@@ -146,6 +159,7 @@ func (p *comicPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 			messages = append(messages, &comicgen.Message{
 				Speaker: speaker,
 				Text:    text,
+				Author:  author,
 			})
 		}
 
