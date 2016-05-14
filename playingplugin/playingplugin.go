@@ -32,7 +32,7 @@ func (p *playingPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []b
 		}
 	}
 
-	service.(*bruxism.Discord).Session.UpdateStatus(0, p.Game, p.URL)
+	service.(*bruxism.Discord).Session.UpdateStreamingStatus(0, p.Game, p.URL)
 
 	return nil
 }
@@ -73,7 +73,7 @@ func (p *playingPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, m
 				p.URL = ""
 			}
 
-			service.(*bruxism.Discord).Session.UpdateStatus(0, p.Game, p.URL)
+			service.(*bruxism.Discord).Session.UpdateStreamingStatus(0, p.Game, p.URL)
 		}
 	}
 }
