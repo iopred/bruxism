@@ -66,9 +66,9 @@ func (p *playingPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, m
 
 			split := strings.Split(query, ",")
 
-			p.Game = split[0]
+			p.Game = strings.Trim(split[0])
 			if len(split) > 1 {
-				p.URL = split[1]
+				p.URL = strings.Trim(split[1], " ")
 			} else {
 				p.URL = ""
 			}
