@@ -39,6 +39,8 @@ var ircServer string
 var ircUsername string
 var ircPassword string
 var ircChannels string
+var slackToken string
+var slackOwnerUserID string
 var imgurID string
 var imgurAlbum string
 var mashableKey string
@@ -60,6 +62,8 @@ func init() {
 	flag.StringVar(&ircUsername, "ircusername", "", "IRC user name.")
 	flag.StringVar(&ircPassword, "ircpassword", "", "IRC password.")
 	flag.StringVar(&ircChannels, "ircchannels", "", "Comma separated list of IRC channels.")
+	flag.StringVar(&slackToken, "slacktoken", "", "Slack token.")
+	flag.StringVar(&slackOwnerUserID, "slackowneruserid", "", "Slack owner user id.")
 	flag.StringVar(&imgurID, "imgurid", "", "Imgur client id.")
 	flag.StringVar(&imgurAlbum, "imguralbum", "", "Imgur album id.")
 	flag.StringVar(&mashableKey, "mashablekey", "", "Mashable key.")
@@ -131,6 +135,18 @@ func main() {
 		bot.RegisterPlugin(irc, topstreamersplugin.New(youtube))
 		bot.RegisterPlugin(irc, streamerplugin.New(youtube))
 		bot.RegisterPlugin(irc, reminderplugin.New())
+	}
+
+	if slackToken != "" {
+		slack := bruxism.NewSlack(slackToken)
+		slack.OwnerUserID = slackOwnerUserID
+		bot.RegisterService(slack)
+
+		bot.RegisterPlugin(slack, cp)
+		bot.RegisterPlugin(slack, topstreamersplugin.New(youtube))
+		bot.RegisterPlugin(slack, streamerplugin.New(youtube))
+		bot.RegisterPlugin(slack, chartplugin.New())
+		bot.RegisterPlugin(slack, comicplugin.New())
 	}
 
 	// Start all our services.
