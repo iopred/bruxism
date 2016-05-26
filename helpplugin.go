@@ -81,7 +81,9 @@ func (p *helpPlugin) Message(bot *Bot, service Service, message Message) {
 
 			if len(parts) == 0 {
 				sort.Strings(help)
-				help = append([]string{fmt.Sprintf("All commands can be used in private messages without the `%s` prefix.", service.CommandPrefix())}, help...)
+				if service.SupportsPrivateMessages() {
+					help = append([]string{fmt.Sprintf("All commands can be used in private messages without the `%s` prefix.", service.CommandPrefix())}, help...)
+				}
 			}
 
 			if len(parts) != 0 && len(help) == 0 {
