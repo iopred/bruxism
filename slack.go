@@ -13,7 +13,7 @@ const SlackServiceName string = "Slack"
 
 // SlackMessage is a Message wrapper around slack.MessageEvent.
 type SlackMessage struct {
-	SlackMessage *slack.MessageEvent
+	SlackMessage *slack.Msg
 	MessageType  MessageType
 }
 
@@ -85,12 +85,12 @@ func (s *Slack) handle() {
 			case *slack.MessageEvent:
 				switch ev.SubType {
 				case "message_changed":
-					s.messageChan <- &SlackMessage{ev.Msg, MessageTypeUpdate}
+					s.messageChan <- &SlackMessage{ev.SubMessage, MessageTypeUpdate}
 				case "message_deleted":
-					ev.Timestamp = ev.DeletedTimestamp
-					s.messageChan <- &SlackMessage{e, MessageTypeDelete}
+					ev.Msg.Timestamp = ev.Msg.DeletedTimestamp
+					s.messageChan <- &SlackMessage{&ev.Msg, MessageTypeDelete}
 				case "":
-					s.messageChan <- &SlackMessage{ev, MessageTypeCreate}
+					s.messageChan <- &SlackMessage{&ev.Msg, MessageTypeCreate}
 				}
 			}
 		}
