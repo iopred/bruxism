@@ -145,8 +145,6 @@ func main() {
 		bot.RegisterPlugin(slack, cp)
 		bot.RegisterPlugin(slack, topstreamersplugin.New(youtube))
 		bot.RegisterPlugin(slack, streamerplugin.New(youtube))
-		bot.RegisterPlugin(slack, chartplugin.New())
-		bot.RegisterPlugin(slack, comicplugin.New())
 	}
 
 	// Start all our services.
