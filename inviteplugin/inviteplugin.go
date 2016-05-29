@@ -26,7 +26,7 @@ func InviteHelp(bot *bruxism.Bot, service bruxism.Service, message bruxism.Messa
 		}
 		return "<discordinvite>", "Joins the provided Discord server."
 	case bruxism.YouTubeServiceName:
-		return "<livechatid>", "Joins the provided YouTube chat by id (this may be hard to find)."
+		return "<videoid>", "Joins the provided YouTube live stream."
 	}
 	return "<channel>", "Joins the provided channel."
 }

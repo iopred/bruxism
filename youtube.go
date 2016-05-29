@@ -3,6 +3,7 @@ package bruxism
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"html"
 	"io"
 	"io/ioutil"
@@ -98,7 +99,6 @@ type YouTube struct {
 	configFilename string
 	tokenFilename  string
 	liveVideoIDs   string
-	liveChatIDs    string
 	config         *oauth2.Config
 	token          *oauth2.Token
 	Client         *http.Client
@@ -109,21 +109,22 @@ type YouTube struct {
 	fanFunding     fanFunding
 	me             *youtube.Channel
 	channelCount   int
+	joined         map[string]bool
 }
 
 // NewYouTube creates a new YouTube service.
-func NewYouTube(url bool, auth, configFilename, tokenFilename, liveVideoIDs, liveChatIDs string) *YouTube {
+func NewYouTube(url bool, auth, configFilename, tokenFilename, liveVideoIDs string) *YouTube {
 	return &YouTube{
 		url:            url,
 		auth:           auth,
 		configFilename: configFilename,
 		tokenFilename:  tokenFilename,
 		liveVideoIDs:   liveVideoIDs,
-		liveChatIDs:    liveChatIDs,
 		messageChan:    make(chan Message, 200),
 		InsertChan:     make(chan interface{}, 200),
 		DeleteChan:     make(chan interface{}, 200),
 		fanFunding:     fanFunding{Messages: make(map[string]*youtube.LiveChatMessage)},
+		joined:         make(map[string]bool),
 	}
 }
 
@@ -144,6 +145,11 @@ func (yt *YouTube) pollBroadcasts(broadcasts *youtube.LiveBroadcastListResponse,
 }
 
 func (yt *YouTube) pollMessages(broadcast *youtube.LiveBroadcast) {
+	if yt.joined[broadcast.Snippet.LiveChatId] {
+		return
+	}
+	yt.joined[broadcast.Snippet.LiveChatId] = true
+
 	yt.channelCount++
 	pageToken := ""
 	for {
@@ -355,13 +361,12 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 	yt.me = me
 
 	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Mine(true).BroadcastType("all").Do())
-	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Id(yt.liveVideoIDs).Do())
 
-	if yt.liveChatIDs != "" {
-		liveChatIDsArray := strings.Split(yt.liveChatIDs, ",")
+	if yt.liveVideoIDs != "" {
+		liveVideoIDsArray := strings.Split(yt.liveVideoIDs, ",")
 
-		for _, liveChatID := range liveChatIDsArray {
-			yt.Join(liveChatID)
+		for _, liveVideoID := range liveVideoIDsArray {
+			yt.Join(liveVideoID)
 		}
 	}
 
@@ -442,19 +447,32 @@ func (yt *YouTube) PrivateMessage(userID, message string) error {
 
 // Join will join a channel.
 func (yt *YouTube) Join(join string) error {
-	_, err := yt.Service.LiveChatMessages.List(join, "id").Do()
+	videos, err := yt.GetVideosByIDList([]string{join})
+
 	if err != nil {
-		return err
+		return errors.New("No live video found.")
+	}
+
+	ok := false
+
+	items := []*youtube.LiveBroadcast{}
+	for _, v := range videos {
+		if v.LiveStreamingDetails != nil && v.LiveStreamingDetails.ActiveLiveChatId != "" {
+			items = append(items, &youtube.LiveBroadcast{
+				Snippet: &youtube.LiveBroadcastSnippet{
+					LiveChatId: v.LiveStreamingDetails.ActiveLiveChatId,
+				},
+			})
+			ok = true
+		}
+	}
+
+	if !ok {
+		return errors.New("No live video found.")
 	}
 
 	liveBroadcastListResponse := &youtube.LiveBroadcastListResponse{
-		Items: []*youtube.LiveBroadcast{
-			{
-				Snippet: &youtube.LiveBroadcastSnippet{
-					LiveChatId: join,
-				},
-			},
-		},
+		Items: items,
 	}
 	yt.pollBroadcasts(liveBroadcastListResponse, nil)
 
@@ -507,7 +525,7 @@ func (yt *YouTube) SupportsMultiline() bool {
 
 // CommandPrefix returns the command prefix for the service.
 func (yt *YouTube) CommandPrefix() string {
-	return "!"
+	return fmt.Sprintf("@%s ", yt.UserName())
 }
 
 // IsBotOwner returns whether or not a message sender was the owner of the bot.

@@ -20,6 +20,7 @@ type liveChannel struct {
 	DiscordChannelID string
 	Live             []string
 	Last             time.Time
+	JoinSeptapus     bool
 }
 
 type livePlugin struct {
@@ -73,6 +74,12 @@ func (p *livePlugin) pollChannel(bot *bruxism.Bot, service bruxism.Service, lc *
 			}
 		}
 		if !found {
+			if lc.JoinSeptapus {
+				ytservice := bot.Services[bruxism.YouTubeServiceName]
+				if ytservice != nil {
+					ytservice.Join(v)
+				}
+			}
 			if lc.Last.Add(6 * time.Hour).Before(time.Now()) {
 				lc.Last = time.Now()
 
@@ -128,6 +135,8 @@ func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bru
 		return []string{
 			fmt.Sprintf("Announces when you go live in <#%s> as well as an optional channel.", livePluginChannelID),
 			bruxism.CommandHelp(service, "setyoutubechannel", "<youtube channel id>", "Sets your youtube channel id.")[0],
+			bruxism.CommandHelp(service, "setjoinseptapus", "", "Septapus will join your livestreams.")[0],
+			bruxism.CommandHelp(service, "unsetjoinseptapus", "", "Septapus will no longer join your livestreams.")[0],
 			bruxism.CommandHelp(service, "setdiscordchannel", "", fmt.Sprintf("%s will also announce you going live in this channel.", service.UserName()))[0],
 			bruxism.CommandHelp(service, "unsetdiscordchannel", "", "Disables additional live announcement of channel.")[0],
 			"Example:",
@@ -187,7 +196,23 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 			for _, lc := range p.Live {
 				if lc.UserID == message.UserID() {
 					lc.DiscordChannelID = ""
-					service.SendMessage(messageChannel, fmt.Sprintf("Discord Channel ID unset. messages will not be sent hire when you go live."))
+					service.SendMessage(messageChannel, fmt.Sprintf("Discord Channel ID unset. Messages will not be sent hire when you go live."))
+					return
+				}
+			}
+		} else if bruxism.MatchesCommand(service, "setjoinseptapus", message) {
+			for _, lc := range p.Live {
+				if lc.UserID == message.UserID() {
+					lc.JoinSeptapus = true
+					service.SendMessage(messageChannel, fmt.Sprintf("Septapus will now join your livestreams."))
+					return
+				}
+			}
+		} else if bruxism.MatchesCommand(service, "unsetjoinseptapus", message) {
+			for _, lc := range p.Live {
+				if lc.UserID == message.UserID() {
+					lc.JoinSeptapus = false
+					service.SendMessage(messageChannel, fmt.Sprintf("Septapus will no longer join your livestreams."))
 					return
 				}
 			}
