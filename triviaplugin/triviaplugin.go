@@ -234,7 +234,7 @@ func (p *triviaPlugin) Save() ([]byte, error) {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *triviaPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
-	if !(service.IsModerator(message) || service.IsBotOwner(message)) {
+	if service.IsPrivate(message) || !(service.IsModerator(message) || service.IsBotOwner(message)) {
 		return nil
 	}
 
@@ -244,7 +244,7 @@ func (p *triviaPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message b
 // Message handler.
 func (p *triviaPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	defer bruxism.MessageRecover()
-	if !service.IsMe(message) && (service.IsModerator(message) || service.IsBotOwner(message)) {
+	if !service.IsMe(message) && !service.IsPrivate(message) && (service.IsModerator(message) || service.IsBotOwner(message)) {
 		messageChannel := message.Channel()
 
 		if bruxism.MatchesCommand(service, "trivia", message) {
