@@ -139,6 +139,8 @@ func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bru
 			bruxism.CommandHelp(service, "unsetjoinseptapus", "", "Septapus will no longer join your livestreams.")[0],
 			bruxism.CommandHelp(service, "setdiscordchannel", "", fmt.Sprintf("%s will also announce you going live in this channel.", service.UserName()))[0],
 			bruxism.CommandHelp(service, "unsetdiscordchannel", "", "Disables additional live announcement of channel.")[0],
+			// Provided by youtubeplugin.
+			bruxism.CommandHelp(service, "youtubeinvite", "<videoid>", "Joins the provided YouTube live stream.")[0],
 			"Example:",
 			fmt.Sprintf("`%ssetyoutubechannel UC392dac34_32fafe2deadbeef`", service.CommandPrefix()),
 		}

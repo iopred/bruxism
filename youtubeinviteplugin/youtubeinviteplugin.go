@@ -2,14 +2,6 @@ package youtubeinviteplugin
 
 import "github.com/iopred/bruxism"
 
-// helpFunc will return the help text for the YouTubeInvite command.
-func helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
-	if detailed {
-		return nil
-	}
-	return bruxism.CommandHelp(service, "youtubeinvite", "<videoid>", "Joins the provided YouTube live stream.")
-}
-
 // messageFunc is a command for accepting an YouTubeInvite to a channel.
 func messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if service.IsMe(message) || !bruxism.MatchesCommand(service, "youtubeinvite", message) {
@@ -35,6 +27,5 @@ func messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mess
 func New() bruxism.Plugin {
 	p := bruxism.NewSimplePlugin("YouTubeInvite")
 	p.MessageFunc = messageFunc
-	p.HelpFunc = helpFunc
 	return p
 }
