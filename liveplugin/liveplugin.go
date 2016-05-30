@@ -210,6 +210,7 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 					return
 				}
 			}
+			service.SendMessage(message.Channel(), "You haven't registered a YouTube Channel ID yet. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
 		} else if bruxism.MatchesCommand(service, "unsetjoinseptapus", message) {
 			for _, lc := range p.Live {
 				if lc.UserID == message.UserID() {
