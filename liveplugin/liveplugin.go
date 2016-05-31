@@ -61,7 +61,7 @@ func (p *livePlugin) pollChannel(bot *bruxism.Bot, service bruxism.Service, lc *
 		if lc.JoinSeptapus {
 			ytservice := bot.Services[bruxism.YouTubeServiceName]
 			if ytservice != nil {
-				ytservice.Join(v)
+				ytservice.Join(v.Id)
 			}
 		}
 	}
