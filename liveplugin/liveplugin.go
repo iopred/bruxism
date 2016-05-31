@@ -66,6 +66,13 @@ func (p *livePlugin) pollChannel(bot *bruxism.Bot, service bruxism.Service, lc *
 	}
 
 	for _, v := range live {
+		if lc.JoinSeptapus {
+			ytservice := bot.Services[bruxism.YouTubeServiceName]
+			if ytservice != nil {
+				ytservice.Join(v)
+			}
+		}
+
 		found := false
 		for _, v2 := range lc.Live {
 			if v == v2 {
@@ -74,12 +81,6 @@ func (p *livePlugin) pollChannel(bot *bruxism.Bot, service bruxism.Service, lc *
 			}
 		}
 		if !found {
-			if lc.JoinSeptapus {
-				ytservice := bot.Services[bruxism.YouTubeServiceName]
-				if ytservice != nil {
-					ytservice.Join(v)
-				}
-			}
 			if lc.Last.Add(6 * time.Hour).Before(time.Now()) {
 				lc.Last = time.Now()
 

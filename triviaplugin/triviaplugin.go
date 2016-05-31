@@ -244,10 +244,10 @@ func (p *triviaPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message b
 // Message handler.
 func (p *triviaPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	defer bruxism.MessageRecover()
-	if !service.IsMe(message) && !service.IsPrivate(message) && (service.IsModerator(message) || service.IsBotOwner(message)) {
+	if !service.IsMe(message) && !service.IsPrivate(message) {
 		messageChannel := message.Channel()
 
-		if bruxism.MatchesCommand(service, "trivia", message) {
+		if bruxism.MatchesCommand(service, "trivia", message) && (service.IsModerator(message) || service.IsBotOwner(message)) {
 			p.Lock()
 			tc := p.Channels[messageChannel]
 			if tc == nil {
