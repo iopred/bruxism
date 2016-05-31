@@ -447,7 +447,7 @@ func (p *MusicPlugin) enqueue(vc *voiceConnection, url, username string) (err er
 	// right now option 4 and 5 work, only.
 	//////////////////////////////////////////////////////////////////////////
 
-	cmd := exec.Command("./youtube-dl", "-i", "-j", "--youtube-skip-dash-manifest", url)
+	cmd := exec.Command("./youtube-dl", "-i", "-j", "--youtube-skip-dash-manifest", "\""+url+"\"")
 	if vc.debug {
 		cmd.Stderr = os.Stderr
 	}
