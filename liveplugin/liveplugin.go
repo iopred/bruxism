@@ -57,6 +57,13 @@ func (p *livePlugin) pollChannel(bot *bruxism.Bot, service bruxism.Service, lc *
 	live := []string{}
 	for _, v := range liveVideos {
 		live = append(live, v.Id)
+
+		if lc.JoinSeptapus {
+			ytservice := bot.Services[bruxism.YouTubeServiceName]
+			if ytservice != nil {
+				ytservice.Join(v)
+			}
+		}
 	}
 
 	// If this is the first time getting results, just exit.
@@ -66,13 +73,6 @@ func (p *livePlugin) pollChannel(bot *bruxism.Bot, service bruxism.Service, lc *
 	}
 
 	for _, v := range live {
-		if lc.JoinSeptapus {
-			ytservice := bot.Services[bruxism.YouTubeServiceName]
-			if ytservice != nil {
-				ytservice.Join(v)
-			}
-		}
-
 		found := false
 		for _, v2 := range lc.Live {
 			if v == v2 {
