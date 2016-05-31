@@ -448,7 +448,7 @@ func (yt *YouTube) PrivateMessage(userID, message string) error {
 // Join will join a channel.
 func (yt *YouTube) Join(join string) error {
 	if yt.joined[join] {
-		return
+		return nil
 	}
 	yt.joined[join] = true
 
