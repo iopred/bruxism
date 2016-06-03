@@ -93,21 +93,27 @@ func (p *MusicPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byt
 
 	discord := service.(*bruxism.Discord)
 
-	discord.Session.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		// Join all registered voice channels and start the playback queue
-		for _, v := range p.VoiceConnections {
-			if v.ChannelID == "" {
-				continue
-			}
-			vc, err := p.join(v.ChannelID)
-			if err != nil {
-				log.Println("musicplugin: join channel err:", err)
-				continue
-			}
-			p.gostart(vc)
-		}
-	})
+	if discord.Session.DataReady {
+		p.ready(discord.Session, nil)
+	} else {
+		discord.Session.AddHandler(p.ready)
+	}
 	return nil
+}
+
+func (p *MusicPlugin) ready(s *discordgo.Session, r *discordgo.Ready) {
+	// Join all registered voice channels and start the playback queue
+	for _, v := range p.VoiceConnections {
+		if v.ChannelID == "" {
+			continue
+		}
+		vc, err := p.join(v.ChannelID)
+		if err != nil {
+			log.Println("musicplugin: join channel err:", err)
+			continue
+		}
+		p.gostart(vc)
+	}
 }
 
 // Save will save plugin state to a byte array.
