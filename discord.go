@@ -44,7 +44,7 @@ func (m *DiscordMessage) UserAvatar() string {
 	if m.DiscordgoMessage.Author == nil {
 		return ""
 	}
-	return discordgo.USER_AVATAR(m.DiscordgoMessage.Author.ID, m.DiscordgoMessage.Author.Avatar)
+	return discordgo.EndpointUserAvatar(m.DiscordgoMessage.Author.ID, m.DiscordgoMessage.Author.Avatar)
 }
 
 // Message returns the message content for this message.

@@ -28,7 +28,7 @@ func avatarMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxis
 				return
 			}
 
-			service.SendMessage(message.Channel(), discordgo.USER_AVATAR(u.ID, u.Avatar))
+			service.SendMessage(message.Channel(), discordgo.EndpointUserAvatar(u.ID, u.Avatar))
 		}
 	}
 }

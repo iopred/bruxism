@@ -2,6 +2,7 @@ package triviaplugin
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"strings"
@@ -56,6 +57,7 @@ type triviaChannel struct {
 
 	Answer string
 	Hint   string
+	Asked  time.Time
 
 	Scores map[string]*triviaScore
 
@@ -105,16 +107,16 @@ func (t *triviaChannel) Message(bot *bruxism.Bot, service bruxism.Service, messa
 		t.Lock()
 		defer t.Unlock()
 
-		service.SendMessage(message.Channel(), message.UserName()+" correctly answered the question! ("+t.Answer+")")
-
 		ts := t.Scores[message.UserID()]
 		if ts == nil {
-			ts = &triviaScore{
-				Name: message.UserName(),
-			}
+			ts = &triviaScore{}
 			t.Scores[message.UserID()] = ts
 		}
+		ts.Name = message.UserName()
 		ts.Score++
+
+		service.SendMessage(message.Channel(), fmt.Sprintf("%s got it! The answer was %s.", message.UserName(), t.Answer))
+		service.SendMessage(message.Channel(), fmt.Sprintf("%s answered in %d seconds and their score is now %d.", message.UserName(), int(time.Now().Sub(t.Asked).Seconds()), ts.Score))
 
 		t.Unanswered = 0
 
@@ -132,6 +134,7 @@ func (t *triviaChannel) question(bot *bruxism.Bot, service bruxism.Service) {
 	hintChan := make(chan bool)
 	t.hintChan = hintChan
 	t.Answer = strings.ToLower(question.Answer)
+	t.Asked = time.Now()
 	t.Unlock()
 
 	service.SendMessage(t.Channel, question.Question)
@@ -164,7 +167,7 @@ func (t *triviaChannel) question(bot *bruxism.Bot, service bruxism.Service) {
 				return
 			case <-time.After(hintTime):
 				if hints == 0 {
-					service.SendMessage(t.Channel, "The answer was: "+question.Answer)
+					service.SendMessage(t.Channel, fmt.Sprintf("Time's up! The answer was: %s.", question.Answer))
 					t.Lock()
 					t.Unanswered++
 					if t.Unanswered > 4 {
@@ -238,7 +241,10 @@ func (p *triviaPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message b
 		return nil
 	}
 
-	return bruxism.CommandHelp(service, "trivia", "<start|stop> [theme]", "Starts or stops trivia with an optional theme.")
+	return []string{
+		bruxism.CommandHelp(service, "trivia", "<start|stop> [theme]", "Starts or stops trivia with an optional theme.")[0],
+		bruxism.CommandHelp(service, "trivia", "<score>", "Returns your current trivia score.")[0],
+	}
 }
 
 // Message handler.
@@ -247,7 +253,9 @@ func (p *triviaPlugin) Message(bot *bruxism.Bot, service bruxism.Service, messag
 	if !service.IsMe(message) && !service.IsPrivate(message) {
 		messageChannel := message.Channel()
 
-		if bruxism.MatchesCommand(service, "trivia", message) && (service.IsModerator(message) || service.IsBotOwner(message)) {
+		isCommand := bruxism.MatchesCommand(service, "trivia", message)
+
+		if isCommand && (service.IsModerator(message) || service.IsBotOwner(message)) {
 			p.Lock()
 			tc := p.Channels[messageChannel]
 			if tc == nil {
@@ -259,17 +267,17 @@ func (p *triviaPlugin) Message(bot *bruxism.Bot, service bruxism.Service, messag
 			}
 			p.Unlock()
 
-			_, p := bruxism.ParseCommand(service, message)
+			_, parts := bruxism.ParseCommand(service, message)
 
-			if len(p) == 0 {
+			if len(parts) == 0 {
 				return
 			}
 
-			switch p[0] {
+			switch parts[0] {
 			case "start":
 				theme := ""
-				if len(p) >= 2 {
-					theme = p[1]
+				if len(parts) >= 2 {
+					theme = parts[1]
 				}
 				tc.Start(bot, service, theme)
 			case "stop":
@@ -277,6 +285,30 @@ func (p *triviaPlugin) Message(bot *bruxism.Bot, service bruxism.Service, messag
 			}
 
 		} else {
+			if isCommand {
+				_, parts := bruxism.ParseCommand(service, message)
+				if len(parts) == 0 {
+					return
+				}
+				if parts[0] == "score" {
+					p.RLock()
+					tc := p.Channels[messageChannel]
+
+					if tc != nil {
+						ts := tc.Scores[message.UserID()]
+						if ts != nil {
+							service.SendMessage(message.Channel(), fmt.Sprintf("%s's score is %d.", message.UserName(), ts.Score))
+						} else {
+							service.SendMessage(message.Channel(), fmt.Sprintf("%s's score is 0.", message.UserName())
+						}
+					}
+
+					p.RUnlock()
+				}
+
+				return
+			}
+
 			p.RLock()
 			tc := p.Channels[messageChannel]
 			p.RUnlock()
