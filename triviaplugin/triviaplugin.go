@@ -299,7 +299,7 @@ func (p *triviaPlugin) Message(bot *bruxism.Bot, service bruxism.Service, messag
 						if ts != nil {
 							service.SendMessage(message.Channel(), fmt.Sprintf("%s's score is %d.", message.UserName(), ts.Score))
 						} else {
-							service.SendMessage(message.Channel(), fmt.Sprintf("%s's score is 0.", message.UserName())
+							service.SendMessage(message.Channel(), fmt.Sprintf("%s's score is 0.", message.UserName()))
 						}
 					}
 
