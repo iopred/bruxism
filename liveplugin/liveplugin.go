@@ -136,6 +136,7 @@ func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bru
 		return []string{
 			fmt.Sprintf("Announces when you go live in <#%s> as well as an optional channel.", livePluginChannelID),
 			bruxism.CommandHelp(service, "setyoutubechannel", "<youtube channel id>", "Sets your youtube channel id.")[0],
+			bruxism.CommandHelp(service, "unsetyoutubechannel", "", "Unsets your youtube channel id.")[0],
 			bruxism.CommandHelp(service, "setjoinseptapus", "", "Septapus will join your livestreams.")[0],
 			bruxism.CommandHelp(service, "unsetjoinseptapus", "", "Septapus will no longer join your livestreams.")[0],
 			bruxism.CommandHelp(service, "setdiscordchannel", "", fmt.Sprintf("%s will also announce you going live in this channel.", service.UserName()))[0],
@@ -180,6 +181,9 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 			} else {
 				service.SendMessage(messageChannel, "Sorry, please provide a YouTube Channel ID. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
 			}
+		} else if bruxism.MatchesCommand(service, "unsetyoutubechannel", message) {
+			delete(p.Live, message.UserID())
+			service.SendMessage(messageChannel, fmt.Sprintf("YouTube Channel ID unset..", livePluginChannelID))
 		} else if bruxism.MatchesCommand(service, "setdiscordchannel", message) {
 			for _, lc := range p.Live {
 				if lc.UserID == message.UserID() {
