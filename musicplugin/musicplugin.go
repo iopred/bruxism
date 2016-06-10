@@ -284,7 +284,7 @@ func (p *MusicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 			if err != nil {
 				continue
 			}
-			err = p.enqueue(vc, url.String(), message.UserName())
+			err = p.enqueue(vc, url.String(), service, message)
 			if err != nil {
 				// TODO: Might need improving.
 				service.SendMessage(message.Channel(), err.Error())
@@ -431,7 +431,7 @@ func (p *MusicPlugin) join(cID string) (vc *voiceConnection, err error) {
 }
 
 // enqueue a song/playlest to a VoiceConnections Queue
-func (p *MusicPlugin) enqueue(vc *voiceConnection, url, username string) (err error) {
+func (p *MusicPlugin) enqueue(vc *voiceConnection, url string, service bruxism.Service, message bruxism.Message) (err error) {
 
 	if vc == nil {
 		return fmt.Errorf("Cannot enqueue to nil voice connection.")
@@ -483,7 +483,13 @@ func (p *MusicPlugin) enqueue(vc *voiceConnection, url, username string) (err er
 			continue
 		}
 
-		s.AddedBy = username
+		s.AddedBy = message.UserName()
+
+		if len(vc.Queue) == 0 {
+			service.SendMessage(message.Channel(), fmt.Sprintf("Playing %s.", s.Title))
+		} else {
+			service.SendMessage(message.Channel(), fmt.Sprintf("Queueing %s.", s.Title))
+		}
 
 		vc.Lock()
 		vc.Queue = append(vc.Queue, s)
