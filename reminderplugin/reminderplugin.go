@@ -214,9 +214,14 @@ func (p *ReminderPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 		if len(p.Reminders) > 0 {
 			reminder := p.Reminders[0]
 			if time.Now().After(reminder.Time) {
-				p.SendReminder(service, reminder)
-				p.Reminders = p.Reminders[1:]
 				p.RUnlock()
+
+				p.SendReminder(service, reminder)
+
+				p.Lock()
+				p.Reminders = p.Reminders[1:]
+				p.Unlock()
+
 				continue
 			}
 		}
