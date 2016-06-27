@@ -46,8 +46,10 @@ func (p *helpPlugin) Help(bot *Bot, service Service, message Message, detailed b
 
 	sort.Strings(commands)
 
-	help := []string{
-		CommandHelp(service, "help", "[topic]", fmt.Sprintf("Returns help for a specific topic. Available topics: %s%s%s", ticks, strings.Join(commands, ", "), ticks))[0],
+	help := []string{}
+	
+	if len(commands) > 0 {
+		help = append(help, CommandHelp(service, "help", "[topic]", fmt.Sprintf("Returns help for a specific topic. Available topics: %s%s%s", ticks, strings.Join(commands, ", "), ticks))[0])
 	}
 
 	if detailed {
