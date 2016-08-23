@@ -95,6 +95,12 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic %s: %s", message.UserName(), url))
 				}
 			} else {
+				b = &bytes.Buffer{}
+				err = png.Encode(b, image)
+				if err != nil {
+					service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your comic.", message.UserName()))
+					return
+				}
 				// If imgur failed and we're on Discord, try file send instead!
 				if service.Name() == bruxism.DiscordServiceName {
 					service.SendFile(message.Channel(), "comic.png", b)
