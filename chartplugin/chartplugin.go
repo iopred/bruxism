@@ -13,6 +13,7 @@ import (
 	"github.com/gonum/plot/plotutil"
 	"github.com/gonum/plot/vg"
 	"github.com/iopred/bruxism"
+	"github.com/iopred/discordgo"
 )
 
 type chartPlugin struct {
@@ -153,22 +154,26 @@ func (p *chartPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 		w.WriteTo(b)
 
 		go func() {
-			url, err := bot.UploadToImgur(b, "chart.png")
-			if err == nil {
-				if service.Name() == bruxism.DiscordServiceName {
-					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your chart <@%s>: %s", message.UserID(), url))
-				} else {
-					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your chart %s: %s", message.UserName(), url))
-				}
-			} else {
-				// If imgur failed and we're on Discord, try file send instead!
-				if service.Name() == bruxism.DiscordServiceName {
-					service.SendFile(message.Channel(), "comic.png", b)
+			if service.Name() == bruxism.DiscordServiceName {
+				discord := service.(*bruxism.Discord)
+				p, err := discord.Session.State.UserChannelPermissions(message.UserID(), message.Channel())
+				if err == nil && p&discordgo.PermissionAttachFiles != 0 {
+					service.SendFile(message.Channel(), "chart.png", b)
 					return
 				}
+			}
 
-				log.Println("Error uploading comic: ", err)
-				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the comic to imgur.", message.UserName()))
+			url, err := bot.UploadToImgur(b, "chart.png")
+			if err != nil {
+				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the chart to imgur.", message.UserName()))
+				log.Println("Error uploading chart: ", err)
+				return
+			}
+
+			if service.Name() == bruxism.DiscordServiceName {
+				service.SendMessage(message.Channel(), fmt.Sprintf("Here's your chart <@%s>: %s", message.UserID(), url))
+			} else {
+				service.SendMessage(message.Channel(), fmt.Sprintf("Here's your chart %s: %s", message.UserName(), url))
 			}
 		}()
 	}
