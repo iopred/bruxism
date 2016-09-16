@@ -107,6 +107,10 @@ func (t *triviaChannel) Message(bot *bruxism.Bot, service bruxism.Service, messa
 		t.Lock()
 		defer t.Unlock()
 
+		if !t.Active {
+			return
+		}
+
 		ts := t.Scores[message.UserID()]
 		if ts == nil {
 			ts = &triviaScore{}
