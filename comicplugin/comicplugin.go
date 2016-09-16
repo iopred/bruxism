@@ -13,6 +13,7 @@ import (
 
 	"github.com/iopred/bruxism"
 	"github.com/iopred/comicgen"
+	"github.com/iopred/discordgo"
 )
 
 type comicPlugin struct {
@@ -87,22 +88,32 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 				return
 			}
 
-			url, err := bot.UploadToImgur(b, "comic.png")
-			if err == nil {
-				if service.Name() == bruxism.DiscordServiceName {
-					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic <@%s>: %s", message.UserID(), url))
-				} else {
-					service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic %s: %s", message.UserName(), url))
-				}
-			} else {
-				// If imgur failed and we're on Discord, try file send instead!
-				if service.Name() == bruxism.DiscordServiceName {
+			if service.Name() == bruxism.DiscordServiceName {
+				discord := service.(*bruxism.Discord)
+				p, err := discord.Session.State.UserChannelPermissions(message.UserID(), message.Channel())
+				if err == nil && p&discordgo.PermissionAttachFiles != 0 {
 					service.SendFile(message.Channel(), "comic.png", b)
 					return
 				}
+			}
 
-				log.Println("Error uploading comic: ", err)
+			url, err := bot.UploadToImgur(b, "comic.png")
+			if err != nil {
 				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the comic to imgur.", message.UserName()))
+				log.Println("Error uploading comic: ", err)
+				return
+			}
+
+			if service.Name() == bruxism.DiscordServiceName {
+				service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic <@%s>: %s", message.UserID(), url))
+			} else {
+				service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic %s: %s", message.UserName(), url))
+			}
+
+			// If imgur failed and we're on Discord, try file send instead!
+			if service.Name() == bruxism.DiscordServiceName {
+				service.SendFile(message.Channel(), "comic.png", b)
+				return
 			}
 		}()
 	}
