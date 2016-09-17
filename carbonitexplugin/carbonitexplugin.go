@@ -25,7 +25,7 @@ func (p *carbonitexPlugin) carbonitexPluginLoadFunc(bot *bruxism.Bot, service br
 
 func (p *carbonitexPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 	for {
-		<-time.After(30 * time.Second)
+		<-time.After(5 * time.Minute)
 
 		http.PostForm("https://www.carbonitex.net/discord/data/botdata.php", url.Values{"key": {p.key}, "servercount": {fmt.Sprintf("%d", service.ChannelCount())}})
 
