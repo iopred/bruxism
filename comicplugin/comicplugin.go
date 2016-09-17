@@ -90,7 +90,7 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 
 			if service.Name() == bruxism.DiscordServiceName {
 				discord := service.(*bruxism.Discord)
-				p, err := discord.Session.State.UserChannelPermissions(message.UserID(), message.Channel())
+				p, err := discord.UserChannelPermissions(message.UserID(), message.Channel())
 				if err == nil && p&discordgo.PermissionAttachFiles != 0 {
 					service.SendFile(message.Channel(), "comic.png", b)
 					return

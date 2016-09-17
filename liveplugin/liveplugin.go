@@ -127,7 +127,7 @@ func (p *livePlugin) Save() ([]byte, error) {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
-	c, err := p.discord.Session.State.Channel(message.Channel())
+	c, err := p.discord.Channel(message.Channel())
 	if (err != nil || c.GuildID != livePluginGuildID) && !service.IsPrivate(message) {
 		return nil
 	}
@@ -187,7 +187,7 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 		} else if bruxism.MatchesCommand(service, "setdiscordchannel", message) {
 			for _, lc := range p.Live {
 				if lc.UserID == message.UserID() {
-					c, err := p.discord.Session.State.Channel(messageChannel)
+					c, err := p.discord.Channel(messageChannel)
 					if err != nil || c.GuildID == livePluginGuildID {
 						service.SendMessage(messageChannel, fmt.Sprintf("Live messages are sent in <#%s>. Use this on your own server.", livePluginChannelID))
 						return

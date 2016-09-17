@@ -125,7 +125,7 @@ func (p *MusicPlugin) Save() ([]byte, error) {
 func (p *MusicPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 
 	// Only show help messages for guilds where we have a voice connection
-	c, err := p.discord.Session.State.Channel(message.Channel())
+	c, err := p.discord.Channel(message.Channel())
 	if err != nil {
 		log.Println("musicplugin: fetching channel err:", err.Error())
 		return nil
@@ -181,7 +181,7 @@ func (p *MusicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 
 	// Get the Channel (and GuildID) for this channel because it's needed in
 	// a few locations below
-	channel, err := p.discord.Session.State.Channel(message.Channel())
+	channel, err := p.discord.Channel(message.Channel())
 	if err != nil {
 		log.Println("musicplugin: fetching channel err:", err.Error())
 		return
@@ -213,7 +213,7 @@ func (p *MusicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 
 		if channelID == "" {
 			messageUserID := message.UserID()
-			for _, g := range p.discord.Session.State.Guilds {
+			for _, g := range p.discord.Guilds() {
 				for _, v := range g.VoiceStates {
 					if v.UserID == messageUserID {
 						channelID = v.ChannelID
