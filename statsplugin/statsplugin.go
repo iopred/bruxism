@@ -45,7 +45,9 @@ func StatsCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mes
 	fmt.Fprintf(w, "Memory used: \t%s / %s (%s garbage collected)\n", humanize.Bytes(stats.Alloc), humanize.Bytes(stats.Sys), humanize.Bytes(stats.TotalAlloc))
 	fmt.Fprintf(w, "Concurrent tasks: \t%d\n", runtime.NumGoroutine())
 	if service.Name() == bruxism.DiscordServiceName {
+		discord := service.(*bruxism.Discord)
 		fmt.Fprintf(w, "Connected servers: \t%d\n", service.ChannelCount())
+		fmt.Fprintf(w, "Shards: \t%d\n", len(discord.Sessions))
 		fmt.Fprintf(w, "\n```")
 	} else {
 		fmt.Fprintf(w, "Connected channels: \t%d\n", service.ChannelCount())
