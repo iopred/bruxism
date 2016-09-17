@@ -478,14 +478,14 @@ func (p *MusicPlugin) enqueue(vc *voiceConnection, url string, service bruxism.S
 	output, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Println(err)
-		service.SendMessage(message.Channel(), fmt.Sprintf("Error downloading metadata for %s.", s.Title))
+		service.SendMessage(message.Channel(), fmt.Sprintf("Error adding song to playlist."))
 		return
 	}
 
 	err = cmd.Start()
 	if err != nil {
 		log.Println(err)
-		service.SendMessage(message.Channel(), fmt.Sprintf("Error downloading metadata for %s.", s.Title))
+		service.SendMessage(message.Channel(), fmt.Sprintf("Error adding song to playlist."))
 		return
 	}
 	defer func() {
