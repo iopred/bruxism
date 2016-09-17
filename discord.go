@@ -75,6 +75,8 @@ type Discord struct {
 	args        []interface{}
 	messageChan chan Message
 
+	Shards int
+
 	// The first session, used to send messages (and maintain backwards compatibility).
 	Session             *discordgo.Session
 	Sessions            []*discordgo.Session
@@ -161,32 +163,20 @@ func (d *Discord) Name() string {
 
 // Open opens the service and returns a channel which all messages will be sent on.
 func (d *Discord) Open() (<-chan Message, error) {
-	var err error
-
-	session, err := discordgo.New(d.args...)
-	if err != nil {
-		return nil, err
+	shards := d.Shards
+	if shards < 1 {
+		shards = 1
 	}
 
-	numShards := 0
+	d.Sessions = make([]*discordgo.Session, shards)
 
-	guilds, err := session.UserGuilds()
-	if err == nil {
-		numShards = len(guilds) / numGuildsPerShard
-	}
-
-	numShards++
-
-	d.Sessions = make([]*discordgo.Session, numShards)
-
-	for i := 0; i < numShards; i++ {
+	for i := 0; i < shards; i++ {
 		session, err := discordgo.New(d.args...)
 		if err != nil {
 			return nil, err
 		}
-
-		session.ShardCount = numShards
-		session.ShardID = 0
+		session.ShardCount = shards
+		session.ShardID = i
 		session.AddHandler(d.onMessageCreate)
 		session.AddHandler(d.onMessageUpdate)
 		session.AddHandler(d.onMessageDelete)

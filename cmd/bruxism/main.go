@@ -36,6 +36,7 @@ var discordEmail string
 var discordPassword string
 var discordApplicationClientID string
 var discordOwnerUserID string
+var discordShards int
 var ircServer string
 var ircUsername string
 var ircPassword string
@@ -58,6 +59,7 @@ func init() {
 	flag.StringVar(&discordPassword, "discordpassword", "", "Discord account password.")
 	flag.StringVar(&discordOwnerUserID, "discordowneruserid", "", "Discord owner user id.")
 	flag.StringVar(&discordApplicationClientID, "discordapplicationclientid", "", "Discord application client id.")
+	flag.IntVar(&discordShards, "discordshards", 1, "Number of discord shards.")
 	flag.StringVar(&ircServer, "ircserver", "", "IRC server.")
 	flag.StringVar(&ircUsername, "ircusername", "", "IRC user name.")
 	flag.StringVar(&ircPassword, "ircpassword", "", "IRC password.")
@@ -113,6 +115,7 @@ func main() {
 		}
 		discord.ApplicationClientID = discordApplicationClientID
 		discord.OwnerUserID = discordOwnerUserID
+		discord.Shards = discordShards
 		bot.RegisterService(discord)
 
 		bot.RegisterPlugin(discord, cp)
