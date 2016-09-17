@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -91,17 +92,23 @@ func (p *MusicPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byt
 		}
 	}
 
-	discord := service.(*bruxism.Discord)
+	go p.init()
 
-	if discord.Session.DataReady {
-		p.ready(discord.Session, nil)
-	} else {
-		discord.Session.AddHandler(p.ready)
-	}
 	return nil
 }
 
-func (p *MusicPlugin) ready(s *discordgo.Session, r *discordgo.Ready) {
+func (p *MusicPlugin) init() {
+	<-time.After(1 * time.Second)
+	for _, s := range p.discord.Sessions {
+		if !s.DataReady {
+			go p.init()
+			return
+		}
+	}
+	p.ready()
+}
+
+func (p *MusicPlugin) ready() {
 	// Join all registered voice channels and start the playback queue
 	for _, v := range p.VoiceConnections {
 		if v.ChannelID == "" {
@@ -399,7 +406,7 @@ func (p *MusicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 // join a specific voice channel
 func (p *MusicPlugin) join(cID string) (vc *voiceConnection, err error) {
 
-	c, err := p.discord.Session.Channel(cID)
+	c, err := p.discord.Channel(cID)
 	if err != nil {
 		return
 	}
@@ -418,8 +425,18 @@ func (p *MusicPlugin) join(cID string) (vc *voiceConnection, err error) {
 	}
 	p.Unlock()
 
+	guild, err := p.discord.Guild(c.GuildID)
+	if err != nil {
+		return
+	}
+
+	guildId, err := strconv.Atoi(guild.ID)
+	if err != nil {
+		return
+	}
+
 	// NOTE: Setting mute to false, deaf to true.
-	vc.conn, err = p.discord.Session.ChannelVoiceJoin(c.GuildID, cID, false, true)
+	vc.conn, err = p.discord.Sessions[(guildId>>22)%len(p.discord.Sessions)].ChannelVoiceJoin(c.GuildID, cID, false, true)
 	if err != nil {
 		return
 	}
@@ -461,12 +478,14 @@ func (p *MusicPlugin) enqueue(vc *voiceConnection, url string, service bruxism.S
 	output, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Println(err)
+		service.SendMessage(message.Channel(), fmt.Sprintf("Error downloading metadata for %s.", s.Title))
 		return
 	}
 
 	err = cmd.Start()
 	if err != nil {
 		log.Println(err)
+		service.SendMessage(message.Channel(), fmt.Sprintf("Error downloading metadata for %s.", s.Title))
 		return
 	}
 	defer func() {
@@ -587,7 +606,6 @@ func (p *MusicPlugin) start(vc *voiceConnection, close <-chan struct{}, control 
 
 // play an individual song
 func (p *MusicPlugin) play(vc *voiceConnection, close <-chan struct{}, control <-chan controlMessage, s song) {
-
 	var err error
 
 	if close == nil || control == nil || vc == nil || vc.conn == nil {
