@@ -111,7 +111,7 @@ func (p *playedPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 	})
 
 	discord.Session.AddHandler(func(s *discordgo.Session, g *discordgo.GuildCreate) {
-		if g.Unavailable == nil || *g.Unavailable {
+		if g.Unavailable {
 			return
 		}
 
