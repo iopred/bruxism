@@ -7,7 +7,7 @@ A chat bot for YouTube, Discord and IRC.
 
 ## Current plugin support:
 
-Commands are prefixed with `!` on YouTube and IRC, and `@BotName ` on Discord.
+Commands are prefixed with `@BotName `.
 
 * `emoji <emoji>` - Returns a big version of an emoji. Please read the README in emojiplugin for installation notes.
 * `help [<topic>]` - Returns generic help or help for a specific topic. Available topics: `comic,remind`
@@ -18,6 +18,8 @@ Commands are prefixed with `!` on YouTube and IRC, and `@BotName ` on Discord.
 * `stats` - Lists bot statistics.
 * `streamer <streamername|streamerid>` - Grabs details about a YouTube streamer.
 * `topstreamers` - List the current top streamers on YouTube Gaming.
+
+eg: `@BotName help`
 
 Also supports direct invites on Discord and support for announcing streamers going live on YouTube Gaming.
 
