@@ -51,11 +51,7 @@ Now the bot can be run:
 
 ### Run as a Discord bot
 
-`bruxism -discordemail <discord email> -discordpassword <discord password>`
-
-Discord has recently rolled out Bot accounts. To run Bruxism as a Bot:
-
-`bruxism -discordtoken <discord token>`
+`bruxism -discordtoken "Bot <discord bot token>"`
 
 It is suggested that you set `-discordapplicationclientid` if you are running a bot account, this will make `inviteplugin` function correctly.
 
