@@ -31,6 +31,6 @@ func helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message
 func New() bruxism.Plugin {
 	p := bruxism.NewSimplePlugin("YouTubeInvite")
 	p.MessageFunc = messageFunc
-	p.HelpFunc = helpFunc
+	//p.HelpFunc = helpFunc
 	return p
 }
