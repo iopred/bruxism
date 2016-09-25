@@ -5,30 +5,18 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
+
+	"google.golang.org/api/youtube/v3"
 
 	"github.com/iopred/bruxism"
+	"github.com/iopred/discordgo"
 )
 
-const livePluginGuildID = "126798577153474560"
-const livePluginChannelID = "126889593005015040"
-
-type liveChannel struct {
-	UserID           string
-	UserName         string
-	ChannelID        string
-	DiscordChannelID string
-	Live             []string
-	Last             time.Time
-	JoinSeptapus     bool
-}
-
 type livePlugin struct {
-	discord *bruxism.Discord
-	youTube *bruxism.YouTube
-	// Map from UserID -> liveChannel
-	Live        map[string]*liveChannel
-	LastVideoId string
+	ytLiveChannel            *bruxism.YTLiveChannel
+	ChannelToYouTubeChannels map[string]map[string]bool
+	youTubeChannelToChannels map[string]map[string]bool
+	liveVideoChan            chan *youtube.Video
 }
 
 // Name returns the name of the plugin.
@@ -44,80 +32,40 @@ func (p *livePlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byte
 		}
 	}
 
+	for channel, ytChannels := range p.ChannelToYouTubeChannels {
+		for ytChannel := range ytChannels {
+			p.monitor(channel, ytChannel)
+		}
+	}
+
 	go p.Run(bot, service)
 	return nil
 }
 
-func (p *livePlugin) pollChannel(bot *bruxism.Bot, service bruxism.Service, lc *liveChannel) {
-	liveVideos, err := p.youTube.GetLiveVideos(lc.ChannelID)
-	if err != nil {
-		return
-	}
-
-	live := []string{}
-	for _, v := range liveVideos {
-		live = append(live, v.Id)
-
-		if lc.JoinSeptapus {
-			ytservice := bot.Services[bruxism.YouTubeServiceName]
-			if ytservice != nil {
-				ytservice.Join(v.Id)
-			}
+func (p *livePlugin) monitor(channel, ytChannel string) error {
+	if p.youTubeChannelToChannels[ytChannel] == nil {
+		p.youTubeChannelToChannels[ytChannel] = map[string]bool{}
+		err := p.ytLiveChannel.Monitor(ytChannel, p.liveVideoChan)
+		if err != nil {
+			return err
 		}
 	}
-
-	// If this is the first time getting results, just exit.
-	if lc.Live == nil {
-		lc.Live = live
-		return
+	if p.ChannelToYouTubeChannels[channel] == nil {
+		p.ChannelToYouTubeChannels[channel] = map[string]bool{}
 	}
-
-	for _, v := range live {
-		found := false
-		for _, v2 := range lc.Live {
-			if v == v2 {
-				found = true
-				break
-			}
-		}
-		if !found {
-			if lc.Last.Add(6 * time.Hour).Before(time.Now()) {
-				lc.Last = time.Now()
-
-				if p.LastVideoId != v {
-					p.LastVideoId = v
-					if service.Name() == bruxism.DiscordServiceName {
-						service.SendMessage(livePluginChannelID, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
-						if lc.DiscordChannelID != "" {
-							service.SendMessage(lc.DiscordChannelID, fmt.Sprintf("<@%s> just went live: https://gaming.youtube.com/watch?v=%s", lc.UserID, v))
-						}
-					} else {
-						service.SendMessage(livePluginChannelID, fmt.Sprintf("%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserName, v))
-						if lc.DiscordChannelID != "" {
-							service.SendMessage(lc.DiscordChannelID, fmt.Sprintf("%s just went live: https://gaming.youtube.com/watch?v=%s", lc.UserName, v))
-						}
-					}
-				}
-			}
-		}
-	}
-
-	lc.Live = live
-}
-
-func (p *livePlugin) poll(bot *bruxism.Bot, service bruxism.Service) {
-	for _, lc := range p.Live {
-		go p.pollChannel(bot, service, lc)
-	}
+	p.ChannelToYouTubeChannels[channel][ytChannel] = true
+	p.youTubeChannelToChannels[ytChannel][channel] = true
+	return nil
 }
 
 // Run will poll YouTube for channels going live and send messages.
 func (p *livePlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 	for {
-		p.poll(bot, service)
-		<-time.After(1 * time.Minute)
+		v := <-p.liveVideoChan
+		for channel := range p.youTubeChannelToChannels[v.Snippet.ChannelId] {
+			service.SendMessage(channel, fmt.Sprintf("%s has just gone live! http://gaming.youtube.com/watch?v=%s", v.Snippet.ChannelTitle, v.Id))
+		}
 	}
-
 }
 
 // Save will save plugin state to a byte array.
@@ -127,28 +75,15 @@ func (p *livePlugin) Save() ([]byte, error) {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
-	c, err := p.discord.Channel(message.Channel())
-	if (err != nil || c.GuildID != livePluginGuildID) && !service.IsPrivate(message) {
-		return nil
-	}
-
 	if detailed {
 		return []string{
-			fmt.Sprintf("Announces when you go live in <#%s> as well as an optional channel.", livePluginChannelID),
-			bruxism.CommandHelp(service, "setyoutubechannel", "<youtube channel id>", "Sets your youtube channel id.")[0],
-			bruxism.CommandHelp(service, "unsetyoutubechannel", "", "Unsets your youtube channel id.")[0],
-			bruxism.CommandHelp(service, "setjoinseptapus", "", "Septapus will join your livestreams.")[0],
-			bruxism.CommandHelp(service, "unsetjoinseptapus", "", "Septapus will no longer join your livestreams.")[0],
-			bruxism.CommandHelp(service, "setdiscordchannel", "", fmt.Sprintf("%s will also announce you going live in this channel.", service.UserName()))[0],
-			bruxism.CommandHelp(service, "unsetdiscordchannel", "", "Disables additional live announcement of channel.")[0],
-			// Provided by youtubeplugin.
-			bruxism.CommandHelp(service, "youtubeinvite", "<videoid>", "Joins the provided YouTube live stream.")[0],
-			"Example:",
-			fmt.Sprintf("`%ssetyoutubechannel UC392dac34_32fafe2deadbeef`", service.CommandPrefix()),
+			bruxism.CommandHelp(service, "live", "add [youtube channel id]", "Adds a channel to be announced.")[0],
+			bruxism.CommandHelp(service, "live", "remove [youtube channel id]", "Removes a channel from being announced.")[0],
+			bruxism.CommandHelp(service, "live", "list", "Lists all the channels being announced in this channel.")[0],
 		}
 	}
 
-	return bruxism.CommandHelp(service, "setyoutubechannel", "<youtube channel id>", "Sets your youtube channel id.")
+	return bruxism.CommandHelp(service, "live", "<add|remove|list> [youtube channel id]", "Announces when a YouTube Channel goes live.")
 }
 
 // Message handler.
@@ -157,82 +92,81 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 	if !service.IsMe(message) {
 		messageChannel := message.Channel()
 
-		if bruxism.MatchesCommand(service, "setyoutubechannel", message) || bruxism.MatchesCommand(service, "setchannel", message) {
-			query, _ := bruxism.ParseCommand(service, message)
-			if len(query) == 24 && strings.Index(query, ",") == -1 {
-				uid := message.UserID()
+		if bruxism.MatchesCommand(service, "live", message) {
+			ticks := ""
+			if service.Name() == bruxism.DiscordServiceName {
+				ticks = "`"
+			}
 
-				lc, ok := p.Live[uid]
-				if ok {
-					lc.ChannelID = query
+			_, parts := bruxism.ParseCommand(service, message)
+
+			if len(parts) == 0 {
+				service.SendMessage(messageChannel, fmt.Sprintf("Incorrect command. eg: %s%slive [add|remove|list] <%s>%s", ticks, service.CommandPrefix(), "UCGmC0A8mEAPdlELQdP9xJbw", ticks))
+			}
+
+			isAuthorized := service.IsModerator(message)
+
+			if service.Name() == bruxism.DiscordServiceName {
+				discord := service.(*bruxism.Discord)
+				p, err := discord.UserChannelPermissions(message.UserID(), message.Channel())
+				if err == nil {
+					isAuthorized = isAuthorized || (p&discordgo.PermissionManageRoles != 0) || (p&discordgo.PermissionManageChannels != 0) || (p&discordgo.PermissionManageServer != 0)
+				}
+			}
+
+			switch parts[0] {
+			case "list":
+				if !isAuthorized {
+					service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to list live announcements.")
+					return
+				}
+				list := []string{}
+				for ytChannel := range p.ChannelToYouTubeChannels[messageChannel] {
+					list = append(list, fmt.Sprintf("%s (%s)", p.ytLiveChannel.ChannelName(ytChannel), ytChannel))
+				}
+				if len(list) == 0 {
+					service.SendMessage(messageChannel, "No Channels are being announced.")
 				} else {
-					lc = &liveChannel{
-						UserID:    uid,
-						UserName:  message.UserName(),
-						ChannelID: query,
-						Live:      nil,
-					}
-					p.Live[uid] = lc
+					service.SendMessage(messageChannel, fmt.Sprintf("Currently announcing: %s", strings.Join(list, ",")))
 				}
-
-				p.pollChannel(bot, service, lc)
-
-				service.SendMessage(messageChannel, fmt.Sprintf("YouTube Channel ID set. A message will be posted to <#%s> when you go live.", livePluginChannelID))
-			} else {
-				service.SendMessage(messageChannel, "Sorry, please provide a YouTube Channel ID. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
-			}
-		} else if bruxism.MatchesCommand(service, "unsetyoutubechannel", message) {
-			delete(p.Live, message.UserID())
-			service.SendMessage(messageChannel, fmt.Sprintf("YouTube Channel ID unset..", livePluginChannelID))
-		} else if bruxism.MatchesCommand(service, "setdiscordchannel", message) {
-			for _, lc := range p.Live {
-				if lc.UserID == message.UserID() {
-					c, err := p.discord.Channel(messageChannel)
-					if err != nil || c.GuildID == livePluginGuildID {
-						service.SendMessage(messageChannel, fmt.Sprintf("Live messages are sent in <#%s>. Use this on your own server.", livePluginChannelID))
-						return
-					}
-
-					lc.DiscordChannelID = messageChannel
-					service.SendMessage(messageChannel, fmt.Sprintf("Discord Channel ID set. A message will be sent here when you go live."))
+			case "add":
+				if !isAuthorized {
+					service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to add live announcements.")
 					return
 				}
-			}
-			service.SendMessage(message.Channel(), "You haven't registered a YouTube Channel ID yet. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
-		} else if bruxism.MatchesCommand(service, "unsetdiscordchannel", message) {
-			for _, lc := range p.Live {
-				if lc.UserID == message.UserID() {
-					lc.DiscordChannelID = ""
-					service.SendMessage(messageChannel, fmt.Sprintf("Discord Channel ID unset. Messages will not be sent hire when you go live."))
+				if len(parts) != 2 || len(parts[1]) != 24 {
+					service.SendMessage(messageChannel, fmt.Sprintf("Incorrect Channel ID. eg: %s%slive %s %s%s", ticks, service.CommandPrefix(), parts[0], "UCGmC0A8mEAPdlELQdP9xJbw", ticks))
 					return
 				}
-			}
-		} else if bruxism.MatchesCommand(service, "setjoinseptapus", message) {
-			for _, lc := range p.Live {
-				if lc.UserID == message.UserID() {
-					lc.JoinSeptapus = true
-					service.SendMessage(messageChannel, fmt.Sprintf("Septapus will now join your livestreams."))
+				err := p.monitor(messageChannel, parts[1])
+				if err != nil {
+					service.SendMessage(messageChannel, fmt.Sprintf("Could not add Channel ID. %s", err))
 					return
 				}
-			}
-			service.SendMessage(message.Channel(), "You haven't registered a YouTube Channel ID yet. eg: setyoutubechannel UC392dac34_32fafe2deadbeef")
-		} else if bruxism.MatchesCommand(service, "unsetjoinseptapus", message) {
-			for _, lc := range p.Live {
-				if lc.UserID == message.UserID() {
-					lc.JoinSeptapus = false
-					service.SendMessage(messageChannel, fmt.Sprintf("Septapus will no longer join your livestreams."))
+				service.SendMessage(messageChannel, fmt.Sprintf("Messages will be sent here when %s goes live.", p.ytLiveChannel.ChannelName(parts[1])))
+			case "remove":
+				if !isAuthorized {
+					service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to remove live announcements.")
 					return
 				}
+				if len(parts) != 2 || len(parts[1]) != 24 {
+					service.SendMessage(messageChannel, fmt.Sprintf("Incorrect Channel ID. eg: %s%slive %s %s%s", ticks, service.CommandPrefix(), parts[0], "UCGmC0A8mEAPdlELQdP9xJbw", ticks))
+					return
+				}
+				delete(p.ChannelToYouTubeChannels[messageChannel], parts[1])
+				delete(p.youTubeChannelToChannels[parts[1]], messageChannel)
+				service.SendMessage(messageChannel, fmt.Sprintf("Messages will no longer be sent here when %s goes live.", p.ytLiveChannel.ChannelName(parts[1])))
 			}
 		}
 	}
 }
 
-// New will create a new slow mode plugin.
-func New(d *bruxism.Discord, yt *bruxism.YouTube) bruxism.Plugin {
+// New will create a new live plugin.
+func New(ytLiveChannel *bruxism.YTLiveChannel) bruxism.Plugin {
 	return &livePlugin{
-		discord: d,
-		youTube: yt,
-		Live:    map[string]*liveChannel{},
+		ytLiveChannel:            ytLiveChannel,
+		ChannelToYouTubeChannels: map[string]map[string]bool{},
+		youTubeChannelToChannels: map[string]map[string]bool{},
+		liveVideoChan:            make(chan *youtube.Video),
 	}
 }

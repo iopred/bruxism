@@ -331,10 +331,9 @@ func (yt *YouTube) handleRequests() {
 	}
 }
 
-// Open opens the service and returns a channel which all messages will be sent on.
-func (yt *YouTube) Open() (<-chan Message, error) {
+func (yt *YouTube) Init() error {
 	if err := yt.createConfig(); err != nil {
-		return nil, err
+		return err
 	}
 
 	// An oauth URL was requested, error early.
@@ -343,7 +342,7 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 	}
 
 	if err := yt.createToken(); err != nil {
-		return nil, err
+		return err
 	}
 
 	yt.Client = yt.config.Client(oauth2.NoContext, yt.token)
@@ -351,9 +350,14 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 	if service, err := youtube.New(yt.Client); err == nil {
 		yt.Service = service
 	} else {
-		return nil, err
+		return err
 	}
 
+	return nil
+}
+
+// Open opens the service and returns a channel which all messages will be sent on.
+func (yt *YouTube) Open() (<-chan Message, error) {
 	me, err := yt.GetMe()
 	if err != nil {
 		return nil, err

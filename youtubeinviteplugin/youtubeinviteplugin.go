@@ -24,8 +24,13 @@ func messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mess
 	}
 }
 
+func helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
+	return bruxism.CommandHelp(service, "youtubeinvite", "<videoid>", "Joins the provided YouTube live stream.")
+}
+
 func New() bruxism.Plugin {
 	p := bruxism.NewSimplePlugin("YouTubeInvite")
 	p.MessageFunc = messageFunc
+	p.HelpFunc = helpFunc
 	return p
 }
