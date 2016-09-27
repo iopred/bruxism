@@ -49,28 +49,13 @@ func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism
 			if len(parts) == 1 {
 				submatches := discordRegex.FindStringSubmatch(parts[0])
 				if len(submatches) != 0 {
-					discord := service.(*bruxism.Discord)
-
-					ch, err := discord.Channel(message.Channel())
-					if err != nil {
-						return
-					}
-					gu, err := discord.Guild(ch.GuildID)
+					h, err := http.Get("https://cdn.discordapp.com/emojis/" + submatches[1] + ".png")
 					if err != nil {
 						return
 					}
 
-					for _, e := range gu.Emojis {
-						if e.ID == submatches[1] {
-							h, err := http.Get("https://cdn.discordapp.com/emojis/" + e.ID + ".png")
-							if err != nil {
-								return
-							}
-
-							service.SendFile(message.Channel(), "emoji.png", h.Body)
-							h.Body.Close()
-						}
-					}
+					service.SendFile(message.Channel(), "emoji.png", h.Body)
+					h.Body.Close()
 
 					return
 
