@@ -2,7 +2,9 @@ package emojiplugin
 
 import (
 	"fmt"
+	"net/http"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/iopred/bruxism"
@@ -34,6 +36,8 @@ func emojiLoadFunc(bot *bruxism.Bot, service bruxism.Service, data []byte) error
 	return nil
 }
 
+var discordRegex = regexp.MustCompile("<:.*?:(.*?)>")
+
 func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if service.Name() == bruxism.DiscordServiceName && !service.IsMe(message) {
 		if bruxism.MatchesCommand(service, "emoji", message) || bruxism.MatchesCommand(service, "hugemoji", message) {
@@ -43,6 +47,35 @@ func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism
 			}
 			_, parts := bruxism.ParseCommand(service, message)
 			if len(parts) == 1 {
+				submatches := discordRegex.FindStringSubmatch(parts[0])
+				if len(submatches) != 0 {
+					discord := service.(*bruxism.Discord)
+
+					ch, err := discord.Channel(message.Channel())
+					if err != nil {
+						return
+					}
+					gu, err := discord.Guild(ch.GuildID)
+					if err != nil {
+						return
+					}
+
+					for _, e := range gu.Emojis {
+						if e.ID == submatches[1] {
+							h, err := http.Get("https://cdn.discordapp.com/emojis/" + e.ID + ".png")
+							if err != nil {
+								return
+							}
+
+							service.SendFile(message.Channel(), "emoji.png", h.Body)
+							h.Body.Close()
+						}
+					}
+
+					return
+
+				}
+
 				s := strings.TrimSpace(parts[0])
 				for i := range s {
 					filename := emojiFile(base, s[i:])
