@@ -167,6 +167,6 @@ func New(ytLiveChannel *bruxism.YTLiveChannel) bruxism.Plugin {
 		ytLiveChannel:            ytLiveChannel,
 		ChannelToYouTubeChannels: map[string]map[string]bool{},
 		youTubeChannelToChannels: map[string]map[string]bool{},
-		liveVideoChan:            make(chan *youtube.Video),
+		liveVideoChan:            make(chan *youtube.Video, 100),
 	}
 }
