@@ -57,6 +57,8 @@ It is suggested that you set `-discordapplicationclientid` if you are running a 
 
 It is suggested that you set `-discordowneruserid` as this prevents anyone from calling `playingplugin`.
 
+To invite your bot to a server, visit: `https://discordapp.com/oauth2/authorize?client_id=<discord client id>&scope=bot`
+
 ### Run as an IRC bot
 
 `bruxism -ircserver <irc server> -ircusername <irc username> -ircchannels <#channel1,#channel2>`
