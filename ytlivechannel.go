@@ -60,14 +60,14 @@ func (y *YTLiveChannel) ChannelName(channel string) string {
 
 func (y *YTLiveChannel) poll(channel string) {
 	var lastAnnounce time.Time
-	seen := map[string]time.Time{}
+	seen := map[string]bool{}
 	now := time.Now()
 	first := true
 	for {
 		videos, _ := y.getLiveVideos(channel)
-		for _, v := range videos {
-			if now.After(seen[v.Id].Add(6 * time.Hour)) {
-				seen[v.Id] = now
+		for k, v := range videos {
+			if !seen[k] {
+				seen[k] = true
 				// Don't announce the videos that are already live.
 				if first {
 					continue
