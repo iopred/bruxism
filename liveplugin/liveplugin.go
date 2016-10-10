@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 
 	"google.golang.org/api/youtube/v3"
 
@@ -13,6 +14,7 @@ import (
 )
 
 type livePlugin struct {
+	sync.RWMutex
 	ytLiveChannel            *bruxism.YTLiveChannel
 	ChannelToYouTubeChannels map[string]map[string]bool
 	youTubeChannelToChannels map[string]map[string]bool
@@ -43,6 +45,9 @@ func (p *livePlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byte
 }
 
 func (p *livePlugin) monitor(channel, ytChannel string) error {
+	p.Lock()
+	defer p.Unlock()
+
 	if p.youTubeChannelToChannels[ytChannel] == nil {
 		p.youTubeChannelToChannels[ytChannel] = map[string]bool{}
 		err := p.ytLiveChannel.Monitor(ytChannel, p.liveVideoChan)
@@ -60,11 +65,16 @@ func (p *livePlugin) monitor(channel, ytChannel string) error {
 
 // Run will poll YouTube for channels going live and send messages.
 func (p *livePlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
+	p.RLock()
+	lvc := p.liveVideoChan
+	p.RUnlock()
 	for {
-		v := <-p.liveVideoChan
+		v := <-lvc
+		p.RLock()
 		for channel := range p.youTubeChannelToChannels[v.Snippet.ChannelId] {
 			service.SendMessage(channel, fmt.Sprintf("%s has just gone live! http://gaming.youtube.com/watch?v=%s", v.Snippet.ChannelTitle, v.Id))
 		}
+		p.RUnlock()
 	}
 }
 
@@ -121,9 +131,11 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 					return
 				}
 				list := []string{}
+				p.Lock()
 				for ytChannel := range p.ChannelToYouTubeChannels[messageChannel] {
 					list = append(list, fmt.Sprintf("%s (%s)", p.ytLiveChannel.ChannelName(ytChannel), ytChannel))
 				}
+				p.Unlock()
 				if len(list) == 0 {
 					service.SendMessage(messageChannel, "No Channels are being announced.")
 				} else {
@@ -153,8 +165,10 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 					service.SendMessage(messageChannel, fmt.Sprintf("Incorrect Channel ID. eg: %s%slive %s %s%s", ticks, service.CommandPrefix(), parts[0], "UCGmC0A8mEAPdlELQdP9xJbw", ticks))
 					return
 				}
+				p.Lock()
 				delete(p.ChannelToYouTubeChannels[messageChannel], parts[1])
 				delete(p.youTubeChannelToChannels[parts[1]], messageChannel)
+				p.Unlock()
 				service.SendMessage(messageChannel, fmt.Sprintf("Messages will no longer be sent here when %s goes live.", p.ytLiveChannel.ChannelName(parts[1])))
 			}
 		}
@@ -167,6 +181,6 @@ func New(ytLiveChannel *bruxism.YTLiveChannel) bruxism.Plugin {
 		ytLiveChannel:            ytLiveChannel,
 		ChannelToYouTubeChannels: map[string]map[string]bool{},
 		youTubeChannelToChannels: map[string]map[string]bool{},
-		liveVideoChan:            make(chan *youtube.Video, 100),
+		liveVideoChan:            make(chan *youtube.Video),
 	}
 }

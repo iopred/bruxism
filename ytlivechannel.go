@@ -61,7 +61,6 @@ func (y *YTLiveChannel) ChannelName(channel string) string {
 func (y *YTLiveChannel) poll(channel string) {
 	var lastAnnounce time.Time
 	seen := map[string]bool{}
-	now := time.Now()
 	first := true
 	for {
 		videos, _ := y.getLiveVideos(channel)
@@ -72,6 +71,7 @@ func (y *YTLiveChannel) poll(channel string) {
 				if first {
 					continue
 				}
+				now := time.Now()
 				// Don't allow more than 1 announcement per hour.
 				if !now.After(lastAnnounce.Add(1 * time.Hour)) {
 					continue
