@@ -126,7 +126,11 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 				}
 				p.Lock()
 				defer p.Unlock()
-				if _, ok := p.Channels[messageChannel]; ok {
+				_, ok := p.Channels[messageChannel]
+				if !ok {
+					_, ok = p.PrimeChannels[messageChannel]
+				}
+				if ok {
 					service.SendMessage(messageChannel, "A wormhole is already open.")
 				} else {
 					wormhole := &wormhole{}
@@ -253,7 +257,7 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 			case "info":
 				p.RLock()
 				defer p.RUnlock()
-				service.SendMessage(messageChannel, fmt.Sprintf("Wormholes are interdimentional links to other channels that %s is in. Send messages through wormholes and they will exit from another random wormhole.\nThere are %v wormholes open and %v messages have been sent through wormholes. Visit Wormhole Prime at https://discord.gg/HQurPde", service.UserName(), len(p.Channels), p.Messages))
+				service.SendMessage(messageChannel, fmt.Sprintf("Wormholes are interdimentional links to other channels that %s is in.\nSend messages through wormholes and they will exit from another random wormhole.\nThere are %v wormholes open and %v messages have been sent through wormholes. Visit Wormhole Prime where all messages also appear: https://discord.gg/HQurPde", service.UserName(), len(p.Channels), p.Messages))
 			}
 		}
 	}
