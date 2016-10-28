@@ -102,12 +102,14 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 				ticks = "`"
 			}
 
+			p.RLock()
 			channels := p.Channels
 			channelWormhole, ok := channels[messageChannel]
 			if !ok {
 				channels = p.PrimeChannels
 				channelWormhole, ok = channels[messageChannel]
 			}
+			p.RUnlock()
 
 			_, parts := bruxism.ParseCommand(service, message)
 
@@ -131,12 +133,13 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to open a wormhole.")
 					return
 				}
-				p.Lock()
-				defer p.Unlock()
 
 				if ok {
-					service.SendMessage(messageChannel, "A wormhole is already open.")
+					p.send(bot, service, message, messageChannel, channelWormhole, "Wormhole already open.", "A wormhole is already open.")
 				} else {
+					p.Lock()
+					defer p.Unlock()
+
 					channelWormhole = &wormhole{}
 
 					channels = p.Channels
@@ -163,37 +166,34 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					channels[messageChannel] = channelWormhole
 					p.send(bot, service, message, messageChannel, channelWormhole, "Wormhole opened!", "A wormhole has been opened.")
 				}
-
 			case "close":
 				if !isAuthorized {
 					service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to close a wormhole.")
 					return
 				}
-				p.Lock()
-				defer p.Unlock()
 
 				if ok {
+					p.Lock()
+					defer p.Unlock()
+
 					p.send(bot, service, message, messageChannel, channelWormhole, "Wormhole closed", "The wormhole has been closed.")
 					delete(channels, messageChannel)
 				} else {
 					service.SendMessage(messageChannel, "A wormhole has not been opened yet.")
 				}
-
 			case "send":
+				p.Lock()
+				defer p.Unlock()
+
 				now := time.Now()
 				if !ok {
 					service.SendMessage(messageChannel, "A wormhole has not been opened yet.")
 					return
 				} else if !now.After(p.Next[messageChannel]) {
-					content := fmt.Sprintf("Wormhole is busy, available %s.", humanize.Time(p.Next[messageChannel]))
-					p.send(bot, service, message, messageChannel, channelWormhole, content, content)
-
+					p.send(bot, service, message, messageChannel, channelWormhole, fmt.Sprintf("Wormhole is busy, available %s.", humanize.Time(p.Next[messageChannel])), fmt.Sprintf("The wormhole is busy, available %s.", humanize.Time(p.Next[messageChannel])))
 					return
 				}
 				p.Next[messageChannel] = now.Add(1 * time.Minute)
-
-				p.Lock()
-				defer p.Unlock()
 
 				r := rand.Intn(len(p.Channels))
 				i := 0
