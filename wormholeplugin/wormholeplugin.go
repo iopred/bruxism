@@ -134,7 +134,18 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					}
 
 					p.Channels[messageChannel] = wormhole
-					service.SendMessage(messageChannel, "A wormhole has been opened.")
+
+					if service.Name() == bruxism.DiscordServiceName && wormhole.Webhook != "" {
+						discord := service.(*bruxism.Discord)
+						err := discord.Session.WebhookExecute(wormhole.Webhook, wormhole.Token, false, &discordgo.WebhookParams{
+							Content: "Wormhole opened!",
+						})
+						if err != nil {
+							service.SendMessage(messageChannel, "A wormhole has been opened.")
+						}
+					} else {
+						service.SendMessage(messageChannel, "A wormhole has been opened.")
+					}
 				}
 
 			case "close":
@@ -147,11 +158,19 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 				if wormhole, ok := p.Channels[messageChannel]; ok {
 					if service.Name() == bruxism.DiscordServiceName && wormhole.Webhook != "" {
 						discord := service.(*bruxism.Discord)
-						discord.Session.WebhookDeleteWithToken(wormhole.Webhook, wormhole.Token)
-					}
 
+						err := discord.Session.WebhookExecute(wormhole.Webhook, wormhole.Token, false, &discordgo.WebhookParams{
+							Content: "Wormhole closed.",
+						})
+						if err != nil {
+							service.SendMessage(messageChannel, "The wormhole has been closed.")
+						}
+
+						discord.Session.WebhookDeleteWithToken(wormhole.Webhook, wormhole.Token)
+					} else {
+						service.SendMessage(messageChannel, "The wormhole has been closed.")
+					}
 					delete(p.Channels, messageChannel)
-					service.SendMessage(messageChannel, "The wormhole has been closed.")
 				} else {
 					service.SendMessage(messageChannel, "A wormhole has not been opened.")
 				}
