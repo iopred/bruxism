@@ -40,6 +40,16 @@ func (p *wormholePlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []
 		}
 	}
 
+	if p.Channels == nil {
+		p.Channels = make(map[string]*wormhole)
+	}
+	if p.PrimeChannels == nil {
+		p.PrimeChannels = make(map[string]*wormhole)
+	}
+	if p.Next == nil {
+		p.Next = make(map[string]time.Time)
+	}
+
 	return nil
 }
 
