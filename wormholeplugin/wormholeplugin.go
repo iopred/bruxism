@@ -174,7 +174,15 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 				}
 				p.Lock()
 				defer p.Unlock()
-				if wormhole, ok := p.Channels[messageChannel]; ok {
+
+				channels := p.Channels
+				wormhole, ok := channels[messageChannel]
+				if !ok {
+					channels = p.PrimeChannels
+					wormhole, ok = channels[messageChannel]
+				}
+
+				if ok {
 					if service.Name() == bruxism.DiscordServiceName && wormhole.Webhook != "" {
 						discord := service.(*bruxism.Discord)
 
@@ -189,7 +197,7 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					} else {
 						service.SendMessage(messageChannel, "The wormhole has been closed.")
 					}
-					delete(p.Channels, messageChannel)
+					delete(channels, messageChannel)
 				} else {
 					service.SendMessage(messageChannel, "A wormhole has not been opened.")
 				}
