@@ -25,6 +25,7 @@ import (
 	"github.com/iopred/bruxism/streamerplugin"
 	"github.com/iopred/bruxism/topstreamersplugin"
 	"github.com/iopred/bruxism/triviaplugin"
+	"github.com/iopred/bruxism/wormholeplugin"
 	"github.com/iopred/bruxism/youtubeinviteplugin"
 )
 
@@ -113,6 +114,7 @@ func main() {
 	bot.RegisterPlugin(youtube, streamerplugin.New(youtube))
 	bot.RegisterPlugin(youtube, reminderplugin.New())
 	bot.RegisterPlugin(youtube, triviaplugin.New())
+	bot.RegisterPlugin(youtube, wormholeplugin.New())
 	bot.RegisterPlugin(youtube, liveplugin.New(ytLiveChannel))
 
 	// Register the Discord service if we have an email or token.
@@ -142,6 +144,7 @@ func main() {
 			bot.RegisterPlugin(discord, carbonitexplugin.New(carbonitexKey))
 		}
 		bot.RegisterPlugin(discord, triviaplugin.New())
+		bot.RegisterPlugin(discord, wormholeplugin.New())
 		bot.RegisterPlugin(discord, ytip)
 	}
 
@@ -155,6 +158,7 @@ func main() {
 		bot.RegisterPlugin(irc, streamerplugin.New(youtube))
 		bot.RegisterPlugin(irc, reminderplugin.New())
 		bot.RegisterPlugin(irc, triviaplugin.New())
+		bot.RegisterPlugin(irc, wormholeplugin.New())
 		bot.RegisterPlugin(irc, liveplugin.New(ytLiveChannel))
 		bot.RegisterPlugin(irc, ytip)
 	}
@@ -168,6 +172,7 @@ func main() {
 		bot.RegisterPlugin(slack, topstreamersplugin.New(youtube))
 		bot.RegisterPlugin(slack, streamerplugin.New(youtube))
 		bot.RegisterPlugin(slack, triviaplugin.New())
+		bot.RegisterPlugin(slack, wormholeplugin.New())
 		bot.RegisterPlugin(slack, liveplugin.New(ytLiveChannel))
 		bot.RegisterPlugin(slack, ytip)
 	}
