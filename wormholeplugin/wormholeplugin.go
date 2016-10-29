@@ -273,6 +273,11 @@ func (p *wormholePlugin) send(bot *bruxism.Bot, service bruxism.Service, message
 	}
 }
 
+// Stats will return the stats for a plugin.
+func (p *wormholePlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) []string {
+	return []string{fmt.Sprintf("Wormholes open: \t%d\n", len(p.Channels))}
+}
+
 // New will create a new wormhole plugin.
 func New() bruxism.Plugin {
 	return &wormholePlugin{

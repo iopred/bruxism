@@ -758,3 +758,8 @@ func (p *MusicPlugin) play(vc *voiceConnection, close <-chan struct{}, control <
 
 	}
 }
+
+// Stats will return the stats for a plugin.
+func (p *MusicPlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) []string {
+	return nil
+}

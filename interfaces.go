@@ -69,6 +69,9 @@ type HelpFunc func(*Bot, Service, Message, bool) []string
 // MessageFunc is the function signature for a message handler.
 type MessageFunc func(*Bot, Service, Message)
 
+// StatsFunc is the function signature for a stats handler.
+type StatsFunc func(*Bot, Service, Message) []string
+
 // Plugin is a plugin interface, supports loading and saving to a byte array and has help and message handlers.
 type Plugin interface {
 	Name() string
@@ -76,4 +79,5 @@ type Plugin interface {
 	Save() ([]byte, error)
 	Help(*Bot, Service, Message, bool) []string
 	Message(*Bot, Service, Message)
+	Stats(*Bot, Service, Message) []string
 }

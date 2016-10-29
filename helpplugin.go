@@ -47,7 +47,7 @@ func (p *helpPlugin) Help(bot *Bot, service Service, message Message, detailed b
 	sort.Strings(commands)
 
 	help := []string{}
-	
+
 	if len(commands) > 0 {
 		help = append(help, CommandHelp(service, "help", "[topic]", fmt.Sprintf("Returns help for a specific topic. Available topics: %s%s%s", ticks, strings.Join(commands, ", "), ticks))[0])
 	}
@@ -152,6 +152,11 @@ func (p *helpPlugin) Load(bot *Bot, service Service, data []byte) error {
 // Save will save plugin state to a byte array.
 func (p *helpPlugin) Save() ([]byte, error) {
 	return json.Marshal(p)
+}
+
+// Stats will return the stats for a plugin.
+func (p *helpPlugin) Stats(bot *Bot, service Service, message Message) []string {
+	return nil
 }
 
 // NeHelpPlugin will create a new help plugin.

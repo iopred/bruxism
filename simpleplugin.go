@@ -7,6 +7,7 @@ type SimplePlugin struct {
 	SaveFunc    SaveFunc    `json:"-"`
 	MessageFunc MessageFunc `json:"-"`
 	HelpFunc    HelpFunc    `json:"-"`
+	StatsFunc   StatsFunc   `json:"-"`
 }
 
 // Name returns the name of the plugin.
@@ -44,6 +45,13 @@ func (p *SimplePlugin) Message(bot *Bot, service Service, message Message) {
 	if p.MessageFunc != nil {
 		p.MessageFunc(bot, service, message)
 	}
+}
+
+func (p *SimplePlugin) Stats(bot *Bot, service Service, message Message) []string {
+	if p.StatsFunc != nil {
+		return p.StatsFunc(bot, service, message)
+	}
+	return nil
 }
 
 // NewSimplePlugin creates a new simple plugin.

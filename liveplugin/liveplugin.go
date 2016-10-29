@@ -175,6 +175,11 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 	}
 }
 
+// Stats will return the stats for a plugin.
+func (p *livePlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) []string {
+	return []string{fmt.Sprintf("YouTube channels monitored: \t%d\n", len(p.youTubeChannelToChannels))}
+}
+
 // New will create a new live plugin.
 func New(ytLiveChannel *bruxism.YTLiveChannel) bruxism.Plugin {
 	return &livePlugin{

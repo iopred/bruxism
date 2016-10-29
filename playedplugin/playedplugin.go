@@ -226,6 +226,11 @@ func (p *playedPlugin) Name() string {
 	return "Played"
 }
 
+// Stats will return the stats for a plugin.
+func (p *playedPlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) []string {
+	return []string{fmt.Sprintf("Users playing: \t%d\n", len(p.Users))}
+}
+
 // New will create a played plugin.
 func New() bruxism.Plugin {
 	return &playedPlugin{

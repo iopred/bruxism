@@ -153,6 +153,11 @@ func (p *CommandPlugin) AddCommand(commandString string, message CommandMessageF
 	}
 }
 
+// Stats will return the stats for a plugin.
+func (p *CommandPlugin) Stats(bot *Bot, service Service, message Message) []string {
+	return nil
+}
+
 // NewCommandPlugin will create a new command plugin.
 func NewCommandPlugin() *CommandPlugin {
 	return &CommandPlugin{make(map[string]*command)}

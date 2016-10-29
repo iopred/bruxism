@@ -85,6 +85,11 @@ func (p *slowModePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 	}
 }
 
+// Stats will return the stats for a plugin.
+func (p *slowModePlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) []string {
+	return nil
+}
+
 // New will create a new slow mode plugin.
 func New() bruxism.Plugin {
 	return &slowModePlugin{

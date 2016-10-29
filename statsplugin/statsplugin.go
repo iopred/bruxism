@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -66,13 +67,31 @@ func StatsCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mes
 				fmt.Fprintf(w, "Current shard: \t%d\n", (id>>22)%len(discord.Sessions))
 			}
 		}
-		fmt.Fprintf(w, "\n```")
 	} else {
 		fmt.Fprintf(w, "Connected channels: \t%d\n", service.ChannelCount())
 	}
+
+	plugins := bot.Services[service.Name()].Plugins
+	names := []string{}
+	for _, plugin := range plugins {
+		names = append(names, plugin.Name())
+		sort.Strings(names)
+	}
+
+	for _, name := range names {
+		stats := plugins[name].Stats(bot, service, message)
+		for _, stat := range stats {
+			fmt.Fprint(w, stat)
+		}
+	}
+
+	if service.Name() == bruxism.DiscordServiceName {
+		fmt.Fprintf(w, "\n```")
+	}
+
 	w.Flush()
 
-	out := buf.String() + "\nBuilt with love by iopred."
+	out := buf.String() + "\nSeptapus community: https://discord.gg/HWN9pwj\nBuilt with love by iopred."
 
 	if service.SupportsMultiline() {
 		service.SendMessage(message.Channel(), out)

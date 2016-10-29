@@ -2,6 +2,7 @@ package comicplugin
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"image/png"
 	"log"
@@ -20,10 +21,25 @@ type comicPlugin struct {
 	sync.Mutex
 
 	bruxism.SimplePlugin
-	log map[string][]bruxism.Message
+	log    map[string][]bruxism.Message
+	Comics int
 }
 
-func (p *comicPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
+func (p *comicPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byte) error {
+	if data != nil {
+		if err := json.Unmarshal(data, p); err != nil {
+			log.Println("Error loading data", err)
+		}
+	}
+
+	return nil
+}
+
+func (p *comicPlugin) Save() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p *comicPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	help := bruxism.CommandHelp(service, "comic", "[1-10]", "Creates a comic from recent messages, or a number of messages if provided.")
 
 	ticks := ""
@@ -75,6 +91,7 @@ func makeScriptFromMessages(service bruxism.Service, message bruxism.Message, me
 }
 
 func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, script *comicgen.Script) {
+	p.Comics++
 	comic := comicgen.NewComicGen("arial", service.Name() != bruxism.DiscordServiceName)
 	image, err := comic.MakeComic(script)
 	if err != nil {
@@ -113,7 +130,7 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 	}
 }
 
-func (p *comicPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
+func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if service.IsMe(message) {
 		return
 	}
@@ -233,13 +250,18 @@ func (p *comicPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 	}
 }
 
+func (p *comicPlugin) Name() string {
+	return "Comic"
+}
+
+// Stats will return the stats for a plugin.
+func (p *comicPlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) []string {
+	return []string{fmt.Sprintf("Comics created: \t%d\n", p.Comics)}
+}
+
 // New will create a new comic plugin.
 func New() bruxism.Plugin {
-	p := &comicPlugin{
-		SimplePlugin: *bruxism.NewSimplePlugin("Comic"),
-		log:          make(map[string][]bruxism.Message),
+	return &comicPlugin{
+		log: make(map[string][]bruxism.Message),
 	}
-	p.MessageFunc = p.messageFunc
-	p.HelpFunc = p.helpFunc
-	return p
 }

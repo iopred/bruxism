@@ -28,9 +28,9 @@ type Reminder struct {
 // ReminderPlugin is a plugin that reminds users.
 type ReminderPlugin struct {
 	sync.RWMutex
-	bruxism.SimplePlugin
-	bot       *bruxism.Bot
-	Reminders []*Reminder
+	bot            *bruxism.Bot
+	Reminders      []*Reminder
+	TotalReminders int
 }
 
 var randomTimes = []string{
@@ -63,7 +63,7 @@ func (p *ReminderPlugin) randomReminder(service bruxism.Service) string {
 	return fmt.Sprintf("%s%sreminder %s %s%s", ticks, service.CommandPrefix(), p.random(randomTimes), p.random(randomMessages), ticks)
 }
 
-func (p *ReminderPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
+func (p *ReminderPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	help := []string{
 		bruxism.CommandHelp(service, "reminder", "<time> <reminder>", "Sets a reminder that is sent after the provided time.")[0],
 	}
@@ -146,11 +146,12 @@ func (p *ReminderPlugin) AddReminder(reminder *Reminder) error {
 	p.Reminders = append(p.Reminders, reminder)
 	copy(p.Reminders[i+1:], p.Reminders[i:])
 	p.Reminders[i] = reminder
+	p.TotalReminders++
 
 	return nil
 }
 
-func (p *ReminderPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
+func (p *ReminderPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if !service.IsMe(message) {
 		if bruxism.MatchesCommand(service, "remind", message) || bruxism.MatchesCommand(service, "reminder", message) {
 			_, parts := bruxism.ParseCommand(service, message)
@@ -238,6 +239,10 @@ func (p *ReminderPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []
 			log.Println("Error loading data", err)
 		}
 	}
+	if len(p.Reminders) > p.TotalReminders {
+		p.TotalReminders = len(p.Reminders)
+	}
+
 	go p.Run(bot, service)
 	return nil
 }
@@ -247,13 +252,18 @@ func (p *ReminderPlugin) Save() ([]byte, error) {
 	return json.Marshal(p)
 }
 
+// Stats will return the stats for a plugin.
+func (p *ReminderPlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) []string {
+	return []string{fmt.Sprintf("Reminders: \t%d\n", p.TotalReminders)}
+}
+
+func (p *ReminderPlugin) Name() string {
+	return "Reminder"
+}
+
 // New will create a new Reminder plugin.
 func New() bruxism.Plugin {
-	p := &ReminderPlugin{
-		SimplePlugin: *bruxism.NewSimplePlugin("Reminder"),
-		Reminders:    []*Reminder{},
+	return &ReminderPlugin{
+		Reminders: []*Reminder{},
 	}
-	p.MessageFunc = p.messageFunc
-	p.HelpFunc = p.helpFunc
-	return p
 }

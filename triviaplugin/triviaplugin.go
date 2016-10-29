@@ -323,6 +323,11 @@ func (p *triviaPlugin) Message(bot *bruxism.Bot, service bruxism.Service, messag
 	}
 }
 
+// Stats will return the stats for a plugin.
+func (p *triviaPlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) []string {
+	return nil
+}
+
 // New will create a new slow mode plugin.
 func New() bruxism.Plugin {
 	return &triviaPlugin{
