@@ -504,12 +504,6 @@ func (p *MusicPlugin) enqueue(vc *voiceConnection, url string, service bruxism.S
 
 		s.AddedBy = message.UserName()
 
-		if len(vc.Queue) == 0 {
-			service.SendMessage(message.Channel(), fmt.Sprintf("Playing %s.", s.Title))
-		} else {
-			service.SendMessage(message.Channel(), fmt.Sprintf("Queueing %s.", s.Title))
-		}
-
 		vc.Lock()
 		vc.Queue = append(vc.Queue, s)
 		vc.Unlock()
@@ -612,6 +606,8 @@ func (p *MusicPlugin) play(vc *voiceConnection, close <-chan struct{}, control <
 		log.Println("musicplugin: play exited because [close|control|vc|vc.conn] is nil.")
 		return
 	}
+
+	p.discord.SendMessage(vc.AnnounceChannel, fmt.Sprintf("Playing %s.", s.Title))
 
 	ytdl := exec.Command("./youtube-dl", "-v", "-f", "bestaudio", "-o", "-", s.URL)
 	if vc.debug {
