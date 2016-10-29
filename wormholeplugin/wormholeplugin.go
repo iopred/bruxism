@@ -156,7 +156,7 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 							channelWormhole.Webhook = wh.ID
 							channelWormhole.Token = wh.Token
 						} else {
-							if len(parts) <= 1 && parts[1] != "legacy" && parts[1] != "prime" {
+							if len(parts) <= 1 || (parts[1] != "legacy" && parts[1] != "prime") {
 								service.SendMessage(messageChannel, fmt.Sprintf("Wormholes are way more fun if %s has webhook permissions, please give %s a role with Manage Webhooks. Use %s%swormhole open legacy%s for boring wormholes.", service.UserName(), service.UserName(), ticks, service.CommandPrefix(), ticks))
 								return
 							}
@@ -177,6 +177,12 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					defer p.Unlock()
 
 					p.send(bot, service, message, messageChannel, channelWormhole, "Wormhole closed", "The wormhole has been closed.")
+
+					if service.Name() == bruxism.DiscordServiceName && channelWormhole.Webhook != "" {
+						discord := service.(*bruxism.Discord)
+						discord.Session.WebhookDeleteWithToken(channelWormhole.Webhook, channelWormhole.Token)
+					}
+
 					delete(channels, messageChannel)
 				} else {
 					service.SendMessage(messageChannel, "A wormhole has not been opened yet.")
@@ -234,7 +240,7 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 func (p *wormholePlugin) broadcast(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, channel string, wormhole *wormhole, content string) {
 	if service.Name() == bruxism.DiscordServiceName && wormhole.Webhook != "" {
 		discord := service.(*bruxism.Discord)
-		err := discord.Session.WebhookExecute(wormhole.Webhook, wormhole.Token, false, &discordgo.WebhookParams{
+		err := discord.Session.WebhookExecute(wormhole.Webhook, wormhole.Token, true, &discordgo.WebhookParams{
 			Embeds: []*discordgo.MessageEmbed{
 				{
 					Color:       rand.Intn(0xFFFFFF),
@@ -262,7 +268,7 @@ func (p *wormholePlugin) broadcast(bot *bruxism.Bot, service bruxism.Service, me
 func (p *wormholePlugin) send(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, channel string, channelWormhole *wormhole, wormholeContent, legacyContent string) {
 	if service.Name() == bruxism.DiscordServiceName && channelWormhole != nil && channelWormhole.Webhook != "" {
 		discord := service.(*bruxism.Discord)
-		err := discord.Session.WebhookExecute(channelWormhole.Webhook, channelWormhole.Token, false, &discordgo.WebhookParams{
+		err := discord.Session.WebhookExecute(channelWormhole.Webhook, channelWormhole.Token, true, &discordgo.WebhookParams{
 			Content: wormholeContent,
 		})
 		if err != nil {
