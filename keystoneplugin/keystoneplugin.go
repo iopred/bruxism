@@ -277,7 +277,7 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 			}
 		} else if channel, ok := p.Channels[messageChannel]; ok {
 			channel.check()
-			parts := strings.Split(message.Message(), " ")
+			parts := strings.Split(strings.ToLower(message.Message()), " ")
 			if len(parts) < 2 || parts[0] != "keystone" {
 				return
 			}
