@@ -196,6 +196,7 @@ func (c *keystoneChannel) list(bot *bruxism.Bot, service bruxism.Service, messag
 			content += "\n"
 		}
 		content += keystone.String()
+		content += " - " + keystone.User
 	}
 	service.SendMessage(message.Channel(), content)
 }
