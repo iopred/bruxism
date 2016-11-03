@@ -285,7 +285,7 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 			switch parts[1] {
 			case "set":
 				if len(parts) > 2 && channel.add(bot, service, message, message.Message()[len("keystone set "):]) {
-					keystone := channel.Users[message.UserID()]
+					channel.list(bot, service, message)
 					service.SendMessage(messageChannel, fmt.Sprintf("Keystone set: %s", keystone.String()))
 				} else {
 					service.SendMessage(messageChannel, "Invalid keystone. Eg: `keystone hall of valor 3 sanguine`")
