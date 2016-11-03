@@ -192,6 +192,9 @@ func (c *keystoneChannel) list(bot *bruxism.Bot, service bruxism.Service, messag
 
 	content := ""
 	for _, keystone := range keystones {
+		if len(content) != 0 {
+			content += "\n"
+		}
 		content += keystone.String()
 	}
 	service.SendMessage(message.Channel(), content)
