@@ -172,9 +172,9 @@ func (s keystoneList) Swap(i, j int) {
 // Less is part of sort.Interface. It is implemented by calling the "by" closure in the sorter.
 func (s keystoneList) Less(i, j int) bool {
 	if s[i].Level == s[j].Level {
-		return dungeons[s[i].Dungeon].Name < dungeons[s[j].Dungeon].Name
+		return dungeons[s[i].Dungeon].Name > dungeons[s[j].Dungeon].Name
 	}
-	return s[i].Level < s[j].Level
+	return s[i].Level > s[j].Level
 }
 
 func (c *keystoneChannel) list(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
