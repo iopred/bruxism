@@ -98,7 +98,7 @@ type keystoneChannel struct {
 func lastTuesday(t time.Time) time.Time {
 	year, month, day := t.Date()
 	t = time.Date(year, month, day, 0, 0, 0, 0, t.Location())
-	for t.Weekday() == 1 {
+	for t.Weekday() != time.Tuesday {
 		t = t.Add(-24 * time.Hour)
 	}
 
