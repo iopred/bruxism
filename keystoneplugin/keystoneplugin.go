@@ -111,7 +111,7 @@ func (c *keystoneChannel) check() {
 	}
 }
 
-func (c *keystoneChannel) add(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, query string) bool {
+func (c *keystoneChannel) add(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, userName, query string) bool {
 	query = strings.ToLower(query)
 	for dungeonID, dungeon := range dungeons {
 		for _, alias := range dungeon.Aliases {
@@ -142,7 +142,7 @@ func (c *keystoneChannel) add(bot *bruxism.Bot, service bruxism.Service, message
 				}
 
 				c.Users[message.UserID()] = &keystone{
-					User:      message.UserName(),
+					User:      userName,
 					Dungeon:   dungeonID,
 					Level:     level,
 					Depleted:  depleted,
@@ -259,6 +259,14 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 	if !service.IsMe(message) {
 		messageChannel := message.Channel()
 
+		var userName string
+		discord, ok := service.(*bruxism.Discord)
+		if ok {
+			userName = discord.Nickname(message)
+		} else {
+			userName = message.UserName()
+		}
+
 		if service.IsBotOwner(message) && bruxism.MatchesCommand(service, "keystone", message) {
 			_, parts := bruxism.ParseCommand(service, message)
 
@@ -284,7 +292,7 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 
 			switch parts[1] {
 			case "set":
-				if len(parts) > 2 && channel.add(bot, service, message, message.Message()[len("keystone set "):]) {
+				if len(parts) > 2 && channel.add(bot, service, message, userName, message.Message()[len("keystone set "):]) {
 					channel.list(bot, service, message)
 				} else {
 					service.SendMessage(messageChannel, "Invalid keystone. Eg: `keystone hall of valor 3 sanguine`")
@@ -297,7 +305,7 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					service.SendMessage(messageChannel, "You haven't set a keystone this week.")
 				} else {
 					keystone.Depleted = true
-					keystone.User = message.UserName()
+					keystone.User = userName
 					service.SendMessage(messageChannel, fmt.Sprintf("Keystone depleted: %s", keystone.String()))
 				}
 			case "undeplete":
@@ -306,7 +314,7 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					service.SendMessage(messageChannel, "You haven't set a keystone this week.")
 				} else {
 					keystone.Depleted = false
-					keystone.User = message.UserName()
+					keystone.User = userName
 					service.SendMessage(messageChannel, fmt.Sprintf("Keystone undepleted: %s", keystone.String()))
 				}
 			}

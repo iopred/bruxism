@@ -36,6 +36,7 @@ var ErrAlreadyJoined = errors.New("Already joined.")
 type Service interface {
 	Name() string
 	UserName() string
+	UserID() string
 	Open() (<-chan Message, error)
 	IsMe(message Message) bool
 	SendMessage(channel, message string) error

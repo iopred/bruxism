@@ -444,6 +444,11 @@ func (yt *YouTube) UserName() string {
 	return yt.me.Snippet.Title
 }
 
+// UserID returns the bots user id.
+func (yt *YouTube) UserID() string {
+	return yt.me.Id
+}
+
 // PrivateMessage will send a private message to a user.
 func (yt *YouTube) PrivateMessage(userID, message string) error {
 	return errors.New("Private messages not supported on YouTube.")

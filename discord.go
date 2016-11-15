@@ -242,6 +242,14 @@ func (d *Discord) UserName() string {
 	return d.Session.State.User.Username
 }
 
+// UserID returns the bots user id.
+func (d *Discord) UserID() string {
+	if d.Session.State.User == nil {
+		return ""
+	}
+	return d.Session.State.User.ID
+}
+
 // Join accept an invite or return an error.
 // If AlreadyJoinedError is return, @me has already accepted that invite.
 func (d *Discord) Join(join string) error {
@@ -371,4 +379,26 @@ func (d *Discord) UserChannelPermissions(userID, channelID string) (apermissions
 		}
 	}
 	return
+}
+
+func (d *Discord) Nickname(message Message) string {
+	return d.NicknameForID(message.UserID(), message.UserName(), message.Channel())
+}
+
+func (d *Discord) NicknameForID(userID, userName, channelID string) string {
+	c, err := d.Channel(channelID)
+	if err == nil {
+		g, err := d.Guild(c.GuildID)
+		if err == nil {
+			for _, m := range g.Members {
+				if m.User.ID == userID {
+					if m.Nick != "" {
+						return m.Nick
+					}
+					break
+				}
+			}
+		}
+	}
+	return userName
 }

@@ -148,6 +148,11 @@ func (i *IRC) UserName() string {
 	return i.Conn.Me().Nick
 }
 
+// UserID returns the bots user id.
+func (i *IRC) UserID() string {
+	return i.Conn.Me().Nick
+}
+
 // Join will join a channel.
 func (i *IRC) Join(join string) error {
 	i.Conn.Join(join)

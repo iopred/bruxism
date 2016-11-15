@@ -160,6 +160,11 @@ func (s *Slack) UserName() string {
 	return s.Me.User
 }
 
+// UserID returns the bots user id.
+func (s *Slack) UserID() string {
+	return s.Me.UserID
+}
+
 // Join accept an invite or return an error.
 func (s *Slack) Join(join string) error {
 	_, err := s.Client.JoinChannel(join)
