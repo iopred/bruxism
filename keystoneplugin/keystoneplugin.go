@@ -95,9 +95,19 @@ type keystoneChannel struct {
 	LastModified time.Time
 }
 
+var location *time.Location
+
+func init() {
+	var err error
+	location, err = time.LoadLocation("America/Los_Angeles")
+	if err != nil {
+		location = time.Now().Location()
+	}
+}
+
 func lastTuesday(t time.Time) time.Time {
 	year, month, day := t.Date()
-	t = time.Date(year, month, day, 0, 0, 0, 0, t.Location())
+	t = time.Date(year, month, day, 0, 0, 0, 0, location)
 	for t.Weekday() != time.Tuesday {
 		t = t.Add(-24 * time.Hour)
 	}
