@@ -106,11 +106,6 @@ func (s *Slack) Name() string {
 func (s *Slack) Open() (<-chan Message, error) {
 	s.Client = slack.New(s.token)
 
-	users, _ := s.Client.GetUsers()
-	for _, u := range users {
-		fmt.Println(u)
-	}
-
 	var err error
 	s.Me, err = s.Client.AuthTest()
 	if err != nil {
