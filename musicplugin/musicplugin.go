@@ -31,12 +31,10 @@ type voiceConnection struct {
 	sync.Mutex
 	debug bool
 
-	GuildID         string
-	ChannelID       string
-	LoopQueue       bool
-	AnnounceChannel string
-	MaxQueueSize    int
-	Queue           []song
+	GuildID      string
+	ChannelID    string
+	MaxQueueSize int
+	Queue        []song
 
 	close   chan struct{}
 	control chan controlMessage
@@ -158,7 +156,6 @@ func (p *MusicPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message br
 			bruxism.CommandHelp(service, "music", "resume", "Resume playback of current song.")[0],
 			bruxism.CommandHelp(service, "music", "skip", "Skip current song.")[0],
 			bruxism.CommandHelp(service, "music", "stop", "Stop playing music.")[0],
-			bruxism.CommandHelp(service, "music", "loop", "Toggle 'Loop Queue' setting.")[0],
 			bruxism.CommandHelp(service, "music", "list", "List contents of queue.")[0],
 			bruxism.CommandHelp(service, "music", "clear", "Clear all items from queue.")[0],
 		}...)
@@ -269,18 +266,6 @@ func (p *MusicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		service.SendMessage(message.Channel(), fmt.Sprintf("debug mode set to %v", vc.debug))
 		vc.Unlock()
 
-	case "loop":
-		// enable or disable looping the queue
-
-		if !vcok {
-			service.SendMessage(message.Channel(), fmt.Sprintf("There is no voice connection for this Guild."))
-		}
-
-		vc.Lock()
-		vc.LoopQueue = !vc.LoopQueue
-		service.SendMessage(message.Channel(), fmt.Sprintf("Queue loop set to %v", vc.LoopQueue))
-		vc.Unlock()
-
 	case "play":
 		// Start queue player and optionally enqueue provided songs
 
@@ -338,9 +323,7 @@ func (p *MusicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 
 		msg := fmt.Sprintf("`Bruxism MusicPlugin:`\n")
 		msg += fmt.Sprintf("`Voice Channel:` %s\n", vc.ChannelID)
-		//    msg += fmt.Sprintf("`Announce Channel:` %s\n", vc.AnnounceChannel) // TODO
 		msg += fmt.Sprintf("`Queue Size:` %d\n", len(vc.Queue))
-		msg += fmt.Sprintf("`Loop Queue:` %v\n", vc.LoopQueue)
 
 		if vc.playing == nil {
 			service.SendMessage(message.Channel(), msg)
@@ -582,19 +565,11 @@ func (p *MusicPlugin) start(vc *voiceConnection, close <-chan struct{}, control 
 		p.play(vc, close, control, Song)
 		vc.playing = nil
 
-		if vc.LoopQueue {
-			if i+2 > len(vc.Queue) {
-				i = 0
-			} else {
-				i++
-			}
-		} else {
-			vc.Lock()
-			if len(vc.Queue) > 0 {
-				vc.Queue = append(vc.Queue[:i], vc.Queue[i+1:]...)
-			}
-			vc.Unlock()
+		vc.Lock()
+		if len(vc.Queue) > 0 {
+			vc.Queue = append(vc.Queue[:i], vc.Queue[i+1:]...)
 		}
+		vc.Unlock()
 	}
 }
 
@@ -606,8 +581,6 @@ func (p *MusicPlugin) play(vc *voiceConnection, close <-chan struct{}, control <
 		log.Println("musicplugin: play exited because [close|control|vc|vc.conn] is nil.")
 		return
 	}
-
-	p.discord.SendMessage(vc.AnnounceChannel, fmt.Sprintf("Playing %s.", s.Title))
 
 	ytdl := exec.Command("./youtube-dl", "-v", "-f", "bestaudio", "-o", "-", s.URL)
 	if vc.debug {
