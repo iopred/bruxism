@@ -197,12 +197,13 @@ func main() {
 
 	t := time.Tick(1 * time.Minute)
 
+out:
 	for {
 		select {
 		case <-q:
-			break
+			break out
 		case <-c:
-			break
+			break out
 		case <-t:
 			bot.Save()
 		}
