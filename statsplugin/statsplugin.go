@@ -90,9 +90,10 @@ func StatsCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mes
 	}
 
 	w.Flush()
+	out := buf.String()
 
 	if IsSeptapus {
-		out := buf.String() + "\nSeptapus community: https://discord.gg/HWN9pwj\nBuilt with love by iopred."
+		out += "\nSeptapus community: https://discord.gg/HWN9pwj\nBuilt with love by iopred."
 	}
 
 	if service.SupportsMultiline() {
