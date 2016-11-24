@@ -244,6 +244,11 @@ func (p *keystonePlugin) Save() ([]byte, error) {
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *keystonePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	if p.Channels[message.Channel()] == nil {
+		if service.IsModerator(message) {
+			return []string{
+				"`keystone <start|stop>` - Start or stop WoW Mythic Keystones.",
+			}
+		}
 		return nil
 	}
 
@@ -268,6 +273,12 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 	defer bruxism.MessageRecover()
 	if !service.IsMe(message) {
 		messageChannel := message.Channel()
+		messageMessage := strings.ToLower(message.Message())
+		parts := strings.Split(messageMessage, " ")
+
+		if len(parts) < 2 || parts[0] != "keystone" {
+			return
+		}
 
 		var userName string
 		discord, ok := service.(*bruxism.Discord)
@@ -277,13 +288,13 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 			userName = message.UserName()
 		}
 
-		if service.IsBotOwner(message) && bruxism.MatchesCommand(service, "keystone", message) {
+		if service.IsModerator(message) && parts[1] == "start" || parts[1] == "stop" {
 			_, parts := bruxism.ParseCommand(service, message)
 
 			p.Lock()
 			defer p.Unlock()
 
-			switch parts[0] {
+			switch parts[1] {
 			case "start":
 				p.Channels[messageChannel] = &keystoneChannel{
 					Users: map[string]*keystone{},
@@ -295,17 +306,13 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 			}
 		} else if channel, ok := p.Channels[messageChannel]; ok {
 			channel.check()
-			parts := strings.Split(strings.ToLower(message.Message()), " ")
-			if len(parts) < 2 || parts[0] != "keystone" {
-				return
-			}
 
 			switch parts[1] {
 			case "set":
 				if len(parts) > 2 && channel.add(bot, service, message, userName, message.Message()[len("keystone set "):]) {
 					channel.list(bot, service, message)
 				} else {
-					service.SendMessage(messageChannel, "Invalid keystone. Eg: `keystone hall of valor 3 sanguine`")
+					service.SendMessage(messageChannel, "Invalid keystone. Eg: `keystone set hall of valor 3 sanguine`")
 				}
 			case "list":
 				channel.list(bot, service, message)
