@@ -260,7 +260,7 @@ func (p *keystonePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message
 
 	if p.Channels[message.Channel()] != nil {
 		help = append(help, []string{
-			bruxism.CommandHelp(service, "set", "<dungeon> <level> [modifiers]", "Set your keystone for this week.")[0],
+			bruxism.CommandHelp(service, "set", "<dungeon> <level> [modifiers]", fmt.Sprintf("Sets a keystone. Eg: %s%sset hov 5 teeming%s", ticks, service.CommandPrefix(), ticks))[0],
 			bruxism.CommandHelp(service, "list", "", "Lists all this weeks keystones.")[0],
 			bruxism.CommandHelp(service, "deplete", "", "Depletes your keystone")[0],
 			bruxism.CommandHelp(service, "undeplete", "", "Undepletes your keystone")[0],
@@ -295,7 +295,12 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 			userName = message.UserName()
 		}
 
-		if (service.IsBotOwner(message) || service.IsModerator(message)) && (bruxism.MatchesCommand(service, "start", message) || bruxism.MatchesCommand(service, "stop", message)) {
+		if bruxism.MatchesCommand(service, "start", message) || bruxism.MatchesCommand(service, "stop", message) {
+			if !service.IsBotOwner(message) && !service.IsModerator(message) {
+				service.SendMessage(messageChannel, "You must be a server admin to start tracking mythic keystones")
+				return
+			}
+
 			p.Lock()
 			defer p.Unlock()
 
