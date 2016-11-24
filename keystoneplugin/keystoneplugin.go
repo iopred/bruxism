@@ -245,7 +245,7 @@ func (p *keystonePlugin) Save() ([]byte, error) {
 func (p *keystonePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	help := []string{}
 
-	if service.IsModerator(message) {
+	if service.IsBotOwner(message) || service.IsModerator(message) {
 		if p.Channels[message.Channel()] == nil {
 			help = append(help, bruxism.CommandHelp(service, "start", "", "Starts keystone tracking in this channel.")[0])
 		} else {
@@ -295,7 +295,7 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 			userName = message.UserName()
 		}
 
-		if service.IsModerator(message) && (bruxism.MatchesCommand(service, "start", message) || bruxism.MatchesCommand(service, "stop", message)) {
+		if (service.IsBotOwner(message) || service.IsModerator(message)) && (bruxism.MatchesCommand(service, "start", message) || bruxism.MatchesCommand(service, "stop", message)) {
 			p.Lock()
 			defer p.Unlock()
 
