@@ -246,10 +246,11 @@ func (p *keystonePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message
 	help := []string{}
 
 	if service.IsModerator(message) {
-		help = append(help, []string{
-			bruxism.CommandHelp(service, "start", "", "Starts keystone tracking in this channel.")[0],
-			bruxism.CommandHelp(service, "stop", "", "Stops keystone tracking in this channel.")[0],
-		}...)
+		if p.Channels[message.Channel()] == nil {
+			help = append(help, bruxism.CommandHelp(service, "start", "", "Starts keystone tracking in this channel.")[0])
+		} else {
+			help = append(help, bruxism.CommandHelp(service, "stop", "", "Stops keystone tracking in this channel.")[0])
+		}
 	}
 
 	ticks := ""
