@@ -243,29 +243,41 @@ func (p *keystonePlugin) Save() ([]byte, error) {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *keystonePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
-	if p.Channels[message.Channel()] == nil {
-		if service.IsModerator(message) {
-			return []string{
-				"`keystone <start|stop>` - Start or stop WoW Mythic Keystones.",
-			}
-		}
+	help := []string{}
+
+	if service.IsModerator(message) {
+		help = append(help, []string{
+			bruxism.CommandHelp(service, "start", "", "Starts keystone tracking in this channel.")[0],
+			bruxism.CommandHelp(service, "stop", "", "Stops keystone tracking in this channel.")[0],
+		}...)
+	}
+
+	ticks := ""
+	if service.Name() == bruxism.DiscordServiceName {
+		ticks = "`"
+	}
+
+	if p.Channels[message.Channel()] != nil {
+		help = append(help, []string{
+			bruxism.CommandHelp(service, "set", "<dungeon> <level> [modifiers]", "Set your keystone for this week.")[0],
+			bruxism.CommandHelp(service, "list", "", "Lists all this weeks keystones.")[0],
+			bruxism.CommandHelp(service, "deplete", "", "Depletes your keystone")[0],
+			bruxism.CommandHelp(service, "undeplete", "", "Undepletes your keystone")[0],
+		}...)
+	}
+
+	if detailed {
+		help = append(help, []string{
+			"Examples:",
+			fmt.Sprintf("%s%sset hov 5 teeming%s - Adds a Level 5 Halls of Valor keystone with teeming.", ticks, service.CommandPrefix(), ticks),
+			fmt.Sprintf("%s%sset eye of azshara 2 depleted%s - Adds a depleted Level 2 Eye of Azshara keystone.", ticks, service.CommandPrefix(), ticks),
+		}...)
+	}
+
+	if len(help) == 0 {
 		return nil
 	}
-
-	if !detailed {
-		return []string{
-			"`keystone <set <dungeon> <level> [modifiers]|list|deplete|undeplete>` - WoW Mythic Keystones.",
-		}
-	}
-
-	return []string{
-		"`keystone set<dungeon> <level> [modifiers]` - Set your keystone for this week.",
-		"`keystone list` - Lists all this weeks keystones.",
-		"`keystone deplete` - Depletes your keystone.",
-		"Examples:",
-		"`keystone set hov 5 teeming` - Adds a Level 5 Halls of Valor keystone with teeming.",
-		"`keystone set eye of azshara 2 depleted` - Adds a depleted Level 2 Eye of Azshara keystone.",
-	}
+	return help
 }
 
 // Message handler.
@@ -300,7 +312,7 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 
 			if bruxism.MatchesCommand(service, "set", message) {
 				query, parts := bruxism.ParseCommand(service, message)
-				if len(parts) > 2 && channel.add(bot, service, message, userName, query) {
+				if len(parts) > 1 && channel.add(bot, service, message, userName, query) {
 					channel.list(bot, service, message)
 				} else {
 					service.SendMessage(messageChannel, "Invalid keystone. Eg: `keystone set hall of valor 3 sanguine`")
