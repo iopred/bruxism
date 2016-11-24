@@ -15,7 +15,6 @@ import (
 	"github.com/iopred/bruxism/discordavatarplugin"
 	"github.com/iopred/bruxism/emojiplugin"
 	"github.com/iopred/bruxism/inviteplugin"
-	"github.com/iopred/bruxism/keystoneplugin"
 	"github.com/iopred/bruxism/liveplugin"
 	"github.com/iopred/bruxism/mysonplugin"
 	"github.com/iopred/bruxism/numbertriviaplugin"
@@ -155,7 +154,6 @@ func main() {
 		bot.RegisterPlugin(discord, triviaplugin.New())
 		bot.RegisterPlugin(discord, wormholeplugin.New())
 		bot.RegisterPlugin(discord, ytip)
-		bot.RegisterPlugin(discord, keystoneplugin.New())
 		bot.RegisterPlugin(discord, mysonplugin.New())
 	}
 

@@ -91,7 +91,9 @@ func StatsCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mes
 
 	w.Flush()
 
-	out := buf.String() + "\nSeptapus community: https://discord.gg/HWN9pwj\nBuilt with love by iopred."
+	if IsSeptapus {
+		out := buf.String() + "\nSeptapus community: https://discord.gg/HWN9pwj\nBuilt with love by iopred."
+	}
 
 	if service.SupportsMultiline() {
 		service.SendMessage(message.Channel(), out)
@@ -104,6 +106,8 @@ func StatsCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mes
 		}
 	}
 }
+
+var IsSeptapus bool = false
 
 // StatsHelp is the help for the stats command.
 var StatsHelp = bruxism.NewCommandHelp("", "Lists bot statistics.")

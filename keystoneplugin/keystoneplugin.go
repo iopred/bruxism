@@ -273,12 +273,6 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 	defer bruxism.MessageRecover()
 	if !service.IsMe(message) {
 		messageChannel := message.Channel()
-		messageMessage := strings.ToLower(message.Message())
-		parts := strings.Split(messageMessage, " ")
-
-		if len(parts) < 2 || parts[0] != "keystone" {
-			return
-		}
 
 		var userName string
 		discord, ok := service.(*bruxism.Discord)
@@ -288,35 +282,32 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 			userName = message.UserName()
 		}
 
-		if service.IsModerator(message) && parts[1] == "start" || parts[1] == "stop" {
-			_, parts := bruxism.ParseCommand(service, message)
-
+		if service.IsModerator(message) && (bruxism.MatchesCommand(service, "start", message) || bruxism.MatchesCommand(service, "stop", message)) {
 			p.Lock()
 			defer p.Unlock()
 
-			switch parts[1] {
-			case "start":
+			if bruxism.MatchesCommand(service, "start", message) {
 				p.Channels[messageChannel] = &keystoneChannel{
 					Users: map[string]*keystone{},
 				}
 				service.SendMessage(messageChannel, "This channel is now tracking mythic keystones.")
-			case "stop":
+			} else {
 				delete(p.Channels, messageChannel)
 				service.SendMessage(messageChannel, "This channel is no longer tracking mythic keystones.")
 			}
 		} else if channel, ok := p.Channels[messageChannel]; ok {
 			channel.check()
 
-			switch parts[1] {
-			case "set":
-				if len(parts) > 2 && channel.add(bot, service, message, userName, message.Message()[len("keystone set "):]) {
+			if bruxism.MatchesCommand(service, "set", message) {
+				query, parts := bruxism.ParseCommand(service, message)
+				if len(parts) > 2 && channel.add(bot, service, message, userName, query) {
 					channel.list(bot, service, message)
 				} else {
 					service.SendMessage(messageChannel, "Invalid keystone. Eg: `keystone set hall of valor 3 sanguine`")
 				}
-			case "list":
+			} else if bruxism.MatchesCommand(service, "list", message) {
 				channel.list(bot, service, message)
-			case "deplete":
+			} else if bruxism.MatchesCommand(service, "deplete", message) {
 				keystone := channel.Users[message.UserID()]
 				if keystone == nil {
 					service.SendMessage(messageChannel, "You haven't set a keystone this week.")
@@ -325,7 +316,7 @@ func (p *keystonePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					keystone.User = userName
 					service.SendMessage(messageChannel, fmt.Sprintf("Keystone depleted: %s", keystone.String()))
 				}
-			case "undeplete":
+			} else if bruxism.MatchesCommand(service, "undeplete", message) {
 				keystone := channel.Users[message.UserID()]
 				if keystone == nil {
 					service.SendMessage(messageChannel, "You haven't set a keystone this week.")
