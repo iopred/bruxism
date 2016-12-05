@@ -24,6 +24,8 @@ type wormholePlugin struct {
 	Channels      map[string]*wormhole
 	PrimeChannels map[string]*wormhole
 	Next          map[string]time.Time
+	NextCount     map[string]int
+	Reset         time.Time
 	Messages      int
 }
 
@@ -48,6 +50,9 @@ func (p *wormholePlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []
 	}
 	if p.Next == nil {
 		p.Next = make(map[string]time.Time)
+	}
+	if p.NextCount == nil {
+		p.NextCount = make(map[string]int)
 	}
 
 	return nil
@@ -192,14 +197,40 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 				defer p.Unlock()
 
 				now := time.Now()
+				if now.After(p.Reset) {
+					p.Reset = now.Add(24 * time.Hour)
+					// Reset our incremental counter.
+					p.NextCount = make(map[string]int)
+				}
+
+				nextID := messageChannel
+				discord := service.(*bruxism.Discord)
+				channel, err := discord.Channel(messageChannel)
+				if err == nil {
+					nextID = channel.GuildID
+				}
+
+				nextCount, ok := p.NextCount[nextID]
+				if !ok {
+					nextCount = 2
+				}
+
 				if !ok {
 					service.SendMessage(messageChannel, "A wormhole has not been opened yet.")
 					return
-				} else if !now.After(p.Next[messageChannel]) {
-					p.send(bot, service, message, messageChannel, channelWormhole, fmt.Sprintf("Wormhole is busy, available %s.", humanize.Time(p.Next[messageChannel])), fmt.Sprintf("The wormhole is busy, available %s.", humanize.Time(p.Next[messageChannel])))
+				} else if !now.After(p.Next[nextID]) {
+					p.send(bot, service, message, messageChannel, channelWormhole, fmt.Sprintf("Wormhole is busy, available %s. This time increases each time a wormhole is used each day.", humanize.Time(p.Next[nextID])), fmt.Sprintf("The wormhole is busy, available %s. This time increases each time a wormhole is used each day.", humanize.Time(p.Next[nextID])))
 					return
 				}
-				p.Next[messageChannel] = now.Add(1 * time.Minute)
+
+				next := now.Add(time.Duration(nextCount) * time.Minute)
+				if next.After(p.Reset) {
+					next = p.Reset
+				}
+
+				p.Next[nextID] = next
+				nextCount *= 2
+				p.NextCount[nextID] = nextCount
 
 				r := rand.Intn(len(p.Channels))
 				i := 0
