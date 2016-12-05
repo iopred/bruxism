@@ -207,7 +207,7 @@ func (d *Discord) SendMessage(channel, message string) error {
 		log.Println("Empty channel could not send message", message)
 		return nil
 	}
-	
+
 	if _, err := d.Session.ChannelMessageSend(channel, message); err != nil {
 		log.Println("Error sending discord message: ", err)
 		return err

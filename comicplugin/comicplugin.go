@@ -8,6 +8,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -98,20 +99,28 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was an error creating the comic. %s", message.UserName(), err))
 	} else {
 		go func() {
+			if service.Name() == bruxism.DiscordServiceName {
+				discord := service.(*bruxism.Discord)
+				p, err := discord.UserChannelPermissions(message.UserID(), message.Channel())
+				if err == nil && p&discordgo.PermissionAttachFiles != 0 {
+					b := &bytes.Buffer{}
+					err = png.Encode(b, image)
+					if err != nil {
+						service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your comic.", message.UserName()))
+						return
+					}
+
+					if err := service.SendFile(message.Channel(), "comic.png", b); err == nil {
+						return
+					}
+				}
+			}
+
 			b := &bytes.Buffer{}
 			err = png.Encode(b, image)
 			if err != nil {
 				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your comic.", message.UserName()))
 				return
-			}
-
-			if service.Name() == bruxism.DiscordServiceName {
-				discord := service.(*bruxism.Discord)
-				p, err := discord.UserChannelPermissions(message.UserID(), message.Channel())
-				if err == nil && p&discordgo.PermissionAttachFiles != 0 {
-					service.SendFile(message.Channel(), "comic.png", b)
-					return
-				}
 			}
 
 			url, err := bot.UploadToImgur(b, "comic.png")
@@ -126,6 +135,8 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 			} else {
 				service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic %s: %s", message.UserName(), url))
 			}
+
+			runtime.GC()
 		}()
 	}
 }
