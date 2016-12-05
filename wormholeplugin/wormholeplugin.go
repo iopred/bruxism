@@ -210,8 +210,8 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					nextID = channel.GuildID
 				}
 
-				nextCount, ok := p.NextCount[nextID]
-				if !ok {
+				nextCount, nextCountOk := p.NextCount[nextID]
+				if !nextCountOk {
 					nextCount = 2
 				}
 
