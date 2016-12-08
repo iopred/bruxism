@@ -17,5 +17,5 @@ func ThankyouCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.
 	}
 }
 
-// StatsHelp is the help for the stats command.
-var StatsHelp = bruxism.NewCommandHelp("", "Thank you to all my patrons.")
+// ThankyouHelp is the help for the stats command.
+var ThankyouHelp = bruxism.NewCommandHelp("", "Thank you to all my patrons.")
