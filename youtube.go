@@ -109,6 +109,7 @@ type YouTube struct {
 	me             *youtube.Channel
 	channelCount   int
 	joined         map[string]bool
+	videoToChannel map[string]string
 }
 
 // NewYouTube creates a new YouTube service.
@@ -447,20 +448,21 @@ func (yt *YouTube) PrivateMessage(userID, message string) error {
 // Join will join a channel.
 func (yt *YouTube) Join(join string) error {
 	if yt.joined[join] {
-		return nil
+		return ErrAlreadyJoined
 	}
 	yt.joined[join] = true
 
 	videos, err := yt.GetVideosByIDList([]string{join})
 
 	if err != nil {
-		return errors.New("No live video found.")
+		return errors.New("No video found.")
 	}
 
 	ok := false
 
 	items := []*youtube.LiveBroadcast{}
 	for _, v := range videos {
+		yt.videoToChannel[join] = v.Snippet.ChannelId
 		if v.LiveStreamingDetails != nil && v.LiveStreamingDetails.ActiveLiveChatId != "" {
 			items = append(items, &youtube.LiveBroadcast{
 				Snippet: &youtube.LiveBroadcastSnippet{
@@ -481,6 +483,10 @@ func (yt *YouTube) Join(join string) error {
 	yt.pollBroadcasts(liveBroadcastListResponse, nil)
 
 	return nil
+}
+
+func (yt *YouTube) ChannelIDForVideoID(videoID string) string {
+	return yt.videoToChannel[videoID]
 }
 
 type videoList []*youtube.Video
