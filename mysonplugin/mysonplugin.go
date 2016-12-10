@@ -27,6 +27,9 @@ func messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mess
 }
 
 func helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
+	if detailed {
+		return nil
+	}
 	return bruxism.CommandHelp(service, "myson", "", "Don't ever talk to me or my son ever again.")
 }
 
