@@ -165,7 +165,7 @@ func main() {
 		bot.RegisterPlugin(discord, wormholeplugin.New())
 	}
 
-	// Register the IRC service if we have an IRC server and Username.
+	// Register the IRC service if we have an IRC server and username.
 	if ircServer != "" && ircUsername != "" {
 		irc := bruxism.NewIRC(ircServer, ircUsername, ircPassword, strings.Split(ircChannels, ","))
 		bot.RegisterService(irc)
@@ -182,6 +182,7 @@ func main() {
 		bot.RegisterPlugin(irc, wormholeplugin.New())
 	}
 
+	// Register the Slack service if we have a Slack token.
 	if slackToken != "" {
 		slack := bruxism.NewSlack(slackToken)
 		slack.OwnerUserID = slackOwnerUserID
@@ -201,6 +202,8 @@ func main() {
 	// Start all our services.
 	bot.Open()
 
+	// Monitor all the youtube channel arguments.
+	// This will cause the youtubejoin plugin to join any live streams on those channels.
 	if youtubeChannelIDs != "" {
 		channelIDs := strings.Split(youtubeChannelIDs, ",")
 
