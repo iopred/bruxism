@@ -57,7 +57,7 @@ func (p *YouTubeJoinPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 		v := <-lvc
 		p.RLock()
 		if p.Channels[v.Snippet.ChannelId] && v.LiveStreamingDetails != nil && v.LiveStreamingDetails.ActiveLiveChatId != "" {
-			service.Join(v.LiveStreamingDetails.ActiveLiveChatId)
+			service.(*bruxism.YouTube).JoinChat(v.Id, v.Snippet.ChannelId, v.LiveStreamingDetails.ActiveLiveChatId)
 		}
 		p.RUnlock()
 	}

@@ -446,39 +446,37 @@ func (yt *YouTube) PrivateMessage(userID, message string) error {
 }
 
 // Join will join a channel.
-func (yt *YouTube) Join(join string) error {
-	if yt.joined[join] {
+func (yt *YouTube) Join(videoID string) error {
+	if yt.joined[videoID] {
 		return ErrAlreadyJoined
 	}
-	yt.joined[join] = true
+	yt.joined[videoID] = true
 
-	videos, err := yt.GetVideosByIDList([]string{join})
+	videos, err := yt.GetVideosByIDList([]string{videoID})
 
 	if err != nil {
 		return errors.New("No video found.")
 	}
 
-	ok := false
-
-	items := []*youtube.LiveBroadcast{}
 	for _, v := range videos {
-		yt.videoToChannel[join] = v.Snippet.ChannelId
+		yt.videoToChannel[videoID] = v.Snippet.ChannelId
 		if v.LiveStreamingDetails != nil && v.LiveStreamingDetails.ActiveLiveChatId != "" {
-			items = append(items, &youtube.LiveBroadcast{
-				Snippet: &youtube.LiveBroadcastSnippet{
-					LiveChatId: v.LiveStreamingDetails.ActiveLiveChatId,
-				},
-			})
-			ok = true
+			return yt.JoinChat(videoID, v.Snippet.ChannelId, v.LiveStreamingDetails.ActiveLiveChatId)
 		}
 	}
 
-	if !ok {
-		return errors.New("No live video found.")
-	}
+	return errors.New("No live video found.")
+}
+
+func (yt *YouTube) JoinChat(videoID, channelID, liveChatID string) error {
+	yt.videoToChannel[videoID] = channelID
 
 	liveBroadcastListResponse := &youtube.LiveBroadcastListResponse{
-		Items: items,
+		Items: []*youtube.LiveBroadcast{&youtube.LiveBroadcast{
+			Snippet: &youtube.LiveBroadcastSnippet{
+				LiveChatId: liveChatID,
+			},
+		}},
 	}
 	yt.pollBroadcasts(liveBroadcastListResponse, nil)
 
