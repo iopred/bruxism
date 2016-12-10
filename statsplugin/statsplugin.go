@@ -49,22 +49,24 @@ func StatsCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mes
 	if service.Name() == bruxism.DiscordServiceName {
 		discord := service.(*bruxism.Discord)
 		fmt.Fprintf(w, "Connected servers: \t%d\n", service.ChannelCount())
-		shards := 0
-		for _, s := range discord.Sessions {
-			if s.DataReady {
-				shards++
+		if len(discord.Sessions) > 1 {
+			shards := 0
+			for _, s := range discord.Sessions {
+				if s.DataReady {
+					shards++
+				}
 			}
-		}
-		if shards == len(discord.Sessions) {
-			fmt.Fprintf(w, "Shards: \t%d\n", shards)
-		} else {
-			fmt.Fprintf(w, "Shards: \t%d (%d connected)\n", len(discord.Sessions), shards)
-		}
-		guild, err := discord.Channel(message.Channel())
-		if err == nil {
-			id, err := strconv.Atoi(guild.ID)
+			if shards == len(discord.Sessions) {
+				fmt.Fprintf(w, "Shards: \t%d\n", shards)
+			} else {
+				fmt.Fprintf(w, "Shards: \t%d (%d connected)\n", len(discord.Sessions), shards)
+			}
+			guild, err := discord.Channel(message.Channel())
 			if err == nil {
-				fmt.Fprintf(w, "Current shard: \t%d\n", (id>>22)%len(discord.Sessions))
+				id, err := strconv.Atoi(guild.ID)
+				if err == nil {
+					fmt.Fprintf(w, "Current shard: \t%d\n", ((id>>22)%len(discord.Sessions) + 1))
+				}
 			}
 		}
 	} else {
