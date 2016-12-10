@@ -485,8 +485,9 @@ func (yt *YouTube) Join(join string) error {
 	return nil
 }
 
-func (yt *YouTube) ChannelIDForVideoID(videoID string) string {
-	return yt.videoToChannel[videoID]
+func (yt *YouTube) ChannelIDForVideoID(videoID string) (channelID string, ok bool) {
+	channelID, ok = yt.videoToChannel[videoID]
+	return
 }
 
 type videoList []*youtube.Video
