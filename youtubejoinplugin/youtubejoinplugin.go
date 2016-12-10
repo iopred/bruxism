@@ -91,5 +91,6 @@ func New(ytLiveChannel *bruxism.YTLiveChannel) *YouTubeJoinPlugin {
 	return &YouTubeJoinPlugin{
 		ytLiveChannel: ytLiveChannel,
 		liveVideoChan: make(chan *youtube.Video),
+		Channels:      map[string]bool{},
 	}
 }
