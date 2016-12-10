@@ -40,8 +40,8 @@ func MatchesCommandString(service Service, commandString string, private bool, m
 
 // MatchesCommand returns true if a message matches a command.
 func MatchesCommand(service Service, commandString string, message Message) bool {
-	// Only new messages can trigger commands.
-	if message.Type() != MessageTypeCreate {
+	// Deleted messages can't trigger commands.
+	if message.Type() == MessageTypeDelete {
 		return false
 	}
 	return MatchesCommandString(service, commandString, service.IsPrivate(message), message.Message())
@@ -62,7 +62,11 @@ func ParseCommandString(service Service, message string) (string, []string) {
 	parts := strings.Split(message, " ")
 	if len(parts) > 1 {
 		rest := parts[1:]
-		return strings.Join(rest, " "), parts[1:]
+		query := strings.Join(rest, " ")
+		for i, v := range rest {
+			rest[i] = strings.TrimSpace(v)
+		}
+		return query, rest
 	}
 	return "", []string{}
 }

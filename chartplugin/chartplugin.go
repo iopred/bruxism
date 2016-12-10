@@ -179,7 +179,7 @@ func (p *chartPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 	}
 }
 
-// New will create a new comic plugin.
+// New will create a new chart plugin.
 func New() bruxism.Plugin {
 	p := &chartPlugin{
 		SimplePlugin: *bruxism.NewSimplePlugin("Chart"),

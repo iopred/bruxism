@@ -328,7 +328,7 @@ func (p *triviaPlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message 
 	return nil
 }
 
-// New will create a new slow mode plugin.
+// New will create a new trivia plugin.
 func New() bruxism.Plugin {
 	return &triviaPlugin{
 		Channels: map[string]*triviaChannel{},

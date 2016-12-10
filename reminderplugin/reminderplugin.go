@@ -63,6 +63,7 @@ func (p *ReminderPlugin) randomReminder(service bruxism.Service) string {
 	return fmt.Sprintf("%s%sreminder %s %s%s", ticks, service.CommandPrefix(), p.random(randomTimes), p.random(randomMessages), ticks)
 }
 
+// Help returns a list of help strings that are printed when the user requests them.
 func (p *ReminderPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	help := []string{
 		bruxism.CommandHelp(service, "reminder", "<time> <reminder>", "Sets a reminder that is sent after the provided time.")[0],
@@ -257,6 +258,7 @@ func (p *ReminderPlugin) Stats(bot *bruxism.Bot, service bruxism.Service, messag
 	return []string{fmt.Sprintf("Reminders: \t%d\n", p.TotalReminders)}
 }
 
+// Name returns the name of the plugin.
 func (p *ReminderPlugin) Name() string {
 	return "Reminder"
 }

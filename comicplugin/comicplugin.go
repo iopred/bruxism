@@ -26,6 +26,7 @@ type comicPlugin struct {
 	Comics int
 }
 
+// Load will load plugin state from a byte array.
 func (p *comicPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byte) error {
 	if data != nil {
 		if err := json.Unmarshal(data, p); err != nil {
@@ -36,10 +37,12 @@ func (p *comicPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byt
 	return nil
 }
 
+// Save will save plugin state to a byte array.
 func (p *comicPlugin) Save() ([]byte, error) {
 	return json.Marshal(p)
 }
 
+// Help returns a list of help strings that are printed when the user requests them.
 func (p *comicPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
 	help := bruxism.CommandHelp(service, "comic", "[1-10]", "Creates a comic from recent messages, or a number of messages if provided.")
 
@@ -141,6 +144,7 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 	}
 }
 
+// Message handler.
 func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if service.IsMe(message) {
 		return
@@ -231,7 +235,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		p.makeComic(bot, service, message, makeScriptFromMessages(service, message, log[len(log)-lines:]))
 	} else {
 		// Don't append commands.
-		if strings.HasPrefix(strings.ToLower(strings.Trim(message.Message(), " ")), strings.ToLower(service.CommandPrefix())) {
+		if bruxism.MatchesCommand(service, "", message) {
 			return
 		}
 
@@ -261,6 +265,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 	}
 }
 
+// Name returns the name of the plugin.
 func (p *comicPlugin) Name() string {
 	return "Comic"
 }

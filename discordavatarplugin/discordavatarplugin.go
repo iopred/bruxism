@@ -10,8 +10,15 @@ import (
 
 var userIDRegex = regexp.MustCompile("<@!?([0-9]*)>")
 
+func avatarLoadFunc(bot *bruxism.Bot, service bruxism.Service, data []byte) error {
+	if service.Name() != bruxism.DiscordServiceName {
+		panic("DiscordAvatar plugin only supports Discord.")
+	}
+	return nil
+}
+
 func avatarMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
-	if service.Name() == bruxism.DiscordServiceName && !service.IsMe(message) {
+	if !service.IsMe(message) {
 		if bruxism.MatchesCommand(service, "avatar", message) {
 			query := strings.Join(strings.Split(message.RawMessage(), " ")[1:], " ")
 
@@ -42,7 +49,8 @@ func avatarHelpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.M
 
 // New creates a new discordavatar plugin.
 func New() bruxism.Plugin {
-	p := bruxism.NewSimplePlugin("discordavatar")
+	p := bruxism.NewSimplePlugin("DiscordAvatar")
+	p.LoadFunc = avatarLoadFunc
 	p.MessageFunc = avatarMessageFunc
 	p.HelpFunc = avatarHelpFunc
 	return p

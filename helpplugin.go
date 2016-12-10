@@ -12,10 +12,12 @@ type helpPlugin struct {
 	Private map[string]bool
 }
 
+// Name returns the name of the service.
 func (p *helpPlugin) Name() string {
 	return "Help"
 }
 
+// Help returns a list of help strings that are printed when the user requests them.
 func (p *helpPlugin) Help(bot *Bot, service Service, message Message, detailed bool) []string {
 	privs := service.SupportsPrivateMessages() && !service.IsPrivate(message) && (service.IsBotOwner(message) || service.IsModerator(message))
 	if detailed && !privs {
