@@ -2,10 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"math/rand"
-	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -210,14 +208,6 @@ func main() {
 			ytip.Monitor(channelID)
 		}
 	}
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		channel := r.FormValue("channel")
-		if channel != "" {
-			ytip.Monitor(channel)
-		}
-	})
-	http.ListenAndServe(fmt.Sprintf(":%d", youtubeInvitePort), nil)
 
 	// Wait for a termination signal, while saving the bot state every minute. Save on close.
 	c := make(chan os.Signal, 1)
