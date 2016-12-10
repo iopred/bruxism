@@ -98,7 +98,6 @@ type YouTube struct {
 	auth           string
 	configFilename string
 	tokenFilename  string
-	liveVideoIDs   string
 	config         *oauth2.Config
 	token          *oauth2.Token
 	Client         *http.Client
@@ -113,13 +112,12 @@ type YouTube struct {
 }
 
 // NewYouTube creates a new YouTube service.
-func NewYouTube(url bool, auth, configFilename, tokenFilename, liveVideoIDs string) *YouTube {
+func NewYouTube(url bool, auth, configFilename, tokenFilename string) *YouTube {
 	return &YouTube{
 		url:            url,
 		auth:           auth,
 		configFilename: configFilename,
 		tokenFilename:  tokenFilename,
-		liveVideoIDs:   liveVideoIDs,
 		messageChan:    make(chan Message, 200),
 		InsertChan:     make(chan interface{}, 200),
 		DeleteChan:     make(chan interface{}, 200),
@@ -365,14 +363,6 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 	yt.me = me
 
 	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Mine(true).BroadcastType("all").Do())
-
-	if yt.liveVideoIDs != "" {
-		liveVideoIDsArray := strings.Split(yt.liveVideoIDs, ",")
-
-		for _, liveVideoID := range liveVideoIDsArray {
-			yt.Join(liveVideoID)
-		}
-	}
 
 	// Start a goroutine to handle all requests.
 	go yt.handleRequests()

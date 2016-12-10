@@ -69,8 +69,7 @@ To invite your bot to a server, visit: `https://discordapp.com/oauth2/authorize?
 * `youtubeauth` - Exchanges the provided auth code for an oauth2 token.
 * `youtubeconfig` - The filename for your YouTube OAuth client JSON. (Download JSON in Google Developers Console -> Credentials).
 * `youtubetoken` - The filename to store the oauth2 token.
-* `youtubelivevideoids` - Comma separated list of video id's to poll.
-* `youtubelivechatids` - An additional comma separated list of YouTube Live Chat ID's to listen on. By default the bot listens to all the live broadcasts on the primary account.
+* `youtubelivechannelids` - Comma separated list of channel ids to poll.
 * `discordtoken` - Sets the Discord token.
 * `discordemail` - Sets the Discord account email.
 * `discordpassword` - Sets the Discord account password.

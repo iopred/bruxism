@@ -37,7 +37,7 @@ var youtubeURL bool
 var youtubeAuth string
 var youtubeConfigFilename string
 var youtubeTokenFilename string
-var youtubeLiveVideoIDs string
+var youtubeChannelIDs string
 var youtubeInvitePort int
 var discordToken string
 var discordEmail string
@@ -61,7 +61,7 @@ func init() {
 	flag.StringVar(&youtubeAuth, "youtubeauth", "", "Exchanges the provided auth code for an oauth2 token.")
 	flag.StringVar(&youtubeConfigFilename, "youtubeconfig", "youtubeoauth2config.json", "The filename that contains the oauth2 config.")
 	flag.StringVar(&youtubeTokenFilename, "youtubetoken", "youtubeoauth2token.json", "The filename to store the oauth2 token.")
-	flag.StringVar(&youtubeLiveVideoIDs, "youtubelivevideoids", "", "Comma separated list of video id's to poll.")
+	flag.StringVar(&youtubeChannelIDs, "youtubechannelids", "", "Comma separated list of channel ids to poll.")
 	flag.IntVar(&youtubeInvitePort, "youtubeinviteport", 7777, "The port to listen for invites.")
 	flag.StringVar(&discordToken, "discordtoken", "", "Discord token.")
 	flag.StringVar(&discordEmail, "discordemail", "", "Discord account email.")
@@ -109,7 +109,7 @@ func main() {
 		}
 	}, nil)
 
-	youtube := bruxism.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename, youtubeLiveVideoIDs)
+	youtube := bruxism.NewYouTube(youtubeURL, youtubeAuth, youtubeConfigFilename, youtubeTokenFilename)
 	err := youtube.Init()
 	if err != nil {
 		log.Fatal(err)
@@ -202,6 +202,14 @@ func main() {
 
 	// Start all our services.
 	bot.Open()
+
+	if youtubeChannelIDs != "" {
+		channelIDs := strings.Split(youtubeChannelIDs, ",")
+
+		for _, channelID := range channelIDs {
+			ytip.Monitor(channelID)
+		}
+	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		channel := r.FormValue("channel")
