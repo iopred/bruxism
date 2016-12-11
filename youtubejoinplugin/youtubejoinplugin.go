@@ -88,7 +88,7 @@ func (p *YouTubeJoinPlugin) Unmonitor(channel string) error {
 
 	delete(p.Channels, channel)
 
-	return p.ytLiveChannel.Unmonitor(channel, p.liveVideoChan)
+	return p.ytLiveChannel.UnmonitorAll(channel, p.liveVideoChan)
 }
 
 // Save will save plugin state to a byte array.
