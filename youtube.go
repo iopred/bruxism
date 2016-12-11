@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/atotto/clipboard"
@@ -34,6 +33,10 @@ const (
 const (
 	LiveChatBanSnippetTypeTemporary string = "temporary"
 	LiveChatBanSnippetTypePermanent        = "permanent"
+)
+
+const (
+	LiveChatEndedEvent string = "chatEndedEvent"
 )
 
 // LiveChatMessage is a Message wrapper around youtube.LiveChatMessage.
@@ -87,11 +90,6 @@ func (m *LiveChatMessage) Type() MessageType {
 	return MessageTypeCreate
 }
 
-type fanFunding struct {
-	sync.Mutex
-	Messages map[string]*youtube.LiveChatMessage
-}
-
 // YouTube is a Service provider for YouTube.
 type YouTube struct {
 	url            bool
@@ -105,7 +103,6 @@ type YouTube struct {
 	messageChan    chan Message
 	InsertChan     chan interface{}
 	DeleteChan     chan interface{}
-	fanFunding     fanFunding
 	me             *youtube.Channel
 	channelCount   int
 	joined         map[string]bool
@@ -122,7 +119,6 @@ func NewYouTube(url bool, auth, configFilename, tokenFilename string) *YouTube {
 		messageChan:    make(chan Message, 200),
 		InsertChan:     make(chan interface{}, 200),
 		DeleteChan:     make(chan interface{}, 200),
-		fanFunding:     fanFunding{Messages: make(map[string]*youtube.LiveChatMessage)},
 		joined:         make(map[string]bool),
 		videoToChannel: map[string]string{},
 	}
@@ -150,6 +146,8 @@ func (yt *YouTube) pollMessages(broadcast *youtube.LiveBroadcast) {
 	}
 	yt.joined[broadcast.Snippet.LiveChatId] = true
 
+	errors := 0
+
 	yt.channelCount++
 	pageToken := ""
 	for {
@@ -161,8 +159,12 @@ func (yt *YouTube) pollMessages(broadcast *youtube.LiveBroadcast) {
 		liveChatMessageListResponse, err := list.Do()
 
 		if err != nil {
-			log.Println(err)
+			errors++
+			if errors > 10 {
+				return
+			}
 		} else {
+			errors = 0
 			// Ignore the first results, we only want new chats.
 			if pageToken != "" {
 				for _, message := range liveChatMessageListResponse.Items {
@@ -170,8 +172,8 @@ func (yt *YouTube) pollMessages(broadcast *youtube.LiveBroadcast) {
 					yt.messageChan <- &liveChatMessage
 
 					switch message.Snippet.Type {
-					case LiveChatMessageSnippetTypeFanFunding:
-						yt.addFanFundingMessage(message)
+					case LiveChatEndedEvent:
+						return
 					}
 				}
 			}
@@ -195,25 +197,6 @@ func (yt *YouTube) writeMessagesToFile(messages []*youtube.LiveChatMessage, file
 	if err != nil {
 		log.Println(err)
 	}
-}
-
-func (yt *YouTube) addFanFundingMessage(message *youtube.LiveChatMessage) {
-	yt.fanFunding.Lock()
-	defer yt.fanFunding.Unlock()
-
-	if yt.fanFunding.Messages[message.Id] == nil {
-		yt.fanFunding.Messages[message.Id] = message
-		yt.writeMessagesToFile([]*youtube.LiveChatMessage{message}, "youtubelatest.txt")
-	}
-
-	largest := message
-	for _, check := range yt.fanFunding.Messages {
-		if check.Snippet.FanFundingEventDetails.AmountMicros > largest.Snippet.FanFundingEventDetails.AmountMicros {
-			largest = check
-		}
-	}
-
-	yt.writeMessagesToFile([]*youtube.LiveChatMessage{largest}, "youtubelargest.txt")
 }
 
 func (yt *YouTube) generateOauthURLAndExit() {
@@ -381,14 +364,23 @@ var messageReplacer = strings.NewReplacer("<", "(", ">", ")")
 
 // SendMessage sends a message.
 func (yt *YouTube) SendMessage(channel, message string) error {
-	yt.InsertChan <- &youtube.LiveChatMessage{
-		Snippet: &youtube.LiveChatMessageSnippet{
-			LiveChatId: channel,
-			Type:       LiveChatMessageSnippetTypeText,
-			TextMessageDetails: &youtube.LiveChatTextMessageDetails{
-				MessageText: messageReplacer.Replace(message),
+	// Send messages of 200 characters.
+	for i := 0; i < len(message); i += 200 {
+		m := i + 200
+		if m > len(message) {
+			m = len(message)
+		}
+
+		me := message[i:m]
+		yt.InsertChan <- &youtube.LiveChatMessage{
+			Snippet: &youtube.LiveChatMessageSnippet{
+				LiveChatId: channel,
+				Type:       LiveChatMessageSnippetTypeText,
+				TextMessageDetails: &youtube.LiveChatTextMessageDetails{
+					MessageText: messageReplacer.Replace(me),
+				},
 			},
-		},
+		}
 	}
 	return nil
 }

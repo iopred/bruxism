@@ -94,14 +94,19 @@ func StatsCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mes
 	w.Flush()
 	out := buf.String()
 
+	end := ""
 	if IsSeptapus {
-		out += "\nSeptapus community: <https://discord.gg/HWN9pwj>\nPatreon: <https://www.patreon.com/iopred>\nBuilt with love by iopred."
+		end += "Septapus community: <https://discord.gg/HWN9pwj>\nPatreon: <https://www.patreon.com/iopred>\nBuilt with love by iopred."
 	}
 
 	if service.SupportsMultiline() {
+		if end != "" {
+			out += "\n" + end
+		}
 		service.SendMessage(message.Channel(), out)
 	} else {
 		service.SendMessage(message.Channel(), strings.Join(strings.Split(out, "\n"), " "))
+		service.SendMessage(message.Channel(), strings.Join(strings.Split(end, "\n"), " "))
 	}
 }
 
