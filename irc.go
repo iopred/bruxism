@@ -122,6 +122,12 @@ func (i *IRC) SendMessage(channel, message string) error {
 	return nil
 }
 
+// SendAction sends an action.
+func (i *IRC) SendAction(channel, message string) error {
+	i.Conn.Action(channel, message)
+	return nil
+}
+
 // DeleteMessage deletes a message.
 func (i *IRC) DeleteMessage(channel, messageID string) error {
 	return errors.New("Deleting messages not supported on IRC.")

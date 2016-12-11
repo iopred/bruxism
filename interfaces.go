@@ -40,6 +40,7 @@ type Service interface {
 	Open() (<-chan Message, error)
 	IsMe(message Message) bool
 	SendMessage(channel, message string) error
+	SendAction(channel, message string) error
 	DeleteMessage(channel, messageID string) error
 	SendFile(channel, name string, r io.Reader) error
 	BanUser(channel, userID string, duration int) error

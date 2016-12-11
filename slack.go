@@ -130,6 +130,11 @@ func (s *Slack) SendMessage(channel, message string) error {
 	return nil
 }
 
+// SendAction sends an action.
+func (s *Slack) SendAction(channel, message string) error {
+	return s.SendMessage(channel, message)
+}
+
 // DeleteMessage deletes a message.
 func (s *Slack) DeleteMessage(channel, messageID string) error {
 	return errors.New("Slack does not support deleting messages.")

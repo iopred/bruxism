@@ -392,6 +392,11 @@ func (yt *YouTube) SendMessage(channel, message string) error {
 	return nil
 }
 
+// SendAction sends an action.
+func (yt *YouTube) SendAction(channel, message string) error {
+	return yt.SendMessage(channel, message)
+}
+
 // DeleteMessage deletes a message.
 func (yt *YouTube) DeleteMessage(channel, messageID string) error {
 	yt.DeleteChan <- &youtube.LiveChatMessage{Id: messageID}

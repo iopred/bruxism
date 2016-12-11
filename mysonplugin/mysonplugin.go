@@ -1,9 +1,6 @@
 package mysonplugin
 
 import (
-	"fmt"
-	"math/rand"
-
 	"github.com/iopred/bruxism"
 	"github.com/iopred/discordgo"
 )
@@ -14,16 +11,14 @@ func messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mess
 	}
 
 	discord := service.(*bruxism.Discord)
-	m, err := discord.Session.ChannelMessageSendEmbed(message.Channel(), &discordgo.MessageEmbed{
-		Color:       rand.Intn(0xFFFFFF),
+	discord.Session.ChannelMessageSendEmbed(message.Channel(), &discordgo.MessageEmbed{
+		Color:       discord.Session.State.UserColor(service.UserID(), message.Channel()),
 		Description: "Don't ever talk to me or my son ever again.",
 		Author: &discordgo.MessageEmbedAuthor{
 			Name:    discord.NicknameForID(service.UserID(), service.UserName(), message.Channel()),
 			IconURL: discordgo.EndpointUserAvatar(service.UserID(), discord.Session.State.User.Avatar),
 		},
 	})
-
-	fmt.Println(m, err)
 }
 
 func helpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {

@@ -212,7 +212,33 @@ func (d *Discord) SendMessage(channel, message string) error {
 		log.Println("Error sending discord message: ", err)
 		return err
 	}
+
 	return nil
+}
+
+// SendAction sends an action.
+func (d *Discord) SendAction(channel, message string) error {
+	if channel == "" {
+		log.Println("Empty channel could not send message", message)
+		return nil
+	}
+
+	p, err := d.UserChannelPermissions(d.UserID(), channel)
+	if err != nil {
+		return d.SendMessage(channel, message)
+	}
+
+	if p&discordgo.PermissionEmbedLinks == discordgo.PermissionEmbedLinks {
+		if _, err := d.Session.ChannelMessageSendEmbed(channel, &discordgo.MessageEmbed{
+			Color:       d.UserColor(d.UserID(), channel),
+			Description: message,
+		}); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	return d.SendMessage(channel, message)
 }
 
 // DeleteMessage deletes a message.
@@ -384,6 +410,16 @@ func (d *Discord) UserChannelPermissions(userID, channelID string) (apermissions
 		}
 	}
 	return
+}
+
+func (d *Discord) UserColor(userID, channelID string) int {
+	for _, s := range d.Sessions {
+		color := s.State.UserColor(userID, channelID)
+		if color != 0 {
+			return color
+		}
+	}
+	return 0
 }
 
 func (d *Discord) Nickname(message Message) string {
