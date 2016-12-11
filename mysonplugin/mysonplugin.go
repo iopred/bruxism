@@ -12,7 +12,7 @@ func messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mess
 
 	discord := service.(*bruxism.Discord)
 	discord.Session.ChannelMessageSendEmbed(message.Channel(), &discordgo.MessageEmbed{
-		Color:       discord.Session.State.UserColor(service.UserID(), message.Channel()),
+		Color:       discord.UserColor(service.UserID(), message.Channel()),
 		Description: "Don't ever talk to me or my son ever again.",
 		Author: &discordgo.MessageEmbedAuthor{
 			Name:    discord.NicknameForID(service.UserID(), service.UserName(), message.Channel()),
