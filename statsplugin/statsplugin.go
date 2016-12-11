@@ -101,12 +101,7 @@ func StatsCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mes
 	if service.SupportsMultiline() {
 		service.SendMessage(message.Channel(), out)
 	} else {
-		lines := strings.Split(out, "\n")
-		for _, line := range lines {
-			if err := service.SendMessage(message.Channel(), line); err != nil {
-				break
-			}
-		}
+		service.SendMessage(message.Channel(), strings.Join(strings.Split(out, "\n"), " "))
 	}
 }
 

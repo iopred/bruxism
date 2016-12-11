@@ -65,17 +65,7 @@ func (p *wormholePlugin) Save() ([]byte, error) {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *wormholePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
-	isAuthorized := service.IsModerator(message)
-
-	if service.Name() == bruxism.DiscordServiceName {
-		discord := service.(*bruxism.Discord)
-		p, err := discord.UserChannelPermissions(message.UserID(), message.Channel())
-		if err == nil {
-			isAuthorized = isAuthorized || (p&discordgo.PermissionManageRoles != 0) || (p&discordgo.PermissionManageChannels != 0) || (p&discordgo.PermissionManageServer != 0)
-		}
-	}
-
-	if isAuthorized {
+	if service.IsModerator(message) {
 		if detailed {
 			return []string{
 				bruxism.CommandHelp(service, "wormhole", "info", "Learn more about wormholes.")[0],

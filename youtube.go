@@ -545,12 +545,25 @@ func (yt *YouTube) CommandPrefix() string {
 
 // IsBotOwner returns whether or not a message sender was the owner of the bot.
 func (yt *YouTube) IsBotOwner(message Message) bool {
-	return false
+	m, ok := message.(*LiveChatMessage)
+	if !ok {
+		return false
+	}
+	return m.AuthorDetails.ChannelId == "UCGmC0A8mEAPdlELQdP9xJbw"
 }
 
 // IsPrivate returns whether or not a message was private.
 func (yt *YouTube) IsPrivate(message Message) bool {
 	return false
+}
+
+// IsChannelOwner returns whether or not the sender of a message is the owner.
+func (yt *YouTube) IsChannelOwner(message Message) bool {
+	m, ok := message.(*LiveChatMessage)
+	if !ok {
+		return false
+	}
+	return m.AuthorDetails.IsChatOwner
 }
 
 // IsModerator returns whether or not the sender of a message is a moderator.

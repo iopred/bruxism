@@ -336,8 +336,8 @@ func (d *Discord) IsPrivate(message Message) bool {
 	return err == nil && c.IsPrivate
 }
 
-// IsModerator returns whether or not the sender of a message is a moderator.
-func (d *Discord) IsModerator(message Message) bool {
+// IsChannelOwner returns whether or not the sender of a message is a moderator.
+func (d *Discord) IsChannelOwner(message Message) bool {
 	c, err := d.Channel(message.Channel())
 	if err != nil {
 		return false
@@ -347,6 +347,18 @@ func (d *Discord) IsModerator(message Message) bool {
 		return false
 	}
 	return g.OwnerID == message.UserID()
+}
+
+// IsModerator returns whether or not the sender of a message is a moderator.
+func (d *Discord) IsModerator(message Message) bool {
+	p, err := d.UserChannelPermissions(message.UserID(), message.Channel())
+	if err == nil {
+		if p&discordgo.PermissionManageChannels == discordgo.PermissionManageChannels || p&discordgo.PermissionManageServer == discordgo.PermissionManageServer {
+			return true
+		}
+	}
+
+	return false
 }
 
 // ChannelCount returns the number of channels the bot is in.

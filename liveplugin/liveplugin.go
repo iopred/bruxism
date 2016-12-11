@@ -10,7 +10,6 @@ import (
 	"google.golang.org/api/youtube/v3"
 
 	"github.com/iopred/bruxism"
-	"github.com/iopred/discordgo"
 )
 
 type livePlugin struct {
@@ -114,19 +113,9 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 				service.SendMessage(messageChannel, fmt.Sprintf("Incorrect command. eg: %s%slive [add|remove|list] <%s>%s", ticks, service.CommandPrefix(), "UCGmC0A8mEAPdlELQdP9xJbw", ticks))
 			}
 
-			isAuthorized := service.IsModerator(message)
-
-			if service.Name() == bruxism.DiscordServiceName {
-				discord := service.(*bruxism.Discord)
-				p, err := discord.UserChannelPermissions(message.UserID(), message.Channel())
-				if err == nil {
-					isAuthorized = isAuthorized || (p&discordgo.PermissionManageRoles != 0) || (p&discordgo.PermissionManageChannels != 0) || (p&discordgo.PermissionManageServer != 0)
-				}
-			}
-
 			switch parts[0] {
 			case "list":
-				if !isAuthorized {
+				if !service.IsModerator(message) {
 					service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to list live announcements.")
 					return
 				}
@@ -142,7 +131,7 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 					service.SendMessage(messageChannel, fmt.Sprintf("Currently announcing: %s", strings.Join(list, ",")))
 				}
 			case "add":
-				if !isAuthorized {
+				if !service.IsModerator(message) {
 					service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to add live announcements.")
 					return
 				}
@@ -157,7 +146,7 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 				}
 				service.SendMessage(messageChannel, fmt.Sprintf("Messages will be sent here when %s goes live.", p.ytLiveChannel.ChannelName(parts[1])))
 			case "remove":
-				if !isAuthorized {
+				if !service.IsModerator(message) {
 					service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to remove live announcements.")
 					return
 				}

@@ -208,6 +208,11 @@ func (s *Slack) IsPrivate(message Message) bool {
 	return false
 }
 
+// IsChannelOwner returns whether or not the sender of a message is the owner.
+func (s *Slack) IsChannelOwner(message Message) bool {
+	return false
+}
+
 // IsModerator returns whether or not the sender of a message is a moderator.
 func (s *Slack) IsModerator(message Message) bool {
 	return false

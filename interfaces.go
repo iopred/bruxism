@@ -50,6 +50,7 @@ type Service interface {
 	PrivateMessage(userID, messageID string) error
 	IsBotOwner(message Message) bool
 	IsPrivate(message Message) bool
+	IsChannelOwner(message Message) bool
 	IsModerator(message Message) bool
 	SupportsPrivateMessages() bool
 	SupportsMultiline() bool

@@ -200,6 +200,11 @@ func (i *IRC) IsPrivate(message Message) bool {
 	return message.UserName() == message.Channel()
 }
 
+// IsChannelOwner returns whether or not the sender of a message is the owner.
+func (i *IRC) IsChannelOwner(message Message) bool {
+	return false
+}
+
 // IsModerator returns whether or not the sender of a message is a moderator.
 func (i *IRC) IsModerator(message Message) bool {
 	return false
