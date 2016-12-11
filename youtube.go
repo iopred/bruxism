@@ -124,6 +124,7 @@ func NewYouTube(url bool, auth, configFilename, tokenFilename string) *YouTube {
 		DeleteChan:     make(chan interface{}, 200),
 		fanFunding:     fanFunding{Messages: make(map[string]*youtube.LiveChatMessage)},
 		joined:         make(map[string]bool),
+		videoToChannel: map[string]string{},
 	}
 }
 
@@ -455,7 +456,6 @@ func (yt *YouTube) Join(videoID string) error {
 	if yt.joined[videoID] {
 		return ErrAlreadyJoined
 	}
-	yt.joined[videoID] = true
 
 	videos, err := yt.GetVideosByIDList([]string{videoID})
 
@@ -474,6 +474,7 @@ func (yt *YouTube) Join(videoID string) error {
 }
 
 func (yt *YouTube) JoinChat(videoID, channelID, liveChatID string) error {
+	yt.joined[videoID] = true
 	yt.videoToChannel[videoID] = channelID
 
 	liveBroadcastListResponse := &youtube.LiveBroadcastListResponse{

@@ -206,7 +206,6 @@ func main() {
 	// This will cause the youtubejoin plugin to join any live streams on those channels.
 	if youtubeChannelIDs != "" {
 		channelIDs := strings.Split(youtubeChannelIDs, ",")
-
 		for _, channelID := range channelIDs {
 			ytip.Monitor(channelID)
 		}

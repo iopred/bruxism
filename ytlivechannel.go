@@ -13,38 +13,44 @@ import (
 type YTLiveChannel struct {
 	sync.RWMutex
 	service *youtube.Service
+
 	// map channelID -> chan
-	liveVideoChans map[string][]chan *youtube.Video
-	channelNames   map[string]string
+	filteredLiveVideoChans map[string][]chan *youtube.Video
+	liveVideoChans         map[string][]chan *youtube.Video
+
+	channelNames map[string]string
 }
 
 func NewYTLiveChannel(service *youtube.Service) *YTLiveChannel {
-	return &YTLiveChannel{service: service}
+	return &YTLiveChannel{
+		service:                service,
+		channelNames:           map[string]string{},
+		filteredLiveVideoChans: map[string][]chan *youtube.Video{},
+		liveVideoChans:         map[string][]chan *youtube.Video{},
+	}
 }
 
+// Monitor monitors a channel for new live videos and sends them down liveVideoChan.
+// If the channel is live when this is called, it will not send the video down the channel.
 func (y *YTLiveChannel) Monitor(channel string, liveVideoChan chan *youtube.Video) error {
 	y.Lock()
-	defer y.Unlock()
+	created := len(y.filteredLiveVideoChans[channel])+len(y.liveVideoChans[channel]) == 0
+	y.filteredLiveVideoChans[channel] = append(y.filteredLiveVideoChans[channel], liveVideoChan)
+	y.Unlock()
 
-	if y.channelNames[channel] == "" {
-		clr, err := y.service.Channels.List("snippet").Id(channel).Do()
-		if err != nil {
-			return errors.New("Error loading channel.")
-		}
-		if len(clr.Items) != 1 {
-			return errors.New("No channel found.")
-		}
-		if y.channelNames == nil {
-			y.channelNames = map[string]string{}
-		}
-		y.channelNames[channel] = clr.Items[0].Snippet.Title
+	if created {
+		go y.poll(channel)
 	}
+	return nil
+}
 
-	if y.liveVideoChans == nil {
-		y.liveVideoChans = map[string][]chan *youtube.Video{}
-	}
-	created := len(y.liveVideoChans[channel]) == 0
+// MonitorAll monitors a channel for live videos and sends them down liveVideoChan.
+func (y *YTLiveChannel) MonitorAll(channel string, liveVideoChan chan *youtube.Video) error {
+	y.Lock()
+	created := len(y.filteredLiveVideoChans[channel])+len(y.liveVideoChans[channel]) == 0
 	y.liveVideoChans[channel] = append(y.liveVideoChans[channel], liveVideoChan)
+	y.Unlock()
+
 	if created {
 		go y.poll(channel)
 	}
@@ -64,9 +70,17 @@ func (y *YTLiveChannel) poll(channel string) {
 	first := true
 	for {
 		videos, _ := y.getLiveVideos(channel)
+		y.Lock()
 		for k, v := range videos {
 			if !seen[k] {
 				seen[k] = true
+
+				y.channelNames[channel] = v.Snippet.ChannelTitle
+
+				for _, c := range y.liveVideoChans[channel] {
+					c <- v
+				}
+
 				// Don't announce the videos that are already live.
 				if first {
 					continue
@@ -77,13 +91,13 @@ func (y *YTLiveChannel) poll(channel string) {
 					continue
 				}
 				lastAnnounce = now
-				y.RLock()
-				for _, c := range y.liveVideoChans[channel] {
+
+				for _, c := range y.filteredLiveVideoChans[channel] {
 					c <- v
 				}
-				y.RUnlock()
 			}
 		}
+		y.Unlock()
 		first = false
 		<-time.After(5 * time.Minute)
 	}
