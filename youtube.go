@@ -124,34 +124,29 @@ func NewYouTube(url bool, auth, configFilename, tokenFilename string) *YouTube {
 	}
 }
 
-func (yt *YouTube) pollBroadcasts(broadcasts *youtube.LiveBroadcastListResponse, err error) {
-	if err != nil {
-		log.Println(err)
+func (yt *YouTube) JoinVideo(video *youtube.Video) {
+	yt.joined[video.Id] = true
+	defer delete(yt.joined, video.Id)
+
+	if video.Snippet != nil {
+		yt.videoToChannel[video.Id] = video.Snippet.ChannelTitle
+	}
+
+	if video == nil || video.LiveStreamingDetails == nil || video.LiveStreamingDetails.ActiveLiveChatId == "" {
 		return
 	}
-
-	for _, broadcast := range broadcasts.Items {
-		// If the broadcast has ended, it can't have a valid chat.
-		if broadcast.Status != nil && broadcast.Status.LifeCycleStatus == "complete" {
-			continue
-		}
-
-		go yt.pollMessages(broadcast)
-	}
-}
-
-func (yt *YouTube) pollMessages(broadcast *youtube.LiveBroadcast) {
-	if yt.joined[broadcast.Snippet.LiveChatId] {
-		return
-	}
-	yt.joined[broadcast.Snippet.LiveChatId] = true
 
 	errors := 0
 
 	yt.channelCount++
 	pageToken := ""
 	for {
-		list := yt.Service.LiveChatMessages.List(broadcast.Snippet.LiveChatId, "id,snippet,authorDetails").MaxResults(200)
+		// We have been asked to leave.
+		if !yt.joined[video.Id] {
+			return
+		}
+
+		list := yt.Service.LiveChatMessages.List(video.LiveStreamingDetails.ActiveLiveChatId, "id,snippet,authorDetails").MaxResults(200)
 		if pageToken != "" {
 			list.PageToken(pageToken)
 		}
@@ -347,7 +342,12 @@ func (yt *YouTube) Open() (<-chan Message, error) {
 	}
 	yt.me = me
 
-	yt.pollBroadcasts(yt.Service.LiveBroadcasts.List("id,snippet,status,contentDetails").Mine(true).BroadcastType("all").Do())
+	videos, err := yt.GetLiveVideos(yt.me.Id)
+	if err == nil {
+		for _, v := range videos {
+			yt.JoinVideo(v)
+		}
+	}
 
 	// Start a goroutine to handle all requests.
 	go yt.handleRequests()
@@ -450,33 +450,21 @@ func (yt *YouTube) Join(videoID string) error {
 	}
 
 	videos, err := yt.GetVideosByIDList([]string{videoID})
-
 	if err != nil {
 		return errors.New("No video found.")
 	}
 
 	for _, v := range videos {
-		yt.videoToChannel[videoID] = v.Snippet.ChannelId
-		if v.LiveStreamingDetails != nil && v.LiveStreamingDetails.ActiveLiveChatId != "" {
-			return yt.JoinChat(videoID, v.Snippet.ChannelId, v.LiveStreamingDetails.ActiveLiveChatId)
-		}
+		go yt.JoinVideo(v)
+		return nil
 	}
 
-	return errors.New("No live video found.")
+	return errors.New("No video found.")
 }
 
-func (yt *YouTube) JoinChat(videoID, channelID, liveChatID string) error {
-	yt.joined[videoID] = true
-	yt.videoToChannel[videoID] = channelID
-
-	liveBroadcastListResponse := &youtube.LiveBroadcastListResponse{
-		Items: []*youtube.LiveBroadcast{&youtube.LiveBroadcast{
-			Snippet: &youtube.LiveBroadcastSnippet{
-				LiveChatId: liveChatID,
-			},
-		}},
-	}
-	yt.pollBroadcasts(liveBroadcastListResponse, nil)
+// Leave will leave a channel.
+func (yt *YouTube) Leave(videoID string) error {
+	delete(yt.joined, videoID)
 
 	return nil
 }

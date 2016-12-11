@@ -2,6 +2,7 @@ package youtubejoinplugin
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"sync"
 
@@ -25,6 +26,9 @@ func (p *YouTubeJoinPlugin) Help(bot *bruxism.Bot, service bruxism.Service, mess
 
 // Message handler.
 func (p *YouTubeJoinPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
+	if service.IsBotOwner(message) || service.IsChannelOwner(message) && bruxism.MatchesCommand(service, "leave", message) {
+		p.Unmonitor(message.Channel())
+	}
 }
 
 // Load will load plugin state from a byte array.
@@ -57,7 +61,7 @@ func (p *YouTubeJoinPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 		v := <-lvc
 		p.RLock()
 		if p.Channels[v.Snippet.ChannelId] && v.LiveStreamingDetails != nil && v.LiveStreamingDetails.ActiveLiveChatId != "" {
-			service.(*bruxism.YouTube).JoinChat(v.Id, v.Snippet.ChannelId, v.LiveStreamingDetails.ActiveLiveChatId)
+			service.(*bruxism.YouTube).JoinVideo(v)
 		}
 		p.RUnlock()
 	}
@@ -67,12 +71,24 @@ func (p *YouTubeJoinPlugin) Monitor(channel string) error {
 	p.Lock()
 	defer p.Unlock()
 	if p.Channels[channel] {
-		return nil
+		return errors.New("already monitoring that channel")
 	}
 
 	p.Channels[channel] = true
 
 	return p.ytLiveChannel.MonitorAll(channel, p.liveVideoChan)
+}
+
+func (p *YouTubeJoinPlugin) Unmonitor(channel string) error {
+	p.Lock()
+	defer p.Unlock()
+	if !p.Channels[channel] {
+		return errors.New("not monitoring that channel")
+	}
+
+	delete(p.Channels, channel)
+
+	return p.ytLiveChannel.Unmonitor(channel, p.liveVideoChan)
 }
 
 // Save will save plugin state to a byte array.

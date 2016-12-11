@@ -34,9 +34,17 @@ func NewYTLiveChannel(service *youtube.Service) *YTLiveChannel {
 // If the channel is live when this is called, it will not send the video down the channel.
 func (y *YTLiveChannel) Monitor(channel string, liveVideoChan chan *youtube.Video) error {
 	y.Lock()
+	defer y.Unlock()
+
+	videoChans := y.filteredLiveVideoChans[channel]
+	for _, v := range videoChans {
+		if v == liveVideoChan {
+			return errors.New("already monitoring that channel")
+		}
+	}
+
 	created := len(y.filteredLiveVideoChans[channel])+len(y.liveVideoChans[channel]) == 0
 	y.filteredLiveVideoChans[channel] = append(y.filteredLiveVideoChans[channel], liveVideoChan)
-	y.Unlock()
 
 	if created {
 		go y.poll(channel)
@@ -47,14 +55,54 @@ func (y *YTLiveChannel) Monitor(channel string, liveVideoChan chan *youtube.Vide
 // MonitorAll monitors a channel for live videos and sends them down liveVideoChan.
 func (y *YTLiveChannel) MonitorAll(channel string, liveVideoChan chan *youtube.Video) error {
 	y.Lock()
+	defer y.Unlock()
+
+	videoChans := y.liveVideoChans[channel]
+	for _, v := range videoChans {
+		if v == liveVideoChan {
+			return errors.New("already monitoring that channel")
+		}
+	}
+
 	created := len(y.filteredLiveVideoChans[channel])+len(y.liveVideoChans[channel]) == 0
 	y.liveVideoChans[channel] = append(y.liveVideoChans[channel], liveVideoChan)
-	y.Unlock()
 
 	if created {
 		go y.poll(channel)
 	}
 	return nil
+}
+
+// UnmonitorAll unmonitors a channel for live videos.
+func (y *YTLiveChannel) Unmonitor(channel string, liveVideoChan chan *youtube.Video) error {
+	y.Lock()
+	defer y.Unlock()
+
+	videoChans := y.filteredLiveVideoChans[channel]
+	for i, v := range videoChans {
+		if v == liveVideoChan {
+			y.filteredLiveVideoChans[channel] = append(videoChans[:i], videoChans[i+1:]...)
+			return nil
+		}
+	}
+
+	return errors.New("channel not being monitored")
+}
+
+// UnmonitorAll unmonitors a channel for live videos.
+func (y *YTLiveChannel) UnmonitorAll(channel string, liveVideoChan chan *youtube.Video) error {
+	y.Lock()
+	defer y.Unlock()
+
+	videoChans := y.liveVideoChans[channel]
+	for i, v := range videoChans {
+		if v == liveVideoChan {
+			y.liveVideoChans[channel] = append(videoChans[:i], videoChans[i+1:]...)
+			return nil
+		}
+	}
+
+	return errors.New("channel not being monitored")
 }
 
 func (y *YTLiveChannel) ChannelName(channel string) string {
@@ -96,6 +144,9 @@ func (y *YTLiveChannel) poll(channel string) {
 					c <- v
 				}
 			}
+		}
+		if len(y.liveVideoChans[channel])+len(y.filteredLiveVideoChans[channel]) == 0 {
+			return
 		}
 		y.Unlock()
 		first = false
