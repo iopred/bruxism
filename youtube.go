@@ -105,7 +105,8 @@ type YouTube struct {
 	DeleteChan     chan interface{}
 	me             *youtube.Channel
 	channelCount   int
-	joined         map[string]bool
+	joined         map[string]string
+	chatToVideo    map[string]string
 	videoToChannel map[string]string
 }
 
@@ -119,30 +120,34 @@ func NewYouTube(url bool, auth, configFilename, tokenFilename string) *YouTube {
 		messageChan:    make(chan Message, 200),
 		InsertChan:     make(chan interface{}, 200),
 		DeleteChan:     make(chan interface{}, 200),
-		joined:         make(map[string]bool),
+		joined:         make(map[string]string),
+		chatToVideo:    map[string]string{},
 		videoToChannel: map[string]string{},
 	}
 }
 
 func (yt *YouTube) JoinVideo(video *youtube.Video) error {
-	if yt.joined[video.Id] {
+	videoid := video.Id
+
+	if yt.joined[videoid] != "" {
 		return ErrAlreadyJoined
 	}
-	yt.joined[video.Id] = true
+
+	if video == nil || video.Snippet == nil || video.LiveStreamingDetails == nil || video.LiveStreamingDetails.ActiveLiveChatId == "" {
+		return errors.New("Invalid video")
+	}
+
+	chat := video.LiveStreamingDetails.ActiveLiveChatId
+
+	yt.joined[videoid] = chat
+	yt.videoToChannel[videoid] = video.Snippet.ChannelId
+	yt.chatToVideo[chat] = videoid
 
 	go func() {
-		defer delete(yt.joined, video.Id)
+		defer delete(yt.joined, videoid)
 
-		if video.Snippet != nil {
-			yt.videoToChannel[video.Id] = video.Snippet.ChannelId
-		}
-
-		if video == nil || video.LiveStreamingDetails == nil || video.LiveStreamingDetails.ActiveLiveChatId == "" {
-			return
-		}
-
-		yt.SendMessage(video.LiveStreamingDetails.ActiveLiveChatId, "I have joined!")
-		defer yt.SendMessage(video.LiveStreamingDetails.ActiveLiveChatId, "I'm leaving. Bye.")
+		yt.SendMessage(chat, "I am here!")
+		defer yt.SendMessage(chat, "I'm leaving. Bye.")
 
 		errors := 0
 
@@ -150,11 +155,11 @@ func (yt *YouTube) JoinVideo(video *youtube.Video) error {
 		pageToken := ""
 		for {
 			// We have been asked to leave.
-			if !yt.joined[video.Id] {
+			if yt.joined[videoid] == "" {
 				return
 			}
 
-			list := yt.Service.LiveChatMessages.List(video.LiveStreamingDetails.ActiveLiveChatId, "id,snippet,authorDetails").MaxResults(200)
+			list := yt.Service.LiveChatMessages.List(chat, "id,snippet,authorDetails").MaxResults(200)
 			if pageToken != "" {
 				list.PageToken(pageToken)
 			}
@@ -192,17 +197,6 @@ func (yt *YouTube) JoinVideo(video *youtube.Video) error {
 	}()
 
 	return nil
-}
-
-func (yt *YouTube) writeMessagesToFile(messages []*youtube.LiveChatMessage, filename string) {
-	output := ""
-	for _, message := range messages {
-		output += html.UnescapeString(message.Snippet.DisplayMessage) + "\n"
-	}
-	err := ioutil.WriteFile(filename, []byte(output), 0777)
-	if err != nil {
-		log.Println(err)
-	}
 }
 
 func (yt *YouTube) generateOauthURLAndExit() {
@@ -456,7 +450,7 @@ func (yt *YouTube) PrivateMessage(userID, message string) error {
 
 // Join will join a video channel.
 func (yt *YouTube) Join(videoID string) error {
-	if yt.joined[videoID] {
+	if yt.joined[videoID] != "" {
 		return ErrAlreadyJoined
 	}
 
@@ -498,6 +492,12 @@ func (yt *YouTube) LeaveAll(channelID string) error {
 // ChannelIDForVideoID gets a channelID for a videoID.
 func (yt *YouTube) ChannelIDForVideoID(videoID string) (channelID string, ok bool) {
 	channelID, ok = yt.videoToChannel[videoID]
+	return
+}
+
+// VideoIDForChatID gets a chatID for a videoID.
+func (yt *YouTube) VideoIDForChatID(videoID string) (channelID string, ok bool) {
+	channelID, ok = yt.chatToVideo[videoID]
 	return
 }
 

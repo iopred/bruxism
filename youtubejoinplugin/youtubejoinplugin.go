@@ -28,7 +28,13 @@ func (p *YouTubeJoinPlugin) Help(bot *bruxism.Bot, service bruxism.Service, mess
 // Message handler.
 func (p *YouTubeJoinPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if (service.IsBotOwner(message) || service.IsChannelOwner(message)) && bruxism.MatchesCommand(service, "leave", message) {
-		p.Unmonitor(message.Channel())
+		video, ok := p.youtube.VideoIDForChatID(message.Channel())
+		if ok {
+			channel, ok := p.youtube.ChannelIDForVideoID(video)
+			if ok {
+				p.Unmonitor(channel)
+			}
+		}
 	}
 }
 
@@ -63,7 +69,7 @@ func (p *YouTubeJoinPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 		v := <-lvc
 		p.RLock()
 		if p.Channels[v.Snippet.ChannelId] && v.LiveStreamingDetails != nil && v.LiveStreamingDetails.ActiveLiveChatId != "" {
-			service.(*bruxism.YouTube).JoinVideo(v)
+			p.youtube.JoinVideo(v)
 		}
 		p.RUnlock()
 	}
