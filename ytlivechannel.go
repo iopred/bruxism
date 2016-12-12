@@ -146,6 +146,7 @@ func (y *YTLiveChannel) poll(channel string) {
 			}
 		}
 		if len(y.liveVideoChans[channel])+len(y.filteredLiveVideoChans[channel]) == 0 {
+			y.Unlock()
 			return
 		}
 		y.Unlock()

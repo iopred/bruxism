@@ -70,6 +70,7 @@ func (p *YouTubeJoinPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 func (p *YouTubeJoinPlugin) Monitor(channel string) error {
 	p.Lock()
 	defer p.Unlock()
+
 	if p.Channels[channel] {
 		return errors.New("already tracking that channel")
 	}
@@ -82,6 +83,7 @@ func (p *YouTubeJoinPlugin) Monitor(channel string) error {
 func (p *YouTubeJoinPlugin) Unmonitor(channel string) error {
 	p.Lock()
 	defer p.Unlock()
+
 	if !p.Channels[channel] {
 		return errors.New("not tracking that channel")
 	}
