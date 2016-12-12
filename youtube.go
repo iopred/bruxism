@@ -124,7 +124,10 @@ func NewYouTube(url bool, auth, configFilename, tokenFilename string) *YouTube {
 	}
 }
 
-func (yt *YouTube) JoinVideo(video *youtube.Video) {
+func (yt *YouTube) JoinVideo(video *youtube.Video) error {
+	if yt.joined[video.Id] {
+		return ErrAlreadyJoined
+	}
 	yt.joined[video.Id] = true
 
 	go func() {
@@ -137,6 +140,9 @@ func (yt *YouTube) JoinVideo(video *youtube.Video) {
 		if video == nil || video.LiveStreamingDetails == nil || video.LiveStreamingDetails.ActiveLiveChatId == "" {
 			return
 		}
+
+		yt.SendMessage(video.LiveStreamingDetails.ActiveLiveChatId, "I have joined!")
+		defer yt.SendMessage(video.LiveStreamingDetails.ActiveLiveChatId, "I'm leaving. Bye.")
 
 		errors := 0
 
@@ -184,6 +190,8 @@ func (yt *YouTube) JoinVideo(video *youtube.Video) {
 			}
 		}
 	}()
+
+	return nil
 }
 
 func (yt *YouTube) writeMessagesToFile(messages []*youtube.LiveChatMessage, filename string) {
@@ -446,7 +454,7 @@ func (yt *YouTube) PrivateMessage(userID, message string) error {
 	return errors.New("Private messages not supported on YouTube.")
 }
 
-// Join will join a channel.
+// Join will join a video channel.
 func (yt *YouTube) Join(videoID string) error {
 	if yt.joined[videoID] {
 		return ErrAlreadyJoined
@@ -458,20 +466,20 @@ func (yt *YouTube) Join(videoID string) error {
 	}
 
 	for _, v := range videos {
-		yt.JoinVideo(v)
-		return nil
+		return yt.JoinVideo(v)
 	}
 
 	return errors.New("No video found.")
 }
 
-// Leave will leave a channel.
+// Leave will leave a video channel.
 func (yt *YouTube) Leave(videoID string) error {
 	delete(yt.joined, videoID)
 
 	return nil
 }
 
+// LeaveAll will leave all the video channels for a channel.
 func (yt *YouTube) LeaveAll(channelID string) error {
 	videos := []string{}
 	for video, channel := range yt.videoToChannel {
@@ -487,6 +495,7 @@ func (yt *YouTube) LeaveAll(channelID string) error {
 	return nil
 }
 
+// ChannelIDForVideoID gets a channelID for a videoID.
 func (yt *YouTube) ChannelIDForVideoID(videoID string) (channelID string, ok bool) {
 	channelID, ok = yt.videoToChannel[videoID]
 	return
