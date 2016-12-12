@@ -131,7 +131,7 @@ func (yt *YouTube) JoinVideo(video *youtube.Video) {
 		defer delete(yt.joined, video.Id)
 
 		if video.Snippet != nil {
-			yt.videoToChannel[video.Id] = video.Snippet.ChannelTitle
+			yt.videoToChannel[video.Id] = video.Snippet.ChannelId
 		}
 
 		if video == nil || video.LiveStreamingDetails == nil || video.LiveStreamingDetails.ActiveLiveChatId == "" {
