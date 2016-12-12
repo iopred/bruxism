@@ -78,8 +78,10 @@ func (p *YouTubeJoinPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 
 func (p *YouTubeJoinPlugin) monitor(channel string) error {
 	v, err := p.youtube.GetLiveVideos(channel)
-	for _, video := range v {
-		p.youtube.JoinVideo(video)
+	if err == nil {
+		for _, video := range v {
+			p.youtube.JoinVideo(video)
+		}
 	}
 
 	return p.ytLiveChannel.Monitor(channel, p.liveVideoChan)
