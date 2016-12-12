@@ -126,61 +126,64 @@ func NewYouTube(url bool, auth, configFilename, tokenFilename string) *YouTube {
 
 func (yt *YouTube) JoinVideo(video *youtube.Video) {
 	yt.joined[video.Id] = true
-	defer delete(yt.joined, video.Id)
 
-	if video.Snippet != nil {
-		yt.videoToChannel[video.Id] = video.Snippet.ChannelTitle
-	}
+	go func() {
+		defer delete(yt.joined, video.Id)
 
-	if video == nil || video.LiveStreamingDetails == nil || video.LiveStreamingDetails.ActiveLiveChatId == "" {
-		return
-	}
+		if video.Snippet != nil {
+			yt.videoToChannel[video.Id] = video.Snippet.ChannelTitle
+		}
 
-	errors := 0
-
-	yt.channelCount++
-	pageToken := ""
-	for {
-		// We have been asked to leave.
-		if !yt.joined[video.Id] {
+		if video == nil || video.LiveStreamingDetails == nil || video.LiveStreamingDetails.ActiveLiveChatId == "" {
 			return
 		}
 
-		list := yt.Service.LiveChatMessages.List(video.LiveStreamingDetails.ActiveLiveChatId, "id,snippet,authorDetails").MaxResults(200)
-		if pageToken != "" {
-			list.PageToken(pageToken)
-		}
+		errors := 0
 
-		liveChatMessageListResponse, err := list.Do()
-
-		if err != nil {
-			errors++
-			if errors > 10 {
+		yt.channelCount++
+		pageToken := ""
+		for {
+			// We have been asked to leave.
+			if !yt.joined[video.Id] {
 				return
 			}
-		} else {
-			errors = 0
-			// Ignore the first results, we only want new chats.
-			if pageToken != "" {
-				for _, message := range liveChatMessageListResponse.Items {
-					liveChatMessage := LiveChatMessage(*message)
-					yt.messageChan <- &liveChatMessage
 
-					switch message.Snippet.Type {
-					case LiveChatEndedEvent:
-						return
+			list := yt.Service.LiveChatMessages.List(video.LiveStreamingDetails.ActiveLiveChatId, "id,snippet,authorDetails").MaxResults(200)
+			if pageToken != "" {
+				list.PageToken(pageToken)
+			}
+
+			liveChatMessageListResponse, err := list.Do()
+
+			if err != nil {
+				errors++
+				if errors > 10 {
+					return
+				}
+			} else {
+				errors = 0
+				// Ignore the first results, we only want new chats.
+				if pageToken != "" {
+					for _, message := range liveChatMessageListResponse.Items {
+						liveChatMessage := LiveChatMessage(*message)
+						yt.messageChan <- &liveChatMessage
+
+						switch message.Snippet.Type {
+						case LiveChatEndedEvent:
+							return
+						}
 					}
 				}
+				pageToken = liveChatMessageListResponse.NextPageToken
 			}
-			pageToken = liveChatMessageListResponse.NextPageToken
-		}
 
-		if liveChatMessageListResponse != nil && liveChatMessageListResponse.PollingIntervalMillis != 0 {
-			time.Sleep(time.Duration(liveChatMessageListResponse.PollingIntervalMillis) * time.Millisecond)
-		} else {
-			time.Sleep(10 * time.Second)
+			if liveChatMessageListResponse != nil && liveChatMessageListResponse.PollingIntervalMillis != 0 {
+				time.Sleep(time.Duration(liveChatMessageListResponse.PollingIntervalMillis) * time.Millisecond)
+			} else {
+				time.Sleep(10 * time.Second)
+			}
 		}
-	}
+	}()
 }
 
 func (yt *YouTube) writeMessagesToFile(messages []*youtube.LiveChatMessage, filename string) {
@@ -455,7 +458,7 @@ func (yt *YouTube) Join(videoID string) error {
 	}
 
 	for _, v := range videos {
-		go yt.JoinVideo(v)
+		yt.JoinVideo(v)
 		return nil
 	}
 
