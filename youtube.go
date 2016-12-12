@@ -472,6 +472,19 @@ func (yt *YouTube) Leave(videoID string) error {
 	return nil
 }
 
+func (yt *YouTube) LeaveAll(channelID string) {
+	videos := []string{}
+	for video, channel := range yt.videoToChannel {
+		if channel == channelID {
+			videos = append(videos, video)
+		}
+	}
+
+	for _, video := range videos {
+		delete(yt.joined, video)
+	}
+}
+
 func (yt *YouTube) ChannelIDForVideoID(videoID string) (channelID string, ok bool) {
 	channelID, ok = yt.videoToChannel[videoID]
 	return
