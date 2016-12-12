@@ -115,6 +115,10 @@ func (p *YouTubeJoinPlugin) Unmonitor(channel string) error {
 	return p.ytLiveChannel.Unmonitor(channel, p.liveVideoChan)
 }
 
+func (p *YouTubeJoinPlugin) Check(channel string) bool {
+	return p.Channels[channel]
+}
+
 // Save will save plugin state to a byte array.
 func (p *YouTubeJoinPlugin) Save() ([]byte, error) {
 	return json.Marshal(p)
