@@ -14,6 +14,7 @@ import (
 // YouTubeJoinPlugin is a plugin that monitors channels, and when they go live, will join the service
 type YouTubeJoinPlugin struct {
 	sync.RWMutex
+	youtube       *bruxism.YouTube
 	ytLiveChannel *bruxism.YTLiveChannel
 	liveVideoChan chan *youtube.Video
 	Channels      map[string]bool
@@ -47,6 +48,7 @@ func (p *YouTubeJoinPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data
 		p.ytLiveChannel.MonitorAll(channel, p.liveVideoChan)
 	}
 
+	p.youtube = service.(*bruxism.YouTube)
 	go p.Run(bot, service)
 
 	return nil
@@ -92,7 +94,7 @@ func (p *YouTubeJoinPlugin) Unmonitor(channel string) error {
 
 	p.ytLiveChannel.UnmonitorAll(channel, p.liveVideoChan)
 
-	service.(*bruxism.YouTube).LeaveAll(channel)
+	return p.youtube.LeaveAll(channel)
 }
 
 // Save will save plugin state to a byte array.

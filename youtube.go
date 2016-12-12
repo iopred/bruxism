@@ -472,7 +472,7 @@ func (yt *YouTube) Leave(videoID string) error {
 	return nil
 }
 
-func (yt *YouTube) LeaveAll(channelID string) {
+func (yt *YouTube) LeaveAll(channelID string) error {
 	videos := []string{}
 	for video, channel := range yt.videoToChannel {
 		if channel == channelID {
@@ -483,6 +483,8 @@ func (yt *YouTube) LeaveAll(channelID string) {
 	for _, video := range videos {
 		delete(yt.joined, video)
 	}
+
+	return nil
 }
 
 func (yt *YouTube) ChannelIDForVideoID(videoID string) (channelID string, ok bool) {
