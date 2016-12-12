@@ -15,45 +15,22 @@ type YTLiveChannel struct {
 	service *youtube.Service
 
 	// map channelID -> chan
-	filteredLiveVideoChans map[string][]chan *youtube.Video
-	liveVideoChans         map[string][]chan *youtube.Video
+	liveVideoChans map[string][]chan *youtube.Video
 
 	channelNames map[string]string
 }
 
 func NewYTLiveChannel(service *youtube.Service) *YTLiveChannel {
 	return &YTLiveChannel{
-		service:                service,
-		channelNames:           map[string]string{},
-		filteredLiveVideoChans: map[string][]chan *youtube.Video{},
-		liveVideoChans:         map[string][]chan *youtube.Video{},
+		service:        service,
+		channelNames:   map[string]string{},
+		liveVideoChans: map[string][]chan *youtube.Video{},
 	}
 }
 
 // Monitor monitors a channel for new live videos and sends them down liveVideoChan.
 // If the channel is live when this is called, it will not send the video down the channel.
 func (y *YTLiveChannel) Monitor(channel string, liveVideoChan chan *youtube.Video) error {
-	y.Lock()
-	defer y.Unlock()
-
-	videoChans := y.filteredLiveVideoChans[channel]
-	for _, v := range videoChans {
-		if v == liveVideoChan {
-			return errors.New("already monitoring that channel")
-		}
-	}
-
-	created := len(y.filteredLiveVideoChans[channel])+len(y.liveVideoChans[channel]) == 0
-	y.filteredLiveVideoChans[channel] = append(y.filteredLiveVideoChans[channel], liveVideoChan)
-
-	if created {
-		go y.poll(channel)
-	}
-	return nil
-}
-
-// MonitorAll monitors a channel for live videos and sends them down liveVideoChan.
-func (y *YTLiveChannel) MonitorAll(channel string, liveVideoChan chan *youtube.Video) error {
 	y.Lock()
 	defer y.Unlock()
 
@@ -64,7 +41,7 @@ func (y *YTLiveChannel) MonitorAll(channel string, liveVideoChan chan *youtube.V
 		}
 	}
 
-	created := len(y.filteredLiveVideoChans[channel])+len(y.liveVideoChans[channel]) == 0
+	created := len(y.liveVideoChans[channel]) == 0
 	y.liveVideoChans[channel] = append(y.liveVideoChans[channel], liveVideoChan)
 
 	if created {
@@ -75,22 +52,6 @@ func (y *YTLiveChannel) MonitorAll(channel string, liveVideoChan chan *youtube.V
 
 // UnmonitorAll unmonitors a channel for live videos.
 func (y *YTLiveChannel) Unmonitor(channel string, liveVideoChan chan *youtube.Video) error {
-	y.Lock()
-	defer y.Unlock()
-
-	videoChans := y.filteredLiveVideoChans[channel]
-	for i, v := range videoChans {
-		if v == liveVideoChan {
-			y.filteredLiveVideoChans[channel] = append(videoChans[:i], videoChans[i+1:]...)
-			return nil
-		}
-	}
-
-	return errors.New("channel not being monitored")
-}
-
-// UnmonitorAll unmonitors a channel for live videos.
-func (y *YTLiveChannel) UnmonitorAll(channel string, liveVideoChan chan *youtube.Video) error {
 	y.Lock()
 	defer y.Unlock()
 
@@ -125,10 +86,6 @@ func (y *YTLiveChannel) poll(channel string) {
 
 				y.channelNames[channel] = v.Snippet.ChannelTitle
 
-				for _, c := range y.liveVideoChans[channel] {
-					c <- v
-				}
-
 				// Don't announce the videos that are already live.
 				if first {
 					continue
@@ -140,12 +97,12 @@ func (y *YTLiveChannel) poll(channel string) {
 				}
 				lastAnnounce = now
 
-				for _, c := range y.filteredLiveVideoChans[channel] {
+				for _, c := range y.liveVideoChans[channel] {
 					c <- v
 				}
 			}
 		}
-		if len(y.liveVideoChans[channel])+len(y.filteredLiveVideoChans[channel]) == 0 {
+		if len(y.liveVideoChans[channel]) == 0 {
 			y.Unlock()
 			return
 		}

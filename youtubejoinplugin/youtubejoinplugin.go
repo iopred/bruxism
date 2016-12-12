@@ -50,11 +50,12 @@ func (p *YouTubeJoinPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data
 		}
 	}
 
+	p.youtube = service.(*bruxism.YouTube)
+
 	for channel, _ := range p.Channels {
-		p.ytLiveChannel.MonitorAll(channel, p.liveVideoChan)
+		p.monitor(channel)
 	}
 
-	p.youtube = service.(*bruxism.YouTube)
 	go p.Run(bot, service)
 
 	return nil
@@ -75,6 +76,15 @@ func (p *YouTubeJoinPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 	}
 }
 
+func (p *YouTubeJoinPlugin) monitor(channel string) error {
+	v, err := p.youtube.GetLiveVideos(channel)
+	for _, video := range v {
+		p.youtube.JoinVideo(video)
+	}
+
+	return p.ytLiveChannel.Monitor(channel, p.liveVideoChan)
+}
+
 func (p *YouTubeJoinPlugin) Monitor(channel string) error {
 	p.Lock()
 	defer p.Unlock()
@@ -85,7 +95,7 @@ func (p *YouTubeJoinPlugin) Monitor(channel string) error {
 
 	p.Channels[channel] = true
 
-	return p.ytLiveChannel.MonitorAll(channel, p.liveVideoChan)
+	return p.monitor(channel)
 }
 
 func (p *YouTubeJoinPlugin) Unmonitor(channel string) error {
@@ -98,9 +108,9 @@ func (p *YouTubeJoinPlugin) Unmonitor(channel string) error {
 
 	delete(p.Channels, channel)
 
-	p.ytLiveChannel.UnmonitorAll(channel, p.liveVideoChan)
+	p.youtube.LeaveAll(channel)
 
-	return p.youtube.LeaveAll(channel)
+	return p.ytLiveChannel.Unmonitor(channel, p.liveVideoChan)
 }
 
 // Save will save plugin state to a byte array.
