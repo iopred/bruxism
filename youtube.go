@@ -146,9 +146,6 @@ func (yt *YouTube) JoinVideo(video *youtube.Video) error {
 	go func() {
 		defer delete(yt.joined, videoid)
 
-		yt.SendMessage(chat, "I am here!")
-		defer yt.SendMessage(chat, "I'm leaving. Bye.")
-
 		errors := 0
 
 		yt.channelCount++

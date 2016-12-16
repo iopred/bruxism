@@ -18,6 +18,7 @@ type YouTubeJoinPlugin struct {
 	ytLiveChannel *bruxism.YTLiveChannel
 	liveVideoChan chan *youtube.Video
 	Channels      map[string]bool
+	Seen          map[string]bool
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
@@ -76,11 +77,14 @@ func (p *YouTubeJoinPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 	}
 }
 
-func (p *YouTubeJoinPlugin) monitor(channel string) error {
+func (p *YouTubeJoinPlugin) monitor(channel string, announce bool) error {
 	v, err := p.youtube.GetLiveVideos(channel)
 	if err == nil {
 		for _, video := range v {
 			p.youtube.JoinVideo(video)
+			if announce {
+				yt.SendMessage(video.LiveStreamingDetails.ActiveLiveChatId, "I am here!")
+			}
 		}
 	}
 
@@ -97,7 +101,7 @@ func (p *YouTubeJoinPlugin) Monitor(channel string) error {
 
 	p.Channels[channel] = true
 
-	return p.monitor(channel)
+	return p.monitor(channel, true)
 }
 
 func (p *YouTubeJoinPlugin) Unmonitor(channel string) error {

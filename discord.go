@@ -353,7 +353,7 @@ func (d *Discord) IsChannelOwner(message Message) bool {
 func (d *Discord) IsModerator(message Message) bool {
 	p, err := d.UserChannelPermissions(message.UserID(), message.Channel())
 	if err == nil {
-		if p&discordgo.PermissionManageChannels == discordgo.PermissionManageChannels || p&discordgo.PermissionManageServer == discordgo.PermissionManageServer {
+		if p&discordgo.PermissionAdministrator == discordgo.PermissionAdministrator || p&discordgo.PermissionManageChannels == discordgo.PermissionManageChannels || p&discordgo.PermissionManageServer == discordgo.PermissionManageServer {
 			return true
 		}
 	}
