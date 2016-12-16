@@ -463,6 +463,13 @@ func (yt *YouTube) Join(videoID string) error {
 	return errors.New("No video found.")
 }
 
+func (yt *YouTube) JoinVideoAnnounce(video *youtube.Video) {
+	err := yt.JoinVideo(video)
+	if err == nil {
+		yt.SendMessage(video.LiveStreamingDetails.ActiveLiveChatId, "I am here!")
+	}
+}
+
 // Leave will leave a video channel.
 func (yt *YouTube) Leave(videoID string) error {
 	delete(yt.joined, videoID)
