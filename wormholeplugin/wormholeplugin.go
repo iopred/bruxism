@@ -209,7 +209,7 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					service.SendMessage(messageChannel, "A wormhole has not been opened yet.")
 					return
 				} else if !now.After(p.Next[nextID]) {
-					p.send(bot, service, message, messageChannel, channelWormhole, fmt.Sprintf("Wormhole is busy, available %s. This time increases each time a wormhole is used each day.", humanize.Time(p.Next[nextID])), fmt.Sprintf("The wormhole is busy, available %s. This time increases each time a wormhole is used each day.", humanize.Time(p.Next[nextID])))
+					p.send(bot, service, message, messageChannel, channelWormhole, "Message sent!", "Your message was sent through the wormhole!")
 					return
 				}
 
@@ -241,6 +241,8 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					}
 				}
 
+				p.send(bot, service, message, messageChannel, channelWormhole, fmt.Sprintf("Wormhole is busy, available %s. This time increases each time a wormhole is used each day.", humanize.Time(p.Next[nextID])), fmt.Sprintf("The wormhole is busy, available %s. This time increases each time a wormhole is used each day.", humanize.Time(p.Next[nextID])))
+
 				p.Messages++
 			case "info":
 				p.RLock()
@@ -261,10 +263,16 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 func (p *wormholePlugin) broadcast(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, channel string, wormhole *wormhole, content string) {
 	if service.Name() == bruxism.DiscordServiceName && wormhole.Webhook != "" {
 		discord := service.(*bruxism.Discord)
+
+		color := discord.UserColor(message.UserID(), channel)
+		if color == 0 {
+			color = rand.Intn(0xFFFFFF)
+		}
+
 		err := discord.Session.WebhookExecute(wormhole.Webhook, wormhole.Token, true, &discordgo.WebhookParams{
 			Embeds: []*discordgo.MessageEmbed{
 				{
-					Color:       rand.Intn(0xFFFFFF),
+					Color:       color,
 					Description: content,
 					Author: &discordgo.MessageEmbedAuthor{
 						Name:    message.UserName(),
@@ -273,9 +281,29 @@ func (p *wormholePlugin) broadcast(bot *bruxism.Bot, service bruxism.Service, me
 				},
 			},
 		})
-		if err != nil {
-			service.SendMessage(channel, fmt.Sprintf("*A message came through the wormhole.*\n%s: %s", message.UserName(), content))
+		if err == nil {
+			return
 		}
+
+		p, err := discord.UserChannelPermissions(message.UserID(), channel)
+		if err == nil && p&discordgo.PermissionEmbedLinks == discordgo.PermissionEmbedLinks {
+			if _, err := discord.Session.ChannelMessageSendEmbed(channel, &discordgo.MessageEmbed{
+				Color:       color,
+				Description: content,
+				Author: &discordgo.MessageEmbedAuthor{
+					Name:    message.UserName(),
+					IconURL: message.UserAvatar(),
+				},
+				Footer: &discordgo.MessageEmbedFooter{
+					IconURL: "https://cdn.discordapp.com/avatars/241634176338493440/ead05c2a6d53e42588bc6c3ebe14082e.jpg",
+					Text:    "Wormhole",
+				},
+			}); err == nil {
+				return
+			}
+		}
+
+		service.SendMessage(channel, fmt.Sprintf("*A message came through the wormhole.*\n%s: %s", message.UserName(), content))
 	} else {
 		if service.SupportsMultiline() {
 			service.SendMessage(channel, fmt.Sprintf("*A message came through the wormhole.*\n%s: %s", message.UserName(), content))
