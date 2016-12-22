@@ -150,6 +150,11 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 						if err == nil {
 							channelWormhole.Webhook = wh.ID
 							channelWormhole.Token = wh.Token
+						} else {
+							if len(parts) <= 1 || (parts[1] != "please" && parts[1] != "prime") {
+								service.SendMessage(messageChannel, fmt.Sprintf("Wormholes are way more fun if %s has webhook permissions, please give %s a role with Manage Webhooks (does not work with 2 factor). Use %s%swormhole open please%s for normal wormholes.", service.UserName(), service.UserName(), ticks, service.CommandPrefix(), ticks))
+								return
+							}
 						}
 					}
 
@@ -204,7 +209,7 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					service.SendMessage(messageChannel, "A wormhole has not been opened yet.")
 					return
 				} else if !now.After(p.Next[nextID]) {
-					p.send(bot, service, message, messageChannel, channelWormhole, "Message sent!", "Your message was sent through the wormhole!")
+					p.send(bot, service, message, messageChannel, channelWormhole, fmt.Sprintf("Wormhole is busy, available %s. This time increases each time a wormhole is used each day.", humanize.Time(p.Next[nextID])), fmt.Sprintf("The wormhole is busy, available %s. This time increases each time a wormhole is used each day.", humanize.Time(p.Next[nextID])))
 					return
 				}
 
@@ -236,7 +241,7 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					}
 				}
 
-				p.send(bot, service, message, messageChannel, channelWormhole, fmt.Sprintf("Wormhole is busy, available %s. This time increases each time a wormhole is used each day.", humanize.Time(p.Next[nextID])), fmt.Sprintf("The wormhole is busy, available %s. This time increases each time a wormhole is used each day.", humanize.Time(p.Next[nextID])))
+				p.send(bot, service, message, messageChannel, channelWormhole, "Message sent!", "Your message was sent through the wormhole!")
 
 				p.Messages++
 			case "info":
