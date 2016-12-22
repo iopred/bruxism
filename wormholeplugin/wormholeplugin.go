@@ -150,11 +150,6 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 						if err == nil {
 							channelWormhole.Webhook = wh.ID
 							channelWormhole.Token = wh.Token
-						} else {
-							if len(parts) <= 1 || (parts[1] != "legacy" && parts[1] != "prime") {
-								service.SendMessage(messageChannel, fmt.Sprintf("Wormholes are way more fun if %s has webhook permissions, please give %s a role with Manage Webhooks. Use %s%swormhole open legacy%s for boring wormholes.", service.UserName(), service.UserName(), ticks, service.CommandPrefix(), ticks))
-								return
-							}
 						}
 					}
 
@@ -320,9 +315,24 @@ func (p *wormholePlugin) send(bot *bruxism.Bot, service bruxism.Service, message
 		err := discord.Session.WebhookExecute(channelWormhole.Webhook, channelWormhole.Token, true, &discordgo.WebhookParams{
 			Content: wormholeContent,
 		})
-		if err != nil {
-			service.SendMessage(channel, legacyContent)
+		if err == nil {
+			return
 		}
+
+		p, err := discord.UserChannelPermissions(message.UserID(), channel)
+		if err == nil && p&discordgo.PermissionEmbedLinks == discordgo.PermissionEmbedLinks {
+			if _, err := discord.Session.ChannelMessageSendEmbed(channel, &discordgo.MessageEmbed{
+				Description: wormholeContent,
+				Footer: &discordgo.MessageEmbedFooter{
+					IconURL: "https://cdn.discordapp.com/avatars/241634176338493440/ead05c2a6d53e42588bc6c3ebe14082e.jpg",
+					Text:    "Wormhole",
+				},
+			}); err == nil {
+				return
+			}
+		}
+
+		service.SendMessage(channel, legacyContent)
 	} else {
 		service.SendMessage(channel, legacyContent)
 	}
