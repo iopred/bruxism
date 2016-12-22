@@ -265,9 +265,6 @@ func (p *wormholePlugin) broadcast(bot *bruxism.Bot, service bruxism.Service, me
 		discord := service.(*bruxism.Discord)
 
 		color := discord.UserColor(message.UserID(), channel)
-		if color == 0 {
-			color = rand.Intn(0xFFFFFF)
-		}
 
 		if wormhole.Webhook != "" {
 			err := discord.Session.WebhookExecute(wormhole.Webhook, wormhole.Token, true, &discordgo.WebhookParams{
