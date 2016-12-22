@@ -261,7 +261,7 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 }
 
 func (p *wormholePlugin) broadcast(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, channel string, wormhole *wormhole, content string) {
-	if service.Name() == bruxism.DiscordServiceName && wormhole.Webhook != "" {
+	if service.Name() == bruxism.DiscordServiceName {
 		discord := service.(*bruxism.Discord)
 
 		color := discord.UserColor(message.UserID(), channel)
@@ -269,27 +269,29 @@ func (p *wormholePlugin) broadcast(bot *bruxism.Bot, service bruxism.Service, me
 			color = rand.Intn(0xFFFFFF)
 		}
 
-		err := discord.Session.WebhookExecute(wormhole.Webhook, wormhole.Token, true, &discordgo.WebhookParams{
-			Embeds: []*discordgo.MessageEmbed{
-				{
-					Color:       color,
-					Description: content,
-					Author: &discordgo.MessageEmbedAuthor{
-						Name:    message.UserName(),
-						IconURL: message.UserAvatar(),
+		if wormhole.Webhook != "" {
+			err := discord.Session.WebhookExecute(wormhole.Webhook, wormhole.Token, true, &discordgo.WebhookParams{
+				Embeds: []*discordgo.MessageEmbed{
+					{
+						Color:       color,
+						Description: content,
+						Author: &discordgo.MessageEmbedAuthor{
+							Name:    message.UserName(),
+							IconURL: message.UserAvatar(),
+						},
 					},
 				},
-			},
-		})
-		if err == nil {
-			return
+			})
+			if err == nil {
+				return
+			}
 		}
 
 		p, err := discord.UserChannelPermissions(message.UserID(), channel)
 		if err == nil && p&discordgo.PermissionEmbedLinks == discordgo.PermissionEmbedLinks {
 			if _, err := discord.Session.ChannelMessageSendEmbed(channel, &discordgo.MessageEmbed{
 				Color:       color,
-				Description: content,
+				Description: content + "\n​",
 				Author: &discordgo.MessageEmbedAuthor{
 					Name:    message.UserName(),
 					IconURL: message.UserAvatar(),
@@ -315,24 +317,28 @@ func (p *wormholePlugin) broadcast(bot *bruxism.Bot, service bruxism.Service, me
 }
 
 func (p *wormholePlugin) send(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, channel string, channelWormhole *wormhole, wormholeContent, legacyContent string) {
-	if service.Name() == bruxism.DiscordServiceName && channelWormhole != nil && channelWormhole.Webhook != "" {
+	if service.Name() == bruxism.DiscordServiceName && channelWormhole != nil {
 		discord := service.(*bruxism.Discord)
-		err := discord.Session.WebhookExecute(channelWormhole.Webhook, channelWormhole.Token, true, &discordgo.WebhookParams{
-			Content: wormholeContent,
-		})
-		if err == nil {
-			return
+
+		if channelWormhole.Webhook != "" {
+			err := discord.Session.WebhookExecute(channelWormhole.Webhook, channelWormhole.Token, true, &discordgo.WebhookParams{
+				Content: wormholeContent,
+			})
+			if err == nil {
+				return
+			}
 		}
 
 		p, err := discord.UserChannelPermissions(message.UserID(), channel)
 		if err == nil && p&discordgo.PermissionEmbedLinks == discordgo.PermissionEmbedLinks {
 			if _, err := discord.Session.ChannelMessageSendEmbed(channel, &discordgo.MessageEmbed{
-				Description: wormholeContent,
+				Description: wormholeContent + "\n​",
 				Footer: &discordgo.MessageEmbedFooter{
 					IconURL: "https://cdn.discordapp.com/avatars/241634176338493440/ead05c2a6d53e42588bc6c3ebe14082e.jpg",
 					Text:    "Wormhole",
 				},
 			}); err == nil {
+
 				return
 			}
 		}
