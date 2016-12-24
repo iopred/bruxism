@@ -108,6 +108,7 @@ type YouTube struct {
 	joined         map[string]string
 	chatToVideo    map[string]string
 	videoToChannel map[string]string
+	channelNames   map[string]string
 }
 
 // NewYouTube creates a new YouTube service.
@@ -123,6 +124,7 @@ func NewYouTube(url bool, auth, configFilename, tokenFilename string) *YouTube {
 		joined:         make(map[string]string),
 		chatToVideo:    map[string]string{},
 		videoToChannel: map[string]string{},
+		channelNames:   map[string]string{},
 	}
 }
 
@@ -142,6 +144,7 @@ func (yt *YouTube) JoinVideo(video *youtube.Video) error {
 	yt.joined[videoid] = chat
 	yt.videoToChannel[videoid] = video.Snippet.ChannelId
 	yt.chatToVideo[chat] = videoid
+	yt.channelNames[video.Snippet.ChannelId] = video.Snippet.ChannelTitle
 
 	go func() {
 		defer delete(yt.joined, videoid)
@@ -493,16 +496,21 @@ func (yt *YouTube) LeaveAll(channelID string) error {
 	return nil
 }
 
-// ChannelIDForVideoID gets a channelID for a videoID.
+// ChannelIDForVideoID gets a channelID for a video id.
 func (yt *YouTube) ChannelIDForVideoID(videoID string) (channelID string, ok bool) {
 	channelID, ok = yt.videoToChannel[videoID]
 	return
 }
 
-// VideoIDForChatID gets a chatID for a videoID.
+// VideoIDForChatID gets a chatID for a video id.
 func (yt *YouTube) VideoIDForChatID(videoID string) (channelID string, ok bool) {
 	channelID, ok = yt.chatToVideo[videoID]
 	return
+}
+
+// ChannelName gets a channel name for a channel id.
+func (yt *YouTube) ChannelName(channelID string) string {
+	return yt.channelNames[channelID]
 }
 
 type videoList []*youtube.Video
