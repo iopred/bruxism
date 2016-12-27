@@ -141,7 +141,16 @@ func (yt *YouTube) JoinVideo(video *youtube.Video) error {
 
 	chat := video.LiveStreamingDetails.ActiveLiveChatId
 
+	// If we already have joined this chat, make sure to clear up the old insteance.
+	// This can happen with streamnow.
+	if yt.chatToVideo[chat] != "" {
+		if yt.joined[yt.chatToVideo[chat]] != "" {
+			delete(yt.joined, yt.chatToVideo[chat])
+		}
+	}
+
 	yt.joined[videoid] = chat
+
 	yt.videoToChannel[videoid] = video.Snippet.ChannelId
 	yt.chatToVideo[chat] = videoid
 	yt.channelNames[video.Snippet.ChannelId] = video.Snippet.ChannelTitle
