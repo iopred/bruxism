@@ -153,6 +153,8 @@ func (p *ReminderPlugin) AddReminder(reminder *Reminder) error {
 }
 
 func (p *ReminderPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
+	defer bruxism.MessageRecover()
+
 	if !service.IsMe(message) {
 		if bruxism.MatchesCommand(service, "remind", message) || bruxism.MatchesCommand(service, "reminder", message) {
 			_, parts := bruxism.ParseCommand(service, message)

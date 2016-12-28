@@ -146,6 +146,8 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 
 // Message handler.
 func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
+	defer bruxism.MessageRecover()
+
 	if service.IsMe(message) {
 		return
 	}

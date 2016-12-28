@@ -27,6 +27,8 @@ func (p *YouTubeJoinPlugin) Help(bot *bruxism.Bot, service bruxism.Service, mess
 
 // Message handler.
 func (p *YouTubeJoinPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
+	defer bruxism.MessageRecover()
+
 	if (service.IsBotOwner(message) || service.IsChannelOwner(message)) && bruxism.MatchesCommand(service, "leave", message) {
 		video, ok := p.youtube.VideoIDForChatID(message.Channel())
 		if ok {

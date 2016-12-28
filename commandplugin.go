@@ -57,16 +57,11 @@ func ParseCommandString(service Service, message string) (string, []string) {
 	if strings.HasPrefix(lowerMessage, lowerPrefix) {
 		message = message[len(lowerPrefix):]
 	}
-	message = strings.TrimSpace(message)
+	rest := strings.Fields(message)
 
-	parts := strings.Split(message, " ")
-	if len(parts) > 1 {
-		rest := parts[1:]
-		query := strings.Join(rest, " ")
-		for i, v := range rest {
-			rest[i] = strings.TrimSpace(v)
-		}
-		return query, rest
+	if len(rest) > 1 {
+		rest = rest[1:]
+		return strings.Join(rest, " "), rest
 	}
 	return "", []string{}
 }

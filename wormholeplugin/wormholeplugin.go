@@ -88,6 +88,7 @@ func (p *wormholePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message
 // Message handler.
 func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	defer bruxism.MessageRecover()
+
 	if !service.IsMe(message) {
 		messageChannel := message.Channel()
 
@@ -110,6 +111,7 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 
 			if len(parts) == 0 {
 				service.SendMessage(messageChannel, fmt.Sprintf("Incorrect command. eg: %s%swormhole send Hello!%s", ticks, service.CommandPrefix(), ticks))
+				return
 			}
 
 			isAuthorized := service.IsModerator(message)
