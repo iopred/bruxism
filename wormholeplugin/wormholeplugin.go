@@ -224,21 +224,15 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 				p.NextCount[nextID] = nextCount
 
 				content := strings.Join(parts[1:], " ")
-				var toDelete []string
+
+				var toDelete []string = nil
 				for channel, wormhole := range p.Channels {
 					if channel != messageChannel {
 						if service.Name() == bruxism.DiscordServiceName {
 							discord := service.(*bruxism.Discord)
 							_, err := discord.Channel(channel)
 							if err != nil {
-								// Verify that all our data is available, if it is, we should be safe to clear up this channel.
-								shards := 0
-								for _, s := range discord.Sessions {
-									if s.DataReady {
-										shards++
-									}
-								}
-								if shards == len(discord.Sessions) {
+								if dataAvailable(discord) {
 									toDelete = append(toDelete, channel)
 								}
 								continue
@@ -248,7 +242,6 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 						break
 					}
 				}
-
 				for _, channel := range toDelete {
 					wormhole := p.Channels[channel]
 					delete(p.Channels, channel)
@@ -257,9 +250,27 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 					}
 				}
 
+				toDelete = nil
 				for channel, wormhole := range p.PrimeChannels {
 					if channel != messageChannel {
+						if service.Name() == bruxism.DiscordServiceName {
+							discord := service.(*bruxism.Discord)
+							_, err := discord.Channel(channel)
+							if err != nil {
+								if dataAvailable(discord) {
+									toDelete = append(toDelete, channel)
+								}
+								continue
+							}
+						}
 						p.broadcast(bot, service, message, channel, wormhole, content)
+					}
+				}
+				for _, channel := range toDelete {
+					wormhole := p.PrimeChannels[channel]
+					delete(p.PrimeChannels, channel)
+					if wormhole.Webhook != "" {
+						discord.Session.WebhookDeleteWithToken(wormhole.Webhook, wormhole.Token)
 					}
 				}
 
@@ -280,6 +291,17 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 			}
 		}
 	}
+}
+
+func dataAvailable(discord *bruxism.Discord) bool {
+	// Verify that all our data is available, if it is, we should be safe to clear up this channel.
+	shards := 0
+	for _, s := range discord.Sessions {
+		if s.DataReady {
+			shards++
+		}
+	}
+	return shards == len(discord.Sessions)
 }
 
 func (p *wormholePlugin) broadcast(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, channel string, wormhole *wormhole, content string) {
