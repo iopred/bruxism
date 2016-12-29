@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"strings"
 	"sync"
 	"time"
@@ -224,17 +223,37 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 				nextCount *= 2
 				p.NextCount[nextID] = nextCount
 
-				r := rand.Intn(len(p.Channels))
-				i := 0
 				content := strings.Join(parts[1:], " ")
+				var toDelete []string
 				for channel, wormhole := range p.Channels {
-					if i == r {
-						if channel != messageChannel {
-							p.broadcast(bot, service, message, channel, wormhole, content)
+					if channel != messageChannel {
+						if service.Name() == bruxism.DiscordServiceName {
+							discord := service.(*bruxism.Discord)
+							_, err := discord.Channel(channel)
+							if err != nil {
+								// Verify that all our data is available, if it is, we should be safe to clear up this channel.
+								shards := 0
+								for _, s := range discord.Sessions {
+									if s.DataReady {
+										shards++
+									}
+								}
+								if shards == len(discord.Sessions) {
+									toDelete = append(toDelete, channel)
+								}
+								continue
+							}
 						}
-						break
+						p.broadcast(bot, service, message, channel, wormhole, content)
 					}
-					i++
+				}
+
+				for _, channel := range toDelete {
+					wormhole := p.Channels[channel]
+					delete(p.Channels, channel)
+					if wormhole.Webhook != "" {
+						discord.Session.WebhookDeleteWithToken(wormhole.Webhook, wormhole.Token)
+					}
 				}
 
 				for channel, wormhole := range p.PrimeChannels {
