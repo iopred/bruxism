@@ -245,6 +245,7 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 							}
 						}
 						p.broadcast(bot, service, message, channel, wormhole, content)
+						break
 					}
 				}
 
