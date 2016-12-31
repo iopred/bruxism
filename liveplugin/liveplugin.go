@@ -111,6 +111,7 @@ func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message 
 
 			if len(parts) == 0 {
 				service.SendMessage(messageChannel, fmt.Sprintf("Incorrect command. eg: %s%slive [add|remove|list] <%s>%s", ticks, service.CommandPrefix(), "UCGmC0A8mEAPdlELQdP9xJbw", ticks))
+				return
 			}
 
 			switch parts[0] {

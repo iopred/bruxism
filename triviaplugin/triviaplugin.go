@@ -20,8 +20,7 @@ type question struct {
 type questions []*question
 
 func (q questions) Question() *question {
-	n := rand.Intn(len(q))
-	return q[n]
+	return q[rand.Intn(len(q))]
 }
 
 type trivia struct {
@@ -30,8 +29,8 @@ type trivia struct {
 }
 
 func (t *trivia) Question(theme string) *question {
-	q := t.Themes[theme]
-	if q == nil {
+	q, ok := t.Themes[theme]
+	if !ok {
 		q = t.All
 	}
 	return q.Question()
