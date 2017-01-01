@@ -517,6 +517,11 @@ func (yt *YouTube) VideoIDForChatID(videoID string) (channelID string, ok bool) 
 	return
 }
 
+func (yt *YouTube) ChatIDForVideoID(videoID string) (chatID string, ok bool) {
+	chatID, ok = yt.joined[videoID]
+	return
+}
+
 // ChannelName gets a channel name for a channel id.
 func (yt *YouTube) ChannelName(channelID string) string {
 	return yt.channelNames[channelID]

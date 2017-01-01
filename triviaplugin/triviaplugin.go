@@ -20,7 +20,11 @@ type question struct {
 type questions []*question
 
 func (q questions) Question() *question {
-	return q[rand.Intn(len(q))]
+	r := q[rand.Intn(len(q))]
+	if r == nil {
+		return q.Question()
+	}
+	return r
 }
 
 type trivia struct {
