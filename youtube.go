@@ -92,46 +92,53 @@ func (m *LiveChatMessage) Type() MessageType {
 
 // YouTube is a Service provider for YouTube.
 type YouTube struct {
-	url            bool
-	auth           string
-	configFilename string
-	tokenFilename  string
-	config         *oauth2.Config
-	token          *oauth2.Token
-	Client         *http.Client
-	Service        *youtube.Service
-	messageChan    chan Message
-	InsertChan     chan interface{}
-	DeleteChan     chan interface{}
-	me             *youtube.Channel
-	channelCount   int
-	joined         map[string]string
-	chatToVideo    map[string]string
-	videoToChannel map[string]string
-	channelNames   map[string]string
+	url                bool
+	auth               string
+	configFilename     string
+	tokenFilename      string
+	config             *oauth2.Config
+	token              *oauth2.Token
+	Client             *http.Client
+	Service            *youtube.Service
+	messageChan        chan Message
+	InsertChan         chan interface{}
+	DeleteChan         chan interface{}
+	me                 *youtube.Channel
+	channelCount       int
+	joined             map[string]string
+	chatToVideo        map[string]string
+	videoToChat        map[string]string
+	videoToChannel     map[string]string
+	videoToChannelName map[string]string
 }
 
 // NewYouTube creates a new YouTube service.
 func NewYouTube(url bool, auth, configFilename, tokenFilename string) *YouTube {
 	return &YouTube{
-		url:            url,
-		auth:           auth,
-		configFilename: configFilename,
-		tokenFilename:  tokenFilename,
-		messageChan:    make(chan Message, 200),
-		InsertChan:     make(chan interface{}, 200),
-		DeleteChan:     make(chan interface{}, 200),
-		joined:         make(map[string]string),
-		chatToVideo:    map[string]string{},
-		videoToChannel: map[string]string{},
-		channelNames:   map[string]string{},
+		url:                url,
+		auth:               auth,
+		configFilename:     configFilename,
+		tokenFilename:      tokenFilename,
+		messageChan:        make(chan Message, 200),
+		InsertChan:         make(chan interface{}, 200),
+		DeleteChan:         make(chan interface{}, 200),
+		joined:             make(map[string]string),
+		chatToVideo:        map[string]string{},
+		videoToChat:        map[string]string{},
+		videoToChannel:     map[string]string{},
+		videoToChannelName: map[string]string{},
 	}
 }
 
+// JoinVideo joins a Video and monitors it for messages on the default message channel.
 func (yt *YouTube) JoinVideo(video *youtube.Video) error {
-	videoid := video.Id
+	return yt.joinVideo(video, yt.messageChan)
+}
 
-	if yt.joined[videoid] != "" {
+func (yt *YouTube) joinVideo(video *youtube.Video, messageChan chan Message) error {
+	videoID := video.Id
+
+	if yt.joined[videoID] != "" {
 		return ErrAlreadyJoined
 	}
 
@@ -149,14 +156,19 @@ func (yt *YouTube) JoinVideo(video *youtube.Video) error {
 		}
 	}
 
-	yt.joined[videoid] = chat
-
-	yt.videoToChannel[videoid] = video.Snippet.ChannelId
-	yt.chatToVideo[chat] = videoid
-	yt.channelNames[video.Snippet.ChannelId] = video.Snippet.ChannelTitle
+	yt.joined[videoID] = chat
+	yt.chatToVideo[chat] = videoID
+	yt.videoToChat[videoID] = chat
+	yt.videoToChannel[videoID] = video.Snippet.ChannelId
+	yt.videoToChannelName[videoID] = video.Snippet.ChannelTitle
 
 	go func() {
-		defer delete(yt.joined, videoid)
+		defer func() {
+			delete(yt.joined, videoID)
+			if messageChan != yt.messageChan {
+				close(messageChan)
+			}
+		}()
 
 		errors := 0
 
@@ -164,7 +176,7 @@ func (yt *YouTube) JoinVideo(video *youtube.Video) error {
 		pageToken := ""
 		for {
 			// We have been asked to leave.
-			if yt.joined[videoid] == "" {
+			if yt.joined[videoID] == "" {
 				return
 			}
 
@@ -185,8 +197,10 @@ func (yt *YouTube) JoinVideo(video *youtube.Video) error {
 				// Ignore the first results, we only want new chats.
 				if pageToken != "" {
 					for _, message := range liveChatMessageListResponse.Items {
+						// Use video IDs internally.
+						message.Snippet.LiveChatId = videoID
 						liveChatMessage := LiveChatMessage(*message)
-						yt.messageChan <- &liveChatMessage
+						messageChan <- &liveChatMessage
 
 						switch message.Snippet.Type {
 						case LiveChatEndedEvent:
@@ -298,6 +312,9 @@ func (yt *YouTube) handleRequests() {
 		case request := <-yt.InsertChan:
 			switch request := request.(type) {
 			case *youtube.LiveChatMessage:
+				// Internally we use video ids as the channel, map back to a chat id.
+				request.Snippet.LiveChatId = yt.videoToChat[request.Snippet.LiveChatId]
+
 				insertLiveChatMessageLimited(request)
 			case *youtube.LiveChatBan:
 				yt.Service.LiveChatBans.Insert("snippet", request).Do()
@@ -475,6 +492,28 @@ func (yt *YouTube) Join(videoID string) error {
 	return errors.New("No video found.")
 }
 
+// JoinSilent will join a video channel and return a channel of messages.
+// Messages will not be broadcast through the bot.
+func (yt *YouTube) JoinSilent(videoID string) (chan Message, error) {
+	if yt.joined[videoID] != "" {
+		return nil, ErrAlreadyJoined
+	}
+
+	videos, err := yt.GetVideosByIDList([]string{videoID})
+	if err != nil {
+		return nil, errors.New("No video found.")
+	}
+
+	for _, v := range videos {
+		c := make(chan Message, 200)
+		e := yt.joinVideo(v, c)
+		return c, e
+	}
+
+	return nil, errors.New("No video found.")
+}
+
+// JoinVideoAnnounce will join a video like normal, but announce to chat when the bot joins.
 func (yt *YouTube) JoinVideoAnnounce(video *youtube.Video) {
 	err := yt.JoinVideo(video)
 	if err == nil {
@@ -511,20 +550,9 @@ func (yt *YouTube) ChannelIDForVideoID(videoID string) (channelID string, ok boo
 	return
 }
 
-// VideoIDForChatID gets a chatID for a video id.
-func (yt *YouTube) VideoIDForChatID(videoID string) (channelID string, ok bool) {
-	channelID, ok = yt.chatToVideo[videoID]
-	return
-}
-
-func (yt *YouTube) ChatIDForVideoID(videoID string) (chatID string, ok bool) {
-	chatID, ok = yt.joined[videoID]
-	return
-}
-
 // ChannelName gets a channel name for a channel id.
-func (yt *YouTube) ChannelName(channelID string) string {
-	return yt.channelNames[channelID]
+func (yt *YouTube) ChannelNameForVideoID(videoID string) string {
+	return yt.videoToChannelName[videoID]
 }
 
 type videoList []*youtube.Video
