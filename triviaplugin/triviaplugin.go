@@ -257,71 +257,79 @@ func (p *triviaPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message b
 // Message handler.
 func (p *triviaPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	defer bruxism.MessageRecover()
-	if !service.IsMe(message) && !service.IsPrivate(message) {
-		messageChannel := message.Channel()
 
-		isCommand := bruxism.MatchesCommand(service, "trivia", message)
+	if service.IsMe(message) {
+		return
+	}
 
-		if isCommand && (service.IsModerator(message) || service.IsBotOwner(message)) {
-			p.Lock()
-			tc := p.Channels[messageChannel]
-			if tc == nil {
-				tc = &triviaChannel{
-					Channel: messageChannel,
-					Scores:  map[string]*triviaScore{},
-				}
-				p.Channels[messageChannel] = tc
+	messageChannel := message.Channel()
+
+	isCommand := bruxism.MatchesCommand(service, "trivia", message)
+
+	if isCommand && service.IsPrivate(message) {
+		service.SendMessage(message.Channel(), "Sorry, this command doesn't work in private chat.")
+		return
+	}
+
+	if isCommand && service.IsModerator(message) {
+		p.Lock()
+		tc := p.Channels[messageChannel]
+		if tc == nil {
+			tc = &triviaChannel{
+				Channel: messageChannel,
+				Scores:  map[string]*triviaScore{},
 			}
-			p.Unlock()
+			p.Channels[messageChannel] = tc
+		}
+		p.Unlock()
 
+		_, parts := bruxism.ParseCommand(service, message)
+
+		if len(parts) == 0 {
+			return
+		}
+
+		switch parts[0] {
+		case "start":
+			theme := ""
+			if len(parts) >= 2 {
+				theme = parts[1]
+			}
+			tc.Start(bot, service, theme)
+		case "stop":
+			tc.Stop(bot, service)
+		}
+
+	} else {
+		if isCommand {
 			_, parts := bruxism.ParseCommand(service, message)
-
 			if len(parts) == 0 {
 				return
 			}
+			if parts[0] == "score" {
+				p.RLock()
+				tc := p.Channels[messageChannel]
 
-			switch parts[0] {
-			case "start":
-				theme := ""
-				if len(parts) >= 2 {
-					theme = parts[1]
-				}
-				tc.Start(bot, service, theme)
-			case "stop":
-				tc.Stop(bot, service)
-			}
-
-		} else {
-			if isCommand {
-				_, parts := bruxism.ParseCommand(service, message)
-				if len(parts) == 0 {
-					return
-				}
-				if parts[0] == "score" {
-					p.RLock()
-					tc := p.Channels[messageChannel]
-
-					if tc != nil {
-						ts := tc.Scores[message.UserID()]
-						if ts != nil {
-							service.SendMessage(message.Channel(), fmt.Sprintf("%s's score is %d.", message.UserName(), ts.Score))
-						} else {
-							service.SendMessage(message.Channel(), fmt.Sprintf("%s's score is 0.", message.UserName()))
-						}
+				if tc != nil {
+					ts := tc.Scores[message.UserID()]
+					if ts != nil {
+						service.SendMessage(message.Channel(), fmt.Sprintf("%s's score is %d.", message.UserName(), ts.Score))
+					} else {
+						service.SendMessage(message.Channel(), fmt.Sprintf("%s's score is 0.", message.UserName()))
 					}
-
-					p.RUnlock()
 				}
 
-				return
+				p.RUnlock()
 			}
 
-			p.RLock()
-			tc := p.Channels[messageChannel]
-			p.RUnlock()
-			if tc != nil {
-				tc.Message(bot, service, message)
-			}
+			return
+		}
+
+		p.RLock()
+		tc := p.Channels[messageChannel]
+		p.RUnlock()
+		if tc != nil {
+			tc.Message(bot, service, message)
 		}
 	}
 }

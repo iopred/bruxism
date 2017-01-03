@@ -371,7 +371,7 @@ func (d *Discord) IsChannelOwner(message Message) bool {
 	if err != nil {
 		return false
 	}
-	return g.OwnerID == message.UserID()
+	return g.OwnerID == message.UserID() || d.IsBotOwner(message)
 }
 
 // IsModerator returns whether or not the sender of a message is a moderator.

@@ -18,26 +18,30 @@ func avatarLoadFunc(bot *bruxism.Bot, service bruxism.Service, data []byte) erro
 }
 
 func avatarMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
-	if !service.IsMe(message) {
-		if bruxism.MatchesCommand(service, "avatar", message) {
-			query := strings.Join(strings.Split(message.RawMessage(), " ")[1:], " ")
-
-			id := message.UserID()
-			match := userIDRegex.FindStringSubmatch(query)
-			if match != nil {
-				id = match[1]
-			}
-
-			discord := service.(*bruxism.Discord)
-
-			u, err := discord.Session.User(id)
-			if err != nil {
-				return
-			}
-
-			service.SendMessage(message.Channel(), discordgo.EndpointUserAvatar(u.ID, u.Avatar))
-		}
+	if service.IsMe(message) {
+		return
 	}
+
+	if !bruxism.MatchesCommand(service, "avatar", message) {
+		return
+	}
+
+	query := strings.Join(strings.Split(message.RawMessage(), " ")[1:], " ")
+
+	id := message.UserID()
+	match := userIDRegex.FindStringSubmatch(query)
+	if match != nil {
+		id = match[1]
+	}
+
+	discord := service.(*bruxism.Discord)
+
+	u, err := discord.Session.User(id)
+	if err != nil {
+		return
+	}
+
+	service.SendMessage(message.Channel(), discordgo.EndpointUserAvatar(u.ID, u.Avatar))
 }
 
 func avatarHelpFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {

@@ -155,50 +155,54 @@ func (p *ReminderPlugin) AddReminder(reminder *Reminder) error {
 func (p *ReminderPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	defer bruxism.MessageRecover()
 
-	if !service.IsMe(message) {
-		if bruxism.MatchesCommand(service, "remind", message) || bruxism.MatchesCommand(service, "reminder", message) {
-			_, parts := bruxism.ParseCommand(service, message)
-
-			if len(parts) < 2 {
-				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder, no time or message. eg: %s", p.randomReminder(service)))
-				return
-			}
-
-			t, r, err := p.parseReminder(parts)
-
-			now := time.Now()
-
-			if err != nil || t.Before(now) || t.After(now.Add(time.Hour*24*365+time.Hour)) {
-				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid time. eg: %s", strings.Join(randomTimes, ", ")))
-				return
-			}
-
-			if r == "" {
-				service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder, no message. eg: %s", p.randomReminder(service)))
-				return
-			}
-
-			requester := message.UserName()
-			if service.Name() == bruxism.DiscordServiceName {
-				requester = fmt.Sprintf("<@%s>", message.UserID())
-			}
-
-			err = p.AddReminder(&Reminder{
-				StartTime: now,
-				Time:      t,
-				Requester: requester,
-				Target:    message.Channel(),
-				Message:   r,
-				IsPrivate: service.IsPrivate(message),
-			})
-			if err != nil {
-				service.SendMessage(message.Channel(), err.Error())
-				return
-			}
-
-			service.SendMessage(message.Channel(), fmt.Sprintf("Reminder set for %s.", humanize.Time(t)))
-		}
+	if service.IsMe(message) {
+		return
 	}
+
+	if !bruxism.MatchesCommand(service, "remind", message) && !bruxism.MatchesCommand(service, "reminder", message) {
+		return
+	}
+
+	_, parts := bruxism.ParseCommand(service, message)
+
+	if len(parts) < 2 {
+		service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder, no time or message. eg: %s", p.randomReminder(service)))
+		return
+	}
+
+	t, r, err := p.parseReminder(parts)
+
+	now := time.Now()
+
+	if err != nil || t.Before(now) || t.After(now.Add(time.Hour*24*365+time.Hour)) {
+		service.SendMessage(message.Channel(), fmt.Sprintf("Invalid time. eg: %s", strings.Join(randomTimes, ", ")))
+		return
+	}
+
+	if r == "" {
+		service.SendMessage(message.Channel(), fmt.Sprintf("Invalid reminder, no message. eg: %s", p.randomReminder(service)))
+		return
+	}
+
+	requester := message.UserName()
+	if service.Name() == bruxism.DiscordServiceName {
+		requester = fmt.Sprintf("<@%s>", message.UserID())
+	}
+
+	err = p.AddReminder(&Reminder{
+		StartTime: now,
+		Time:      t,
+		Requester: requester,
+		Target:    message.Channel(),
+		Message:   r,
+		IsPrivate: service.IsPrivate(message),
+	})
+	if err != nil {
+		service.SendMessage(message.Channel(), err.Error())
+		return
+	}
+
+	service.SendMessage(message.Channel(), fmt.Sprintf("Reminder set for %s.", humanize.Time(t)))
 }
 
 // SendReminder sends a reminder.

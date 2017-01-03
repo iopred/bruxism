@@ -156,69 +156,77 @@ var userIDRegex = regexp.MustCompile("<@!?([0-9]*)>")
 
 func (p *playedPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	defer bruxism.MessageRecover()
-	if service.Name() == bruxism.DiscordServiceName && !service.IsMe(message) {
-		if bruxism.MatchesCommand(service, "played", message) {
-			query := strings.Join(strings.Split(message.RawMessage(), " ")[1:], " ")
-
-			id := message.UserID()
-			match := userIDRegex.FindStringSubmatch(query)
-			if match != nil {
-				id = match[1]
-			}
-
-			p.Lock()
-			defer p.Unlock()
-
-			u := p.Users[id]
-			if u == nil {
-				service.SendMessage(message.Channel(), "I haven't seen that user.")
-				return
-			}
-
-			if len(u.Entries) == 0 {
-				service.SendMessage(message.Channel(), "I haven't seen anything played by that user.")
-				return
-			}
-
-			lc := humanize.Time(u.LastChanged)
-			u.Update(u.Current, time.Now())
-
-			pes := make(byDuration, len(u.Entries))
-			i := 0
-			for _, pe := range u.Entries {
-				pes[i] = pe
-				i++
-			}
-
-			sort.Sort(pes)
-
-			messageText := fmt.Sprintf("*First seen %s, last update %s*\n", humanize.Time(u.FirstSeen), lc)
-			for i = 0; i < len(pes) && i < 5; i++ {
-				pe := pes[i]
-
-				du := pe.Duration
-
-				ds := ""
-				hours := int(du / time.Hour)
-				if hours > 0 {
-					ds += fmt.Sprintf("%dh ", hours)
-					du -= time.Duration(hours) * time.Hour
-				}
-
-				minutes := int(du / time.Minute)
-				if minutes > 0 || len(ds) > 0 {
-					ds += fmt.Sprintf("%dm ", minutes)
-					du -= time.Duration(minutes) * time.Minute
-				}
-
-				seconds := int(du / time.Second)
-				ds += fmt.Sprintf("%ds", seconds)
-
-				messageText += fmt.Sprintf("**%s**: %s\n", pe.Name, ds)
-			}
-			service.SendMessage(message.Channel(), messageText)
-		}
+	if service.Name() != bruxism.DiscordServiceName {
+		return
 	}
+
+	if service.IsMe(message) {
+		return
+	}
+
+	if !bruxism.MatchesCommand(service, "played", message) {
+		return
+	}
+
+	query := strings.Join(strings.Split(message.RawMessage(), " ")[1:], " ")
+
+	id := message.UserID()
+	match := userIDRegex.FindStringSubmatch(query)
+	if match != nil {
+		id = match[1]
+	}
+
+	p.Lock()
+	defer p.Unlock()
+
+	u := p.Users[id]
+	if u == nil {
+		service.SendMessage(message.Channel(), "I haven't seen that user.")
+		return
+	}
+
+	if len(u.Entries) == 0 {
+		service.SendMessage(message.Channel(), "I haven't seen anything played by that user.")
+		return
+	}
+
+	lc := humanize.Time(u.LastChanged)
+	u.Update(u.Current, time.Now())
+
+	pes := make(byDuration, len(u.Entries))
+	i := 0
+	for _, pe := range u.Entries {
+		pes[i] = pe
+		i++
+	}
+
+	sort.Sort(pes)
+
+	messageText := fmt.Sprintf("*First seen %s, last update %s*\n", humanize.Time(u.FirstSeen), lc)
+	for i = 0; i < len(pes) && i < 5; i++ {
+		pe := pes[i]
+
+		du := pe.Duration
+
+		ds := ""
+		hours := int(du / time.Hour)
+		if hours > 0 {
+			ds += fmt.Sprintf("%dh ", hours)
+			du -= time.Duration(hours) * time.Hour
+		}
+
+		minutes := int(du / time.Minute)
+		if minutes > 0 || len(ds) > 0 {
+			ds += fmt.Sprintf("%dm ", minutes)
+			du -= time.Duration(minutes) * time.Minute
+		}
+
+		seconds := int(du / time.Second)
+		ds += fmt.Sprintf("%ds", seconds)
+
+		messageText += fmt.Sprintf("**%s**: %s\n", pe.Name, ds)
+	}
+	service.SendMessage(message.Channel(), messageText)
 }
 
 // Name returns the name of the plugin.

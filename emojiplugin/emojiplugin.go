@@ -39,39 +39,47 @@ func emojiLoadFunc(bot *bruxism.Bot, service bruxism.Service, data []byte) error
 var discordRegex = regexp.MustCompile("<:.*?:(.*?)>")
 
 func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
-	if service.Name() == bruxism.DiscordServiceName && !service.IsMe(message) {
-		if bruxism.MatchesCommand(service, "emoji", message) || bruxism.MatchesCommand(service, "hugemoji", message) {
-			base := "emoji/twitter"
-			if bruxism.MatchesCommand(service, "hugemoji", message) {
-				base = "emoji/twitterhuge"
-			}
-			_, parts := bruxism.ParseCommand(service, message)
-			if len(parts) == 1 {
-				submatches := discordRegex.FindStringSubmatch(parts[0])
-				if len(submatches) != 0 {
-					h, err := http.Get("https://cdn.discordapp.com/emojis/" + submatches[1] + ".png")
-					if err != nil {
-						return
-					}
+	if service.Name() != bruxism.DiscordServiceName {
+		return
+	}
 
-					service.SendFile(message.Channel(), "emoji.png", h.Body)
-					h.Body.Close()
+	if service.IsMe(message) {
+		return
+	}
+
+	if !bruxism.MatchesCommand(service, "emoji", message) && !bruxism.MatchesCommand(service, "hugemoji", message) {
+		return
+	}
+
+	base := "emoji/twitter"
+	if bruxism.MatchesCommand(service, "hugemoji", message) {
+		base = "emoji/twitterhuge"
+	}
+	_, parts := bruxism.ParseCommand(service, message)
+	if len(parts) == 1 {
+		submatches := discordRegex.FindStringSubmatch(parts[0])
+		if len(submatches) != 0 {
+			h, err := http.Get("https://cdn.discordapp.com/emojis/" + submatches[1] + ".png")
+			if err != nil {
+				return
+			}
+
+			service.SendFile(message.Channel(), "emoji.png", h.Body)
+			h.Body.Close()
+
+			return
+
+		}
+
+		s := strings.TrimSpace(parts[0])
+		for i := range s {
+			filename := emojiFile(base, s[i:])
+			if filename != "" {
+				if f, err := os.Open(fmt.Sprintf("%s/%s.png", base, filename)); err == nil {
+					defer f.Close()
+					service.SendFile(message.Channel(), "emoji.png", f)
 
 					return
-
-				}
-
-				s := strings.TrimSpace(parts[0])
-				for i := range s {
-					filename := emojiFile(base, s[i:])
-					if filename != "" {
-						if f, err := os.Open(fmt.Sprintf("%s/%s.png", base, filename)); err == nil {
-							defer f.Close()
-							service.SendFile(message.Channel(), "emoji.png", f)
-
-							return
-						}
-					}
 				}
 			}
 		}

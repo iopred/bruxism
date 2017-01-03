@@ -128,6 +128,9 @@ func (p *MusicPlugin) Save() ([]byte, error) {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *MusicPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
+	if service.IsPrivate(message) {
+		return nil
+	}
 
 	// Only show help messages for guilds where we have a voice connection
 	c, err := p.discord.Channel(message.Channel())
@@ -173,6 +176,11 @@ func (p *MusicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 	}
 
 	if !bruxism.MatchesCommand(service, "music", message) && !bruxism.MatchesCommand(service, "mu", message) {
+		return
+	}
+
+	if service.IsPrivate(message) {
+		service.SendMessage(message.Channel(), "Sorry, this command doesn't work in private chat.")
 		return
 	}
 

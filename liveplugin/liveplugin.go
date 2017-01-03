@@ -84,6 +84,10 @@ func (p *livePlugin) Save() ([]byte, error) {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
+	if service.IsPrivate(message) {
+		return nil
+	}
+
 	if detailed {
 		return []string{
 			bruxism.CommandHelp(service, "live", "add [youtube channel id]", "Adds a channel to be announced.")[0],
@@ -98,70 +102,80 @@ func (p *livePlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bru
 // Message handler.
 func (p *livePlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	defer bruxism.MessageRecover()
-	if !service.IsMe(message) {
-		messageChannel := message.Channel()
 
-		if bruxism.MatchesCommand(service, "live", message) {
-			ticks := ""
-			if service.Name() == bruxism.DiscordServiceName {
-				ticks = "`"
-			}
+	if service.IsMe(message) {
+		return
+	}
 
-			_, parts := bruxism.ParseCommand(service, message)
+	if !bruxism.MatchesCommand(service, "live", message) {
+		return
+	}
 
-			if len(parts) == 0 {
-				service.SendMessage(messageChannel, fmt.Sprintf("Incorrect command. eg: %s%slive [add|remove|list] <%s>%s", ticks, service.CommandPrefix(), "UCGmC0A8mEAPdlELQdP9xJbw", ticks))
-				return
-			}
+	messageChannel := message.Channel()
 
-			switch parts[0] {
-			case "list":
-				if !service.IsModerator(message) {
-					service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to list live announcements.")
-					return
-				}
-				list := []string{}
-				p.Lock()
-				for ytChannel := range p.ChannelToYouTubeChannels[messageChannel] {
-					list = append(list, fmt.Sprintf("%s (%s)", p.ytLiveChannel.ChannelName(ytChannel), ytChannel))
-				}
-				p.Unlock()
-				if len(list) == 0 {
-					service.SendMessage(messageChannel, "No Channels are being announced.")
-				} else {
-					service.SendMessage(messageChannel, fmt.Sprintf("Currently announcing: %s", strings.Join(list, ",")))
-				}
-			case "add":
-				if !service.IsModerator(message) {
-					service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to add live announcements.")
-					return
-				}
-				if len(parts) != 2 || len(parts[1]) != 24 {
-					service.SendMessage(messageChannel, fmt.Sprintf("Incorrect Channel ID. eg: %s%slive %s %s%s", ticks, service.CommandPrefix(), parts[0], "UCGmC0A8mEAPdlELQdP9xJbw", ticks))
-					return
-				}
-				err := p.monitor(messageChannel, parts[1])
-				if err != nil {
-					service.SendMessage(messageChannel, fmt.Sprintf("Could not add Channel ID. %s", err))
-					return
-				}
-				service.SendMessage(messageChannel, fmt.Sprintf("Messages will be sent here when %s goes live.", p.ytLiveChannel.ChannelName(parts[1])))
-			case "remove":
-				if !service.IsModerator(message) {
-					service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to remove live announcements.")
-					return
-				}
-				if len(parts) != 2 || len(parts[1]) != 24 {
-					service.SendMessage(messageChannel, fmt.Sprintf("Incorrect Channel ID. eg: %s%slive %s %s%s", ticks, service.CommandPrefix(), parts[0], "UCGmC0A8mEAPdlELQdP9xJbw", ticks))
-					return
-				}
-				p.Lock()
-				delete(p.ChannelToYouTubeChannels[messageChannel], parts[1])
-				delete(p.youTubeChannelToChannels[parts[1]], messageChannel)
-				p.Unlock()
-				service.SendMessage(messageChannel, fmt.Sprintf("Messages will no longer be sent here when %s goes live.", p.ytLiveChannel.ChannelName(parts[1])))
-			}
+	if service.IsPrivate(message) {
+		service.SendMessage(messageChannel, "Sorry, this command doesn't work in private chat.")
+		return
+	}
+
+	ticks := ""
+	if service.Name() == bruxism.DiscordServiceName {
+		ticks = "`"
+	}
+
+	_, parts := bruxism.ParseCommand(service, message)
+
+	if len(parts) == 0 {
+		service.SendMessage(messageChannel, fmt.Sprintf("Incorrect command. eg: %s%slive [add|remove|list] <%s>%s", ticks, service.CommandPrefix(), "UCGmC0A8mEAPdlELQdP9xJbw", ticks))
+		return
+	}
+
+	switch parts[0] {
+	case "list":
+		if !service.IsModerator(message) {
+			service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to list live announcements.")
+			return
 		}
+		list := []string{}
+		p.Lock()
+		for ytChannel := range p.ChannelToYouTubeChannels[messageChannel] {
+			list = append(list, fmt.Sprintf("%s (%s)", p.ytLiveChannel.ChannelName(ytChannel), ytChannel))
+		}
+		p.Unlock()
+		if len(list) == 0 {
+			service.SendMessage(messageChannel, "No Channels are being announced.")
+		} else {
+			service.SendMessage(messageChannel, fmt.Sprintf("Currently announcing: %s", strings.Join(list, ",")))
+		}
+	case "add":
+		if !service.IsModerator(message) {
+			service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to add live announcements.")
+			return
+		}
+		if len(parts) != 2 || len(parts[1]) != 24 {
+			service.SendMessage(messageChannel, fmt.Sprintf("Incorrect Channel ID. eg: %s%slive %s %s%s", ticks, service.CommandPrefix(), parts[0], "UCGmC0A8mEAPdlELQdP9xJbw", ticks))
+			return
+		}
+		err := p.monitor(messageChannel, parts[1])
+		if err != nil {
+			service.SendMessage(messageChannel, fmt.Sprintf("Could not add Channel ID. %s", err))
+			return
+		}
+		service.SendMessage(messageChannel, fmt.Sprintf("Messages will be sent here when %s goes live.", p.ytLiveChannel.ChannelName(parts[1])))
+	case "remove":
+		if !service.IsModerator(message) {
+			service.SendMessage(messageChannel, "I'm sorry, you must be the channel owner to remove live announcements.")
+			return
+		}
+		if len(parts) != 2 || len(parts[1]) != 24 {
+			service.SendMessage(messageChannel, fmt.Sprintf("Incorrect Channel ID. eg: %s%slive %s %s%s", ticks, service.CommandPrefix(), parts[0], "UCGmC0A8mEAPdlELQdP9xJbw", ticks))
+			return
+		}
+		p.Lock()
+		delete(p.ChannelToYouTubeChannels[messageChannel], parts[1])
+		delete(p.youTubeChannelToChannels[parts[1]], messageChannel)
+		p.Unlock()
+		service.SendMessage(messageChannel, fmt.Sprintf("Messages will no longer be sent here when %s goes live.", p.ytLiveChannel.ChannelName(parts[1])))
 	}
 }
 

@@ -61,23 +61,28 @@ func (p *playingPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, mess
 
 // Message handler.
 func (p *playingPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
-	if !service.IsMe(message) {
-		if bruxism.MatchesCommand(service, "playing", message) {
-			if !service.IsBotOwner(message) {
-				return
-			}
-			query, _ := bruxism.ParseCommand(service, message)
+	if service.IsMe(message) {
+		return
+	}
 
-			split := strings.Split(query, ",")
+	if !bruxism.MatchesCommand(service, "playing", message) {
+		return
+	}
 
-			p.Game = strings.Trim(split[0], " ")
-			if len(split) > 1 {
-				p.URL = strings.Trim(split[1], " ")
-				service.(*bruxism.Discord).Session.UpdateStreamingStatus(0, p.Game, p.URL)
-			} else {
-				service.(*bruxism.Discord).Session.UpdateStatus(0, p.Game)
-			}
-		}
+	if !service.IsBotOwner(message) {
+		return
+	}
+
+	query, _ := bruxism.ParseCommand(service, message)
+
+	split := strings.Split(query, ",")
+
+	p.Game = strings.Trim(split[0], " ")
+	if len(split) > 1 {
+		p.URL = strings.Trim(split[1], " ")
+		service.(*bruxism.Discord).Session.UpdateStreamingStatus(0, p.Game, p.URL)
+	} else {
+		service.(*bruxism.Discord).Session.UpdateStatus(0, p.Game)
 	}
 }
 

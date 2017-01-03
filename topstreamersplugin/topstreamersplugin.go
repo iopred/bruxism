@@ -25,30 +25,34 @@ func (p *topStreamersPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service,
 }
 
 func (p *topStreamersPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
-	if !service.IsMe(message) {
-		if bruxism.MatchesCommand(service, "topstreamers", message) {
-			n := time.Now()
-			if !n.After(p.lastUpdate.Add(1 * time.Minute)) {
-				if p.lastMessage != "" {
-					service.SendMessage(message.Channel(), fmt.Sprintf("%s *Last updated %s.*", p.lastMessage, humanize.Time(p.lastUpdate)))
-				}
-				return
-			}
-
-			service.Typing(message.Channel())
-
-			p.lastUpdate = n
-
-			m, err := p.topStreamers(5)
-			if err != nil {
-				service.SendMessage(message.Channel(), "There was an error while requesting the top streamers, please try again later.")
-				return
-			}
-
-			service.SendMessage(message.Channel(), m)
-			p.lastMessage = m
-		}
+	if service.IsMe(message) {
+		return
 	}
+
+	if !bruxism.MatchesCommand(service, "topstreamers", message) {
+		return
+	}
+
+	n := time.Now()
+	if !n.After(p.lastUpdate.Add(1 * time.Minute)) {
+		if p.lastMessage != "" {
+			service.SendMessage(message.Channel(), fmt.Sprintf("%s *Last updated %s.*", p.lastMessage, humanize.Time(p.lastUpdate)))
+		}
+		return
+	}
+
+	service.Typing(message.Channel())
+
+	p.lastUpdate = n
+
+	m, err := p.topStreamers(5)
+	if err != nil {
+		service.SendMessage(message.Channel(), "There was an error while requesting the top streamers, please try again later.")
+		return
+	}
+
+	service.SendMessage(message.Channel(), m)
+	p.lastMessage = m
 }
 
 func (p *topStreamersPlugin) topStreamers(count int) (string, error) {

@@ -74,109 +74,111 @@ func (p *chartPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 		return
 	}
 
-	if bruxism.MatchesCommand(service, "chart", message) {
-		query, parts := bruxism.ParseCommand(service, message)
-		if len(parts) == 0 {
-			service.SendMessage(message.Channel(), fmt.Sprintf("Invalid chart eg: %s", p.randomChart(service)))
-			return
-		}
+	if !bruxism.MatchesCommand(service, "chart", message) {
+		return
+	}
 
-		start, end := 0.5, 0.5
+	query, parts := bruxism.ParseCommand(service, message)
+	if len(parts) == 0 {
+		service.SendMessage(message.Channel(), fmt.Sprintf("Invalid chart eg: %s", p.randomChart(service)))
+		return
+	}
 
-		switch parts[0] {
-		case "up":
-			start, end = 0, 1
-		case "down":
-			start, end = 1, 0
-		case "flat":
-		case "straight":
-		default:
-			service.SendMessage(message.Channel(), fmt.Sprintf("Invalid chart direction. eg: %s", p.randomChart(service)))
-			return
-		}
+	start, end := 0.5, 0.5
 
-		axes := strings.Split(query[len(parts[0]):], ",")
-		if len(axes) != 2 {
-			service.SendMessage(message.Channel(), fmt.Sprintf("Invalid chart axis labels eg: %s", p.randomChart(service)))
-			return
-		}
+	switch parts[0] {
+	case "up":
+		start, end = 0, 1
+	case "down":
+		start, end = 1, 0
+	case "flat":
+	case "straight":
+	default:
+		service.SendMessage(message.Channel(), fmt.Sprintf("Invalid chart direction. eg: %s", p.randomChart(service)))
+		return
+	}
 
-		pl, err := plot.New()
-		if err != nil {
-			service.SendMessage(message.Channel(), fmt.Sprintf("Error making chart, sorry! eg: %s", p.randomChart(service)))
-			return
-		}
+	axes := strings.Split(query[len(parts[0]):], ",")
+	if len(axes) != 2 {
+		service.SendMessage(message.Channel(), fmt.Sprintf("Invalid chart axis labels eg: %s", p.randomChart(service)))
+		return
+	}
 
-		service.Typing(message.Channel())
+	pl, err := plot.New()
+	if err != nil {
+		service.SendMessage(message.Channel(), fmt.Sprintf("Error making chart, sorry! eg: %s", p.randomChart(service)))
+		return
+	}
 
-		pl.Y.Label.Text = axes[0]
-		pl.X.Label.Text = axes[1]
+	service.Typing(message.Channel())
 
-		num := 5 + rand.Intn(15)
+	pl.Y.Label.Text = axes[0]
+	pl.X.Label.Text = axes[1]
 
-		start *= float64(num)
-		end *= float64(num)
+	num := 5 + rand.Intn(15)
 
-		pts := make(plotter.XYs, num)
-		for i := range pts {
-			pts[i].X = float64(i) + rand.Float64()*0.5 - 0.2
-			pts[i].Y = start + float64(end-start)/float64(num-1)*float64(i) + rand.Float64()*0.5 - 0.25
-		}
+	start *= float64(num)
+	end *= float64(num)
 
-		pl.X.Tick.Label.Color = color.Transparent
-		pl.Y.Tick.Label.Color = color.Transparent
+	pts := make(plotter.XYs, num)
+	for i := range pts {
+		pts[i].X = float64(i) + rand.Float64()*0.5 - 0.2
+		pts[i].Y = start + float64(end-start)/float64(num-1)*float64(i) + rand.Float64()*0.5 - 0.25
+	}
 
-		pl.X.Min = -0.5
-		pl.X.Max = float64(num) + 0.5
+	pl.X.Tick.Label.Color = color.Transparent
+	pl.Y.Tick.Label.Color = color.Transparent
 
-		pl.Y.Min = -0.5
-		pl.Y.Max = float64(num) + 0.5
+	pl.X.Min = -0.5
+	pl.X.Max = float64(num) + 0.5
 
-		lpLine, lpPoints, err := plotter.NewLinePoints(pts)
-		if err != nil {
-			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your chart.", message.UserName()))
-		}
-		lpLine.Color = plotutil.Color(rand.Int())
-		lpLine.Width = vg.Points(1 + 0.5*rand.Float64())
-		lpLine.Dashes = plotutil.Dashes(rand.Int())
-		lpPoints.Shape = plotutil.Shape(rand.Int())
-		lpPoints.Color = lpLine.Color
+	pl.Y.Min = -0.5
+	pl.Y.Max = float64(num) + 0.5
 
-		pl.Add(lpLine, lpPoints)
+	lpLine, lpPoints, err := plotter.NewLinePoints(pts)
+	if err != nil {
+		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your chart.", message.UserName()))
+	}
+	lpLine.Color = plotutil.Color(rand.Int())
+	lpLine.Width = vg.Points(1 + 0.5*rand.Float64())
+	lpLine.Dashes = plotutil.Dashes(rand.Int())
+	lpPoints.Shape = plotutil.Shape(rand.Int())
+	lpPoints.Color = lpLine.Color
 
-		w, err := pl.WriterTo(320, 240, "png")
-		if err != nil {
-			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your chart.", message.UserName()))
-			return
-		}
+	pl.Add(lpLine, lpPoints)
 
-		b := &bytes.Buffer{}
-		w.WriteTo(b)
+	w, err := pl.WriterTo(320, 240, "png")
+	if err != nil {
+		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem creating your chart.", message.UserName()))
+		return
+	}
 
-		go func() {
-			if service.Name() == bruxism.DiscordServiceName {
-				discord := service.(*bruxism.Discord)
-				p, err := discord.UserChannelPermissions(message.UserID(), message.Channel())
-				if err == nil && p&discordgo.PermissionAttachFiles != 0 {
-					service.SendFile(message.Channel(), "chart.png", b)
-					return
-				}
-			}
+	b := &bytes.Buffer{}
+	w.WriteTo(b)
 
-			url, err := bot.UploadToImgur(b, "chart.png")
-			if err != nil {
-				service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the chart to imgur.", message.UserName()))
-				log.Println("Error uploading chart: ", err)
+	go func() {
+		if service.Name() == bruxism.DiscordServiceName {
+			discord := service.(*bruxism.Discord)
+			p, err := discord.UserChannelPermissions(message.UserID(), message.Channel())
+			if err == nil && p&discordgo.PermissionAttachFiles == discordgo.PermissionAttachFiles {
+				service.SendFile(message.Channel(), "chart.png", b)
 				return
 			}
+		}
 
-			if service.Name() == bruxism.DiscordServiceName {
-				service.SendMessage(message.Channel(), fmt.Sprintf("Here's your chart <@%s>: %s", message.UserID(), url))
-			} else {
-				service.SendMessage(message.Channel(), fmt.Sprintf("Here's your chart %s: %s", message.UserName(), url))
-			}
-		}()
-	}
+		url, err := bot.UploadToImgur(b, "chart.png")
+		if err != nil {
+			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was a problem uploading the chart to imgur.", message.UserName()))
+			log.Println("Error uploading chart: ", err)
+			return
+		}
+
+		if service.Name() == bruxism.DiscordServiceName {
+			service.SendMessage(message.Channel(), fmt.Sprintf("Here's your chart <@%s>: %s", message.UserID(), url))
+		} else {
+			service.SendMessage(message.Channel(), fmt.Sprintf("Here's your chart %s: %s", message.UserName(), url))
+		}
+	}()
 }
 
 // New will create a new chart plugin.

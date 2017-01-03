@@ -27,42 +27,46 @@ func (p *streamerPlugin) helpFunc(bot *bruxism.Bot, service bruxism.Service, mes
 }
 
 func (p *streamerPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
-	if !service.IsMe(message) {
-		if bruxism.MatchesCommand(service, "streamer", message) {
-			query, parts := bruxism.ParseCommand(service, message)
-
-			if len(parts) == 0 {
-				return
-			}
-
-			r, _ := p.requests[query]
-			if r == nil {
-				r = &streamerPluginRequest{}
-				p.requests[query] = r
-			}
-
-			n := time.Now()
-			if !n.After(r.lastUpdate.Add(60 * time.Minute)) {
-				if r.lastMessage != "" {
-					service.SendMessage(message.Channel(), fmt.Sprintf("%s *Last updated %s.*", r.lastMessage, humanize.Time(r.lastUpdate)))
-				}
-				return
-			}
-
-			service.Typing(message.Channel())
-
-			r.lastUpdate = n
-
-			m, err := p.streamer(query, service.Name() == bruxism.DiscordServiceName)
-			if err != nil {
-				service.SendMessage(message.Channel(), "There was an error while requesting the streamer, please try again later.")
-				return
-			}
-
-			service.SendMessage(message.Channel(), m)
-			r.lastMessage = m
-		}
+	if service.IsMe(message) {
+		return
 	}
+
+	if !bruxism.MatchesCommand(service, "streamer", message) {
+		return
+	}
+
+	query, parts := bruxism.ParseCommand(service, message)
+
+	if len(parts) == 0 {
+		return
+	}
+
+	r, _ := p.requests[query]
+	if r == nil {
+		r = &streamerPluginRequest{}
+		p.requests[query] = r
+	}
+
+	n := time.Now()
+	if !n.After(r.lastUpdate.Add(60 * time.Minute)) {
+		if r.lastMessage != "" {
+			service.SendMessage(message.Channel(), fmt.Sprintf("%s *Last updated %s.*", r.lastMessage, humanize.Time(r.lastUpdate)))
+		}
+		return
+	}
+
+	service.Typing(message.Channel())
+
+	r.lastUpdate = n
+
+	m, err := p.streamer(query, service.Name() == bruxism.DiscordServiceName)
+	if err != nil {
+		service.SendMessage(message.Channel(), "There was an error while requesting the streamer, please try again later.")
+		return
+	}
+
+	service.SendMessage(message.Channel(), m)
+	r.lastMessage = m
 }
 
 func (p *streamerPlugin) streamer(search string, bold bool) (string, error) {
