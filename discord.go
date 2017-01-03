@@ -383,7 +383,7 @@ func (d *Discord) IsModerator(message Message) bool {
 		}
 	}
 
-	return false
+	return d.IsChannelOwner(message)
 }
 
 // ChannelCount returns the number of channels the bot is in.
