@@ -252,7 +252,7 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 						continue
 					}
 				}
-				p.broadcast(bot, service, message, channel, wormhole, content)
+				p.broadcast(bot, service, message, channel, wormhole, content, messageChannel)
 				break
 			}
 		}
@@ -277,7 +277,7 @@ func (p *wormholePlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 						continue
 					}
 				}
-				p.broadcast(bot, service, message, channel, wormhole, content)
+				p.broadcast(bot, service, message, channel, wormhole, content, messageChannel)
 			}
 		}
 		for _, channel := range toDelete {
@@ -316,11 +316,11 @@ func dataAvailable(discord *bruxism.Discord) bool {
 	return shards == len(discord.Sessions)
 }
 
-func (p *wormholePlugin) broadcast(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, channel string, wormhole *wormhole, content string) {
+func (p *wormholePlugin) broadcast(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, channel string, wormhole *wormhole, content string, originalChannel string) {
 	if service.Name() == bruxism.DiscordServiceName {
 		discord := service.(*bruxism.Discord)
 
-		color := discord.UserColor(message.UserID(), channel)
+		color := discord.UserColor(message.UserID(), originalChannel)
 
 		if wormhole.Webhook != "" {
 			err := discord.Session.WebhookExecute(wormhole.Webhook, wormhole.Token, true, &discordgo.WebhookParams{
@@ -369,12 +369,12 @@ func (p *wormholePlugin) broadcast(bot *bruxism.Bot, service bruxism.Service, me
 	}
 }
 
-func (p *wormholePlugin) send(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, channel string, channelWormhole *wormhole, wormholeContent, legacyContent string) {
-	if service.Name() == bruxism.DiscordServiceName && channelWormhole != nil {
+func (p *wormholePlugin) send(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, channel string, wormhole *wormhole, wormholeContent, legacyContent string) {
+	if service.Name() == bruxism.DiscordServiceName && wormhole != nil {
 		discord := service.(*bruxism.Discord)
 
-		if channelWormhole.Webhook != "" {
-			err := discord.Session.WebhookExecute(channelWormhole.Webhook, channelWormhole.Token, true, &discordgo.WebhookParams{
+		if wormhole.Webhook != "" {
+			err := discord.Session.WebhookExecute(wormhole.Webhook, wormhole.Token, true, &discordgo.WebhookParams{
 				Content: wormholeContent,
 			})
 			if err == nil {
