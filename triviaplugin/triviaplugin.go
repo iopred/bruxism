@@ -249,7 +249,7 @@ func (p *triviaPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message b
 	}
 
 	return []string{
-		bruxism.CommandHelp(service, "trivia", "<start|stop> [theme]", "Starts or stops trivia with an optional theme.")[0],
+		bruxism.CommandHelp(service, "trivia", "<start|stop>", "Starts or stops trivia.")[0],
 		bruxism.CommandHelp(service, "trivia", "<score>", "Returns your current trivia score.")[0],
 	}
 }
