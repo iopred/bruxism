@@ -244,7 +244,7 @@ func (p *triviaPlugin) Save() ([]byte, error) {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *triviaPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
-	if service.IsPrivate(message) || !(service.IsModerator(message) || service.IsBotOwner(message)) {
+	if service.IsPrivate(message) || !service.IsModerator(message) {
 		return nil
 	}
 

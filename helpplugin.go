@@ -19,7 +19,7 @@ func (p *helpPlugin) Name() string {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *helpPlugin) Help(bot *Bot, service Service, message Message, detailed bool) []string {
-	privs := service.SupportsPrivateMessages() && !service.IsPrivate(message) && (service.IsBotOwner(message) || service.IsModerator(message))
+	privs := service.SupportsPrivateMessages() && !service.IsPrivate(message) && service.IsModerator(message)
 	if detailed && !privs {
 		return nil
 	}
@@ -122,7 +122,7 @@ func (p *helpPlugin) Message(bot *Bot, service Service, message Message) {
 				}
 			}
 		} else if MatchesCommand(service, "setprivatehelp", message) && service.SupportsPrivateMessages() && !service.IsPrivate(message) {
-			if !service.IsBotOwner(message) && !service.IsModerator(message) {
+			if !service.IsModerator(message) {
 				return
 			}
 
@@ -130,7 +130,7 @@ func (p *helpPlugin) Message(bot *Bot, service Service, message Message) {
 
 			service.PrivateMessage(message.UserID(), fmt.Sprintf("Help text in <#%s> will be sent through private messages.", message.Channel()))
 		} else if MatchesCommand(service, "setpublichelp", message) && service.SupportsPrivateMessages() && !service.IsPrivate(message) {
-			if !service.IsBotOwner(message) && !service.IsModerator(message) {
+			if !service.IsModerator(message) {
 				return
 			}
 
