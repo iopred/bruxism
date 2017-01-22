@@ -173,6 +173,10 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		messages := []*comicgen.Message{}
 
 		splits := strings.Split(str, "|")
+		if len(splits) == 0 {
+			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you didn't add any text.", message.UserName()))
+			return
+		}
 		if len(splits) > 10 {
 			splits = splits[:10]
 		}
@@ -203,11 +207,6 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 				Text:    text,
 				Author:  author,
 			})
-		}
-
-		if len(messages) == 0 {
-			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you didn't add any text.", message.UserName()))
-			return
 		}
 
 		p.makeComic(bot, service, message, &comicgen.Script{
