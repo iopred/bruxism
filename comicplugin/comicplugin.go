@@ -197,7 +197,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 					speaker = -1
 				}
 
-				text = strings.Trim(lineSplit[1], " ")
+				text = strings.Trim(strings.Join(lineSplit[1:], ":"), " ")
 			} else {
 				text = line
 			}
