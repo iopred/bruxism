@@ -173,6 +173,9 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		messages := []*comicgen.Message{}
 
 		splits := strings.Split(str, "|")
+		if len(splits) > 10 {
+			splits = splits[:10]
+		}
 		for _, line := range splits {
 			line := strings.Trim(line, " ")
 
