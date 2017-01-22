@@ -173,7 +173,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		messages := []*comicgen.Message{}
 
 		splits := strings.Split(str, "|")
-		if len(splits) == 0 {
+		if len(splits) == 0 || (len(splits) == 1 && len(splits[0]) == 0) {
 			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you didn't add any text.", message.UserName()))
 			return
 		}
@@ -189,7 +189,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 			if strings.Index(line, ":") != -1 {
 				lineSplit := strings.Split(line, ":")
 
-				author = strings.ToLower(strings.Trim(lineSplit[0], " "))
+				author = strings.Trim(lineSplit[0], " ")
 
 				var err error
 				speaker, err = strconv.Atoi(author)
