@@ -12,7 +12,6 @@ import (
 	"github.com/iopred/bruxism"
 	"github.com/iopred/bruxism/carbonitexplugin"
 	"github.com/iopred/bruxism/chartplugin"
-	"github.com/iopred/bruxism/comicplugin"
 	"github.com/iopred/bruxism/discordavatarplugin"
 	"github.com/iopred/bruxism/emojiplugin"
 	"github.com/iopred/bruxism/inviteplugin"
@@ -120,7 +119,6 @@ func main() {
 	bot.RegisterPlugin(youtube, cp)
 
 	bot.RegisterPlugin(youtube, chartplugin.New())
-	bot.RegisterPlugin(youtube, comicplugin.New())
 	bot.RegisterPlugin(youtube, liveplugin.New(ytLiveChannel))
 	bot.RegisterPlugin(youtube, reminderplugin.New())
 	bot.RegisterPlugin(youtube, streamerplugin.New(youtube))
@@ -148,7 +146,6 @@ func main() {
 		}
 
 		bot.RegisterPlugin(discord, chartplugin.New())
-		bot.RegisterPlugin(discord, comicplugin.New())
 		bot.RegisterPlugin(discord, discordavatarplugin.New())
 		bot.RegisterPlugin(discord, emojiplugin.New())
 		bot.RegisterPlugin(discord, liveplugin.New(ytLiveChannel))
@@ -170,7 +167,6 @@ func main() {
 		bot.RegisterPlugin(irc, cp)
 
 		bot.RegisterPlugin(irc, chartplugin.New())
-		bot.RegisterPlugin(irc, comicplugin.New())
 		bot.RegisterPlugin(irc, liveplugin.New(ytLiveChannel))
 		bot.RegisterPlugin(irc, reminderplugin.New())
 		bot.RegisterPlugin(irc, streamerplugin.New(youtube))
@@ -187,7 +183,9 @@ func main() {
 		bot.RegisterPlugin(slack, cp)
 
 		bot.RegisterPlugin(slack, chartplugin.New())
-		bot.RegisterPlugin(slack, comicplugin.New())
+		
+		
+		
 		bot.RegisterPlugin(slack, liveplugin.New(ytLiveChannel))
 		bot.RegisterPlugin(slack, streamerplugin.New(youtube))
 		bot.RegisterPlugin(slack, topstreamersplugin.New(youtube))
