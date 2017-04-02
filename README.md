@@ -39,19 +39,19 @@ You must first generate a YouTube Oauth token in the [Google Developer Console](
 
 Go to Credentials and download the JSON config file and save it in `$GOPATH/bin` as `youtubeoauth2config.json`
 
-`bruxism -youtubeurl`
+`./bruxism -youtubeurl`
 
 You will then be given a URL (and copied to clipboard), visit that URL and copy the code, then run:
 
-`bruxism -youtubeauth <AUTH CODE>`
+`./bruxism -youtubeauth <AUTH CODE>`
 
 Now the bot can be run:
 
-`bruxism`
+`./bruxism -youtubechannelids <youtube channel id1,youtube channel id2>`
 
 ### Run as a Discord bot
 
-`bruxism -discordtoken "Bot <discord bot token>"`
+`./bruxism -discordtoken "Bot <discord bot token>"`
 
 It is suggested that you set `-discordapplicationclientid` if you are running a bot account, this will make `inviteplugin` function correctly.
 
@@ -61,7 +61,17 @@ To invite your bot to a server, visit: `https://discordapp.com/oauth2/authorize?
 
 ### Run as an IRC bot
 
-`bruxism -ircserver <irc server> -ircusername <irc username> -ircchannels <#channel1,#channel2>`
+`./bruxism -ircserver <irc server> -ircusername <irc username> -ircchannels <#channel1,#channel2>`
+
+### Run as a Slack bot
+
+`./bruxism -slacktoken <slack token>`
+
+It is suggested that you set `-slackowneruserid`.
+
+#### Image uploads
+
+Some plugins upload images to imgur (such as chartplugin), it's suggested that you run your bot with `-imgurid <imgurid>` to enable this.
 
 ## Arguments:
 
@@ -79,7 +89,7 @@ To invite your bot to a server, visit: `https://discordapp.com/oauth2/authorize?
 * `ircpassword` - Sets the IRC password.
 * `ircchannels` - Comma separated list of IRC channels.
 * `imgurid` - Sets the Imgur client id, used for uploading images to imgur.
-* `imgurAlbum` - Sets an optional the Imgur album id, used for uploading images to imgur.
+* `imguralbum` - Sets an optional the Imgur album id, used for uploading images to imgur.
 * `mashablekey` - Sets the mashable oauth key.
 
 ## Special Thanks
