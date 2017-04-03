@@ -51,7 +51,9 @@ Now the bot can be run:
 
 #### Important!
 The account you choose during the oauth flow is the account that the bot will use to send messages.
+
 If you are trying to test the bot, make sure the account you are sending messages with is **different** from the bot account.
+
 Bruxism ignores messages from the bot account, so if you are sharing accounts all commands will be ignored.
 
 
