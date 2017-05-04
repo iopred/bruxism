@@ -71,7 +71,13 @@ func (p *livePlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 		v := <-lvc
 		p.RLock()
 		for channel := range p.youTubeChannelToChannels[v.Snippet.ChannelId] {
-			service.SendMessage(channel, fmt.Sprintf("%s has just gone live! http://gaming.youtube.com/watch?v=%s", v.Snippet.ChannelTitle, v.Id))
+			e := service.SendMessage(channel, fmt.Sprintf("%s has just gone live! http://gaming.youtube.com/watch?v=%s", v.Snippet.ChannelTitle, v.Id))
+			if e != nil {
+				if strings.Contains(e.Error(), "Missing Permissions") || strings.Contains(e.Error(), "Unknown Channel") {
+					delete(p.ChannelToYouTubeChannels[channel], v.Id)
+					delete(p.youTubeChannelToChannels[v.Id], channel)
+				}
+			}
 		}
 		p.RUnlock()
 	}
