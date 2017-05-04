@@ -205,7 +205,7 @@ func (d *Discord) Open() (<-chan Message, error) {
 		session.AddHandler(d.onMessageCreate)
 		session.AddHandler(d.onMessageUpdate)
 		session.AddHandler(d.onMessageDelete)
-		session.TrackPresences = False
+		session.State.TrackPresences = false
 
 		d.Sessions[i] = session
 	}

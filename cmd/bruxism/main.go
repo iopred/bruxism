@@ -183,9 +183,7 @@ func main() {
 		bot.RegisterPlugin(slack, cp)
 
 		bot.RegisterPlugin(slack, chartplugin.New())
-		
-		
-		
+
 		bot.RegisterPlugin(slack, liveplugin.New(ytLiveChannel))
 		bot.RegisterPlugin(slack, streamerplugin.New(youtube))
 		bot.RegisterPlugin(slack, topstreamersplugin.New(youtube))
