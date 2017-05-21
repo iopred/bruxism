@@ -37,7 +37,7 @@ func InviteCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Me
 		discord := service.(*bruxism.Discord)
 
 		if discord.ApplicationClientID != "" {
-			service.SendMessage(message.Channel(), fmt.Sprintf("Please visit https://discordapp.com/oauth2/authorize?client_id=%s&scope=bot to add %s to your server.", discord.ApplicationClientID, service.UserName()))
+			service.SendMessage(message.Channel(), fmt.Sprintf("Please visit <https://discordapp.com/oauth2/authorize?client_id=%s&scope=bot> to add %s to your server.", discord.ApplicationClientID, service.UserName()))
 			return
 		}
 	}
