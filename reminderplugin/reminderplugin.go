@@ -212,7 +212,7 @@ func (p *ReminderPlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 
 // SendReminder sends a reminder.
 func (p *ReminderPlugin) SendReminder(service bruxism.Service, reminder *Reminder) {
-	if strings.Index(reminder.Message, "<@") != -1 || strings.Index(strings.ToLower(reminder.Message), "@everyone") != -1 || strings.Index(strings.ToLower(r), "@here") != -1 {
+	if strings.Index(reminder.Message, "<@") != -1 || strings.Index(strings.ToLower(reminder.Message), "@everyone") != -1 || strings.Index(strings.ToLower(reminder.Message), "@here") != -1 {
 		return
 	}
 
