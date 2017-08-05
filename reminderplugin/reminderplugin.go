@@ -188,7 +188,7 @@ func (p *ReminderPlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 	if service.Name() == bruxism.DiscordServiceName {
 		requester = fmt.Sprintf("<@%s>", message.UserID())
 
-		if strings.Index(r, "<@") != -1 {
+		if strings.Index(r, "<@") != -1 || strings.Index(strings.ToLower(r), "@everyone") != -1 {
 			service.SendMessage(message.Channel(), "Invalid reminder, no mentions, sorry.")
 			return
 		}
@@ -212,7 +212,7 @@ func (p *ReminderPlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 
 // SendReminder sends a reminder.
 func (p *ReminderPlugin) SendReminder(service bruxism.Service, reminder *Reminder) {
-	if strings.Index(reminder.Message, "<@") != -1 {
+	if strings.Index(reminder.Message, "<@") != -1 || strings.Index(strings.ToLower(reminder.Message), "@everyone") != -1 {
 		return
 	}
 
