@@ -150,7 +150,7 @@ func (d *Discord) replaceRoleNames(message *discordgo.Message, content string) s
 }
 
 func (d *Discord) onMessageCreate(s *discordgo.Session, message *discordgo.MessageCreate) {
-	if message.Content == "" {
+	if message.Content == "" || (message.Author != nil && message.Author.Bot) {
 		return
 	}
 
@@ -162,7 +162,7 @@ func (d *Discord) onMessageCreate(s *discordgo.Session, message *discordgo.Messa
 }
 
 func (d *Discord) onMessageUpdate(s *discordgo.Session, message *discordgo.MessageUpdate) {
-	if message.Content == "" {
+	if message.Content == "" || (message.Author != nil && message.Author.Bot) {
 		return
 	}
 
