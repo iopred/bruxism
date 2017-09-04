@@ -8,6 +8,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -66,6 +67,8 @@ func (p *comicPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message br
 	return help
 }
 
+var emojiRegexp = regexp.MustCompile("<:[a-zA-Z0-9]+:([0-9]+)>")
+
 func makeScriptFromMessages(service bruxism.Service, message bruxism.Message, messages []bruxism.Message) *comicgen.Script {
 	speakers := make(map[string]int)
 	avatars := make(map[int]string)
@@ -80,10 +83,20 @@ func makeScriptFromMessages(service bruxism.Service, message bruxism.Message, me
 			avatars[speaker] = message.UserAvatar()
 		}
 
+		replacements := map[string]string{}
+		messageMessage := message.Message()
+		matches := emojiRegexp.FindAllStringSubmatch(messageMessage, -1)
+		for _, match := range matches {
+			if _, ok := replacements[match[0]]; !ok {
+				replacements[match[0]] = discordgo.EndpointEmoji(match[1])
+			}
+		}
+
 		script = append(script, &comicgen.Message{
-			Speaker: speaker,
-			Text:    message.Message(),
-			Author:  message.UserName(),
+			Speaker:      speaker,
+			Text:         messageMessage,
+			Author:       message.UserName(),
+			Replacements: replacements,
 		})
 	}
 	return &comicgen.Script{
