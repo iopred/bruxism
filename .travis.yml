@@ -1,7 +1,8 @@
 language: go
 go:
-    - 1.6
     - 1.7
+    - 1.8
+    - 1.9
 install:
     - go get github.com/iopred/bruxism/carbonitexplugin
     - go get github.com/iopred/bruxism/chartplugin
