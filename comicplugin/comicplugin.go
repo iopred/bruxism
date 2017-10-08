@@ -162,7 +162,7 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 	}
 }
 
-func (p *comicPlugin) checkCooldown(message bruxism.Message) bool {
+func (p *comicPlugin) checkCooldown(service bruxism.Service, message bruxism.Message) bool {
 	cooldown := p.cooldown[message.UserID()]
 	if cooldown.After(time.Now()) {
 		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you need to wait %s before creating another comic.", message.UserName(), humanize.Time(cooldown)))
@@ -189,7 +189,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 	}
 
 	if bruxism.MatchesCommand(service, "customcomic", message) || bruxism.MatchesCommand(service, "customcomicsimple", message) {
-		if p.checkCooldown(message) {
+		if p.checkCooldown(service, message) {
 			return
 		}
 
@@ -247,7 +247,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 			Type:     ty,
 		})
 	} else if bruxism.MatchesCommand(service, "comic", message) {
-		if p.checkCooldown(message) {
+		if p.checkCooldown(service, message) {
 			return
 		}
 
