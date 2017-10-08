@@ -7,7 +7,9 @@ import (
 	"log"
 	"math/rand"
 	"strings"
+	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/plotutil"
@@ -18,6 +20,8 @@ import (
 
 type chartPlugin struct {
 	bruxism.SimplePlugin
+
+	cooldown map[string]time.Time
 }
 
 var randomDirection = []string{
@@ -77,6 +81,13 @@ func (p *chartPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 	if !bruxism.MatchesCommand(service, "chart", message) {
 		return
 	}
+
+	cooldown := p.cooldown[message.UserID()]
+	if cooldown.After(time.Now()) {
+		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you need to wait %s before creating another chart.", message.UserName(), humanize.Time(cooldown)))
+		return
+	}
+	p.cooldown[message.UserID()] = time.Now().Add(30 * time.Second)
 
 	query, parts := bruxism.ParseCommand(service, message)
 	if len(parts) == 0 {
@@ -185,6 +196,7 @@ func (p *chartPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 func New() bruxism.Plugin {
 	p := &chartPlugin{
 		SimplePlugin: *bruxism.NewSimplePlugin("Chart"),
+		cooldown:     map[string]time.Time{},
 	}
 	p.MessageFunc = p.messageFunc
 	p.HelpFunc = p.helpFunc
