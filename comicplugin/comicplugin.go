@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/iopred/bruxism"
 	"github.com/iopred/comicgen"
@@ -23,8 +24,9 @@ type comicPlugin struct {
 	sync.Mutex
 
 	bruxism.SimplePlugin
-	log    map[string][]bruxism.Message
-	Comics int
+	log      map[string][]bruxism.Message
+	Comics   int
+	cooldown map[string]time.Time
 }
 
 // Load will load plugin state from a byte array.
@@ -172,6 +174,13 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 	if !ok {
 		log = []bruxism.Message{}
 	}
+
+	cooldown := p.cooldown[message.UserID()]
+	if cooldown.After(time.Now()) {
+		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you need to wait %s before creating another comic.", message.UserName(), humanize.Time(cooldown))))
+		return
+	}
+	p.cooldown[message.UserID()] = time.Now().Add(30 * time.Second)
 
 	if bruxism.MatchesCommand(service, "customcomic", message) || bruxism.MatchesCommand(service, "customcomicsimple", message) {
 		ty := comicgen.ComicTypeChat
