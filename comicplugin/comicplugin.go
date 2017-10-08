@@ -162,6 +162,16 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 	}
 }
 
+func (p *comicPlugin) checkCooldown(message bruxism.Message) bool {
+	cooldown := p.cooldown[message.UserID()]
+	if cooldown.After(time.Now()) {
+		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you need to wait %s before creating another comic.", message.UserName(), humanize.Time(cooldown)))
+		return true
+	}
+	p.cooldown[message.UserID()] = time.Now().Add(30 * time.Second)
+	return false
+}
+
 // Message handler.
 func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	defer bruxism.MessageRecover()
@@ -178,14 +188,11 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		log = []bruxism.Message{}
 	}
 
-	cooldown := p.cooldown[message.UserID()]
-	if cooldown.After(time.Now()) {
-		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you need to wait %s before creating another comic.", message.UserName(), humanize.Time(cooldown)))
-		return
-	}
-	p.cooldown[message.UserID()] = time.Now().Add(30 * time.Second)
-
 	if bruxism.MatchesCommand(service, "customcomic", message) || bruxism.MatchesCommand(service, "customcomicsimple", message) {
+		if p.checkCooldown(message) {
+			return
+		}
+
 		ty := comicgen.ComicTypeChat
 		if bruxism.MatchesCommand(service, "customcomicsimple", message) {
 			ty = comicgen.ComicTypeSimple
@@ -240,6 +247,10 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 			Type:     ty,
 		})
 	} else if bruxism.MatchesCommand(service, "comic", message) {
+		if p.checkCooldown(message) {
+			return
+		}
+
 		if len(log) == 0 {
 			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, I don't have enough messages to make a comic yet.", message.UserName()))
 			return
