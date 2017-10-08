@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/iopred/bruxism"
 	"github.com/iopred/comicgen"
 	"github.com/iopred/discordgo"
@@ -177,7 +178,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 
 	cooldown := p.cooldown[message.UserID()]
 	if cooldown.After(time.Now()) {
-		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you need to wait %s before creating another comic.", message.UserName(), humanize.Time(cooldown))))
+		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you need to wait %s before creating another comic.", message.UserName(), humanize.Time(cooldown)))
 		return
 	}
 	p.cooldown[message.UserID()] = time.Now().Add(30 * time.Second)
