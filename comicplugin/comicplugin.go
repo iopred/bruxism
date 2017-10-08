@@ -38,6 +38,8 @@ func (p *comicPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byt
 		}
 	}
 
+	p.cooldown = map[string]time.Time{}
+
 	return nil
 }
 
