@@ -76,6 +76,9 @@ func (p *YouTubeJoinPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 }
 
 func (p *YouTubeJoinPlugin) monitor(channel string, announce bool) error {
+	if p.youtube == nil {
+		return nil
+	}
 	v, err := p.youtube.GetLiveVideos(channel)
 	if err == nil {
 		for _, video := range v {
