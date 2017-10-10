@@ -87,7 +87,7 @@ func (p *chartPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you need to wait %s before creating another chart.", message.UserName(), humanize.Time(cooldown)))
 		return
 	}
-	p.cooldown[message.UserID()] = time.Now().Add(30 * time.Second)
+	p.cooldown[message.UserID()] = time.Now().Add(20 * time.Second)
 
 	query, parts := bruxism.ParseCommand(service, message)
 	if len(parts) == 0 {

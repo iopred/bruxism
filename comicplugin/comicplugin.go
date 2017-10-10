@@ -168,7 +168,7 @@ func (p *comicPlugin) checkCooldown(service bruxism.Service, message bruxism.Mes
 		service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you need to wait %s before creating another comic.", message.UserName(), humanize.Time(cooldown)))
 		return true
 	}
-	p.cooldown[message.UserID()] = time.Now().Add(30 * time.Second)
+	p.cooldown[message.UserID()] = time.Now().Add(20 * time.Second)
 	return false
 }
 
