@@ -172,8 +172,8 @@ func (p *ReminderPlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 		for _, r := range p.Reminders {
 			if r.Requester == requester {
 				reminders = append(reminders, fmt.Sprintf("%d - %s: %s", i, humanize.Time(r.Time), r.Message))
+				i++
 			}
-			i++
 		}
 		if len(reminders) > 0 {
 			if service.SupportsMultiline() {
@@ -201,14 +201,16 @@ func (p *ReminderPlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 
 		j := 0
 		for i, r := range p.Reminders {
-			if r.Requester == requester && j == index {
-				p.Lock()
-				p.Reminders = append(p.Reminders[:j], p.Reminders[i+j:]...)
-				p.Unlock()
-				service.SendMessage(message.Channel(), "Reminder deleted.")
-				return
+			if r.Requester == requester {
+				if j == index {
+					p.Lock()
+					p.Reminders = append(p.Reminders[:j], p.Reminders[i+j:]...)
+					p.Unlock()
+					service.SendMessage(message.Channel(), "Reminder deleted.")
+					return
+				}
+				j++
 			}
-			j++
 		}
 		return
 	}
