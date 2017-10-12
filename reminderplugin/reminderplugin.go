@@ -204,7 +204,7 @@ func (p *ReminderPlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 			if r.Requester == requester {
 				if j == index {
 					p.Lock()
-					p.Reminders = append(p.Reminders[:j], p.Reminders[i+j:]...)
+					p.Reminders = append(p.Reminders[:i], p.Reminders[i+1:]...)
 					p.Unlock()
 					service.SendMessage(message.Channel(), "Reminder deleted.")
 					return
