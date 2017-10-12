@@ -115,7 +115,7 @@ func (p *ReminderPlugin) parseReminder(parts []string) (time.Time, string, error
 	case strings.HasPrefix(parts[1], "week"):
 		return time.Now().Add(time.Duration(i) * time.Hour * 24 * 7), strings.Join(parts[2:], " "), nil
 	case strings.HasPrefix(parts[1], "month"):
-		return time.Now().Add(time.Duration(i) * time.Hour * 24 * 7 * 4), strings.Join(parts[2:], " "), nil
+		return time.Now().Add(time.Duration(i) * time.Hour * 24 * 31), strings.Join(parts[2:], " "), nil
 	case strings.HasPrefix(parts[1], "year"):
 		return time.Now().Add(time.Duration(i) * time.Hour * 24 * 365), strings.Join(parts[2:], " "), nil
 	}
