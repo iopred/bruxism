@@ -2422,7 +2422,7 @@ The' Long John Silver Collection' housed on the Cutty Sark is the nations larges
 There are 16 ---------- in a cup*tablespoons
 There are 318,979,564,000 possible ways of playing just the first four moves on each side in a game of*chess
 There are 45 miles of what in the skin of a human being*nerves
-There are more statues of ----------, Lewis & Clarks female indian guide, in the U S than any other person*sacajewa
+There are more statues of ----------, Lewis & Clarks female indian guide, in the U S than any other person*Sacagawea
 There were three Kings of England in 1066. Harold and William, of course, and who else*edward the confessor
 These attach muscles to bones or cartilage*Tendons
 These rabbits are prized for their long, soft fur, used to make very expensive sweaters*angorra
