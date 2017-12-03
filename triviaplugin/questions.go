@@ -1836,7 +1836,7 @@ Lyrics: Suckin on chili dogs outside the Tastee-Freez*Jack and Dianne John Couga
 Lyrics: The five years we have had have been such good times*Don't You Want Me? Human League
 Lyrics: The in crowd say it's cool to dig this chanting thing*Rock the Casbah The Clash
 Lyrics: The moon. Beautiful. The sun. Even more beautiful*Oh Yeah Yello
-Lyrics: The school bell rings you know it's my cue I'm gonna meet the boys on floor number two*Smokin' in the Boys' Room by M�tley Cr�e
+Lyrics: The school bell rings you know it's my cue I'm gonna meet the boys on floor number two*Smokin' in the Boys' Room by Motley Crue
 Lyrics: There's a freeway runnin' through the yard*Free Fallin' Tom Petty and the Heartbreakers
 Lyrics: We could dance and party all night and drink some cherry wine*We Don't Have To Take Our Clothes Off Jeramine Stewart
 Lyrics: We're even skanking to Bob Marley/ Reggae's expanding with Sly and Robbie*Genius of Love Tom Tom Club
@@ -2422,7 +2422,7 @@ The' Long John Silver Collection' housed on the Cutty Sark is the nations larges
 There are 16 ---------- in a cup*tablespoons
 There are 318,979,564,000 possible ways of playing just the first four moves on each side in a game of*chess
 There are 45 miles of what in the skin of a human being*nerves
-There are more statues of ----------, Lewis & Clarks female indian guide, in the U S than any other person*sacajewa
+There are more statues of ----------, Lewis & Clarks female indian guide, in the U S than any other person*Sacagawea
 There were three Kings of England in 1066. Harold and William, of course, and who else*edward the confessor
 These attach muscles to bones or cartilage*Tendons
 These rabbits are prized for their long, soft fur, used to make very expensive sweaters*angorra
@@ -2724,7 +2724,7 @@ TV/Movies: Born Aug 25, 1930, He starred in this movie: Meteor - 1979*sean conne
 TV/Movies: Born Aug 25, 1930, He starred in this movie: Playing by Heart - 1998*sean connery
 TV/Movies: Born Aug 25, 1930, He starred in this movie: The Rock - 1996*sean connery
 TV/Movies: Born Aug 29, 1915, She starred in this movie: Autumn Sonata - 1978*ingrid bergman
-TV/Movies: Born Aug 29, 1915, She starred in this movie: H�stsonaten - 1978*ingrid bergman
+TV/Movies: Born Aug 29, 1915, She starred in this movie: Hostsonaten - 1978*ingrid bergman
 TV/Movies: Born Aug 29, 1915, She starred in this movie: Rich Girl - 1991*ingrid bergman
 TV/Movies: Born Aug 31, 1949, He starred in this movie: Bloodbrothers - 1978*richard gere
 TV/Movies: Born Aug 31, 1949, He starred in this movie: Primal Fear - 1996*richard gere
@@ -4898,7 +4898,7 @@ Who wrote Auld Lang Syne*robert burns
 Who wrote David Copperfield*charles dickens
 Who wrote Moll Flanders*daniel defoe
 Who wrote most of the new testament books*paul
-Who wrote m�a�s�h*richard hooker
+Who wrote MASH*richard hooker
 Who wrote the 'Noddy' books*enid blyton
 Who wrote the 'noddy' books*enid blyton
 Who wrote the book on which the Oscar winning film 'The Godfather' was based*mario puzo
@@ -4987,7 +4987,7 @@ A movement that developed in the 1920s, characterized by a regularized surface, 
 A multistoried building, typically Asian, forming a tower with upward curving roofs over the individual stories*pagoda
 A part of a church or a separate building, often octagonal or round, in which baptisms take place*baptistery
 A passageway of a Christian Church or a Roman basilica running paralell to the nave, separated from it by an arcade or colonnade*aisle
-A projecting support built into or against the external wall of a building, typically used in Gothic buildings. A flying � is an arch that transfers the thrust of a vault to a lower support*buttress
+A projecting support built into or against the external wall of a building, typically used in Gothic buildings. A flying -------- is an arch that transfers the thrust of a vault to a lower support*buttress
 A roofed gallery with an open arcade or colonnade on at least one side*loggia
 A row of columns, usually equidistant, supporting a beam or entablature*colonnade
 A row of windows in the upper part of a wall, especially in a church, to admit light below*clerestory
@@ -5107,7 +5107,7 @@ The rendering of light and shade in painting; the subtle graduations and marked 
 The representation of inanimate objects in painting, drawing or photography*still life
 The technique of producing printed designs through various methods of incising on wood or metal blocks, which are then inked and printed*etching
 The visual and tactile quality of a work based on the particular way the materials are handled; also, the distribution of tones or shades of a single color*texture
-Water-soluble paint made from pigments and a plastic binder�?*acrylic
+Water-soluble paint made from pigments and a plastic binder?*acrylic
 Deep down I am fairly ... ?*superficial
 Never confuse motion with ... ?*action
 I do not sing, I do not dance, and I don't say ... ?*sir
@@ -5117,67 +5117,67 @@ The first half of our lives is ruined by our parents, and the second half ... ?*
 A Bohemian folk dance in duple time with a hop on the fouth beat. It became a popular ballroom dance in the mid-nineteenth century*polka
 A Japanese dance drama featuring stylized narrative choreographic movements*kabuki
 A Sevillian gypsy dance, possibly originating in India, also with Moorish and Arabian influences, originally accompanied by songs and clapping and later by the guitar, and characterized by its heelwork*flamenco
-A Spanish dance in � time or 3/8 time with castanets*cachucha
-A ballet bow or curtsy in which one foot is pointed in front and the body leans forward*r�v�rence
+A Spanish dance in 3/4 time or 3/8 time with castanets*cachucha
+A ballet bow or curtsy in which one foot is pointed in front and the body leans forward*reverence
 A ballet in which the women wear white tutus, such as the second and fourth acts of Swan Lake*ballet blanc
 A ballet movement in which the dancer repeatedly crosses his or her legs in the air*entrechat
 A ballet with a plot, usually tragic, to bring dramatic coherence to the performance of ballet*ballet d'action
 A basic movement in the technique of Martha Graham, based on breath inhalation and exhalation*contraction
 A beating movement of the legs*battement
-A bending of the knees in any of the five positions*pli�
-A dance for two, usually a woman and a man. In its traditional form, it begins with an entre� and adagio, followed by solo variations for each dancer, and a coda*pas de deux
+A bending of the knees in any of the five positions*plie
+A dance for two, usually a woman and a man. In its traditional form, it begins with an entree and adagio, followed by solo variations for each dancer, and a coda*pas de deux
 A dance with a fast or moderate tempo*allegro
 A grave, processional court dance popular in the sixteenth and seventeenth centuries*pavane
 A jump in which the legs open in second position in the air, resembling a scissors*ciseaux
-A leap from one leg to the other in which one leg is thrown to the side, front or back*jet�
+A leap from one leg to the other in which one leg is thrown to the side, front or back*jete
 A lively Spanish dance in triple time performed with castanets or tambourines*fandango
 A lively social dance popular during the 1930s; it originated at the Savoy Ballroom in Harlem in 1928, where it was known as the Lindy*jitterbug
 A male dancer who performs the 'princely' roles of the classical ballet, such as the Prince in Swan Lake*danseur noble
 A plotless work composed of pure dance movements, although the composition may suggest a mood or subject*abstract dance
 A polish national dance in triple time with an accent on the second beat, characterized by proud bearing, clicking of heels, and holubria, a special turning step*mazurka
 A position on the tip of the toes*point
-A series of small, fast steps executed with the feet very close together*pas de bourr�e
-A sliding step in which one foot 'chases' and displaces the other*chass�
+A series of small, fast steps executed with the feet very close together*pas de bourree
+A sliding step in which one foot 'chases' and displaces the other*chasse
 A slow and graceful dance, the most popular dance of the eighteenth century, characterized by symmetrical figures and elaborate curtsys and bows*minuet
-A social dance in � time that became widely popular in the nineteenth century. It developed from the Landler, a German-Austrian turning dance*waltz
-A social dance in � time, which after originating in Spain, developed in Argentina, where it was influenced by black dance style and rhytm*tango
+A social dance in 3/4 time that became widely popular in the nineteenth century. It developed from the Landler, a German-Austrian turning dance*waltz
+A social dance in 2/4 time, which after originating in Spain, developed in Argentina, where it was influenced by black dance style and rhytm*tango
 A social dance of American origin in duple time*fox-trot
 A social dance popular in the nineteenth century. It was a square dance in five sections, each in a different time*quadrille
 A solemn court dance usually in duple time, popular in the fifteenth and sixteenth centuries*basse danse
-A spectacular movement in which the dancer propels himself or herself around a supporting leg with rapid movements of the other leg while remaining in a fixed spot*fouett� en tournant
-A step that rocks from one foot to the other, usually in � time*balanc�
+A spectacular movement in which the dancer propels himself or herself around a supporting leg with rapid movements of the other leg while remaining in a fixed spot*fouette en tournant
+A step that rocks from one foot to the other, usually in � time*balance
 A turn on one leg, with the toe of the other leg touching the knee of the turning leg*pirouette
 A turn while jumping straight up in the air*tour en l'air
 An American folk dance with an even number of couples forming a square, two lines, or a circle. The dance is comprised of figures announced by a caller*square dance
 An English folk dance that appeared in the fifteenth century, in which dancers wore bells on their legs and characters included a fool, a boy on a hobby horse, and a main in blackface*morris dance
 An african-american dance in which couples strut and compete with high kicks and fast steps*cakewalk
-An unfolding of the leg in the air*d�velopp�
+An unfolding of the leg in the air*developpe
 Any dance to slow music; also, part of the classical pas-de-deux in ballet*adagio
 Any solo performance in a ballet*variation
 Catlike leap in which one foot follows the other into the air, knees bent; the landing is in the fifth position*pas de chat
-In ballet, a bend from the waist to the side or to the back*cambr�
-In ballet, a closed position of the feet*ferm�
+In ballet, a bend from the waist to the side or to the back*cambre
+In ballet, a closed position of the feet*ferme
 In ballet, a gliding step which usually connects two steps*glissade
-In ballet, a jump from one to both feet, usually landing in fifth position*assembl�
-In ballet, a jump off one foot that is 'broken' by a beating of the legs in the air*bris�
+In ballet, a jump from one to both feet, usually landing in fifth position*assemble
+In ballet, a jump off one foot that is 'broken' by a beating of the legs in the air*brise
 In ballet, a leap in which the lower leg beats against the upper one at an angle, before the dancer lands again on the lower leg*cabriole
 In ballet, a lowering of the body by bending the knee*fondu
 In ballet, a pose in which one leg is raised in back or in front with knee bent, usually with one arm raised*attitude
 In ballet, a position of the arms above the head*en haut
-In ballet, a position of the body at an oblique angle and partly hidden*effac�
-In ballet, a position with one leg extended at an oblique angle while the body is also at an oblique angle*�cart�
-In ballet, a position with the body at an oblique angle and the working leg crossing the line of the body*crois�e
-In ballet, a rising with a spring movement to point or demi-point*relev�
+In ballet, a position of the body at an oblique angle and partly hidden*efface
+In ballet, a position with one leg extended at an oblique angle while the body is also at an oblique angle*ecarte
+In ballet, a position with the body at an oblique angle and the working leg crossing the line of the body*croisee
+In ballet, a rising with a spring movement to point or demi-point*releve
 In ballet, a slow turn of the body on the whole foot*promenade
 In ballet, a step done off the ground*en l'air
-In ballet, an elongated line; in particular, the horizontal line of an arasbesque with one arm stretched front and the other back*allong�
+In ballet, an elongated line; in particular, the horizontal line of an arasbesque with one arm stretched front and the other back*allonge
 In ballet, an open position of the feet*ouvert
-In ballet, leaning forward*pench�
+In ballet, leaning forward*penche
 In ballet, low, as in placement of arms*en bas
-In ballet, shifting weight from one foot to the other*d�gag�
+In ballet, shifting weight from one foot to the other*degage
 In ballet, the ability of a dancer to remain suspended in air during a jump; elasticity in jumping*ballon
 In ballet, the position of the arms*port de bras
-In ballet, the position of the torso from the waist up*�paulement
+In ballet, the position of the torso from the waist up*epaulement
 In ballet, the third and final part of the classical pas de deux*coda
 In ballroom dance, a characteristic figure that remains constant*basic movement
 Originating around 1830 as a social dance, by 1844 it had become a raucous dance performed in French music halls*cancan
@@ -5186,7 +5186,7 @@ Principial male dancer*premieur danseur
 Social dances usually performed by couples, including the fox-trot, waltz, tango, rumba and cha cha*ballroom dances
 Spectacles for entertainment, usually with allegorical or mythological themes, performed by the aristocracy in the sixteenth and seventeenth centuries, combining music, recitatives and mime*court ballet
 Standard Italian dances and their music of the fifteenth and sixteenth centuries*ballo
-Stepping directly onto the point of a foot*piqu�
+Stepping directly onto the point of a foot*pique
 Steps performed on the floor. It is the opposite of en l'air*par terre
 The members of a ballet company who do not perform solo*corps de ballet
 Traditional English dance in which dancers form two facing lines*country dance
@@ -5292,7 +5292,7 @@ Saucy, sexy single mother of two is a source of constant embarassment to her tee
 Sexually precocious Lyon becomes involved with stolid professor Mason, and bizarre Sellers provides peculiar romance leading to murder and lust*Lolita
 Slow-moving mystery with Modine playing two men - a weakling auto mechanic and an underworld tough-guy - who live in the same city and lead parallel lives*Equinox
 Smart, sophisticated comedy about husband and wife lawyers on opposing sides of the same murder case*Adam's rib
-Standard Murphy western with every horseopera clich� intact - plot centers around missing shipment of rifles*40 Guns to Apache Pass
+Standard Murphy western with every horseopera cliche intact - plot centers around missing shipment of rifles*40 Guns to Apache Pass
 Standard film of couple quarreling over adopting war orphan. Nice locations in Switzerland*High Fury
 Tender film of faithful horse who returns to mistress after parents sell it to racing stable. Remake of 'Lassie Come Home'*Gypsy Colt
 The sword-wielding warrior seeks vengeance on the cult leader who enslaved him and massacred his villagein this fullblooded adventure epic based on Robert E. Howards pulp tales*Conan the Barbarian
@@ -5307,7 +5307,7 @@ Man is the only animal that blushes, or ... ?*needs to
 Obstinacy and dogmatism are the surest signs of stupidity. Is there anything more confident, resolute, disdainful, grave and serious than an ... ?*ass
 There is no place in a fanatics head, where ... ?*reason can enter
 In 1951 the Nobel prize in chemistry was awarded jointly to Edwin Mattison McMillan and Glenn Theodore Seaborg for their discoveries in the chemistry of the transuranium ... ?*elements
-In 1951 the Nobel prize in literature was given to P�r Fabian Lagerkvist for the artistic vigour and true independence of mind with which he endeavours in his poetry to find answers to the eternal questions ... ?*confronting mankind
+In 1951 the Nobel prize in literature was given to Par Fabian Lagerkvist for the artistic vigour and true independence of mind with which he endeavours in his poetry to find answers to the eternal questions ... ?*confronting mankind
 In 1951 the Nobel prize in physics was awarded jointly to Sir John Douglas Cockcroft and Ernest Thomas Sinton Walton for their pioneer work on the transmutation of atomic nuclei by artificially accelerated ... ?*atomic particles
 In 1951 the Nobel prize in physiology or medicine was given to Max Theiler for his discoveries concerning yellow fever and how to ... ?*combat it
 In 1952 the Nobel prize in chemistry was given to awarded jointly to Archer John Porter Martin and Richard  Laurence Millington Synge for their invention of partition ... ?*chromatography
@@ -5323,13 +5323,13 @@ In 1954 the Nobel prize in literature was given to Ernest Miller Hemingway for h
 In 1954 the Nobel prize in physics was divided equally between Max Born for his fundamental research in quantum mechanics, especially for his statistical interpretation of the wavefunction, and Walther Bothe for the ... and his discoveries made therewith*coincidence method
 In 1954 the Nobel prize in physiology or medicine was given to John Franklin Enders, Thomas Huckle Weller and Frederick Chapman Robbins for their discovery of the ability of poliomyelitis viruses to grow in cultures of various types of ... ?*tissue
 In 1955 the Nobel prize in chemistry was given to Vincent du Vigneaud for his work on biochemically important sulphur compounds, especially for the first synthesis of a polypeptide ... ?*hormone
-In 1955 the Nobel prize in literature was given to Halld�r Kiljan Laxness, for his vivid epic power which has renewed the great narrative art of ... ?*Iceland
+In 1955 the Nobel prize in literature was given to Halldor Kiljan Laxness, for his vivid epic power which has renewed the great narrative art of ... ?*Iceland
 In 1955 the Nobel prize in physics was divided equally between: Willis Eugene Lamb for his discoveries concerning the fine structure of the hydrogen spectrum Polykarp Kusch for his precision determination of the magnetic moment of the ... ?*electron
 In 1955 the Nobel prize in physiology or medicine was given to Axel Hugo Theodor Theorell for his discoveries concerning the nature and mode of action of oxidation ... ?*enzymes
 In 1956 the Nobel prize in chemistry was given to awarded jointly to Sir Cyril Norman Hinshelwood and Nikolay Nikolaevich Semenov for their researches into the mechanism of ... ?*chemical reactions
-In 1956 the Nobel prize in literature was given to Juan Ram�n Jim�nez for his lyrical poetry, which in Spanish language constitutes an example of high spirit and ... ?*artistical purity
+In 1956 the Nobel prize in literature was given to Juan Ramon Jimenez for his lyrical poetry, which in Spanish language constitutes an example of high spirit and ... ?*artistical purity
 In 1956 the Nobel prize in physics was awarded jointly, one third each, to William Shockley, John Barden and Walter Houser Brattain for their researches on semiconductors and their discovery of the ... ?*transistor effect
-In 1956 the Nobel prize in physiology or medicine was given to Andr� Fr�d�ric Cournand, Werner Forssmann and Dickinson W. Richards for their discoveries concerning heart catherization and pathological changes in the ... ?*circulatory system
+In 1956 the Nobel prize in physiology or medicine was given to Andre Frederic Cournand, Werner Forssmann and Dickinson W. Richards for their discoveries concerning heart catherization and pathological changes in the ... ?*circulatory system
 In 1957 the Nobel prize in chemistry was given to Lord Alexander R. Todd for his work on nucleotides and nucleotide ... ?*co-enzymes
 In 1957 the Nobel prize in literature was given to Albert Camus for his important literary production, which with clear-sighted earnestness illuminates the problems of the ... ?*human conscience in our times
 In 1957 the Nobel prize in physics was given jointly Chen Ning Yang and Tsung-Dao Lee for their penetratinginvestigation of the so-called ... which has led to important discoveries regarding the elementary particles*parity laws
@@ -5339,16 +5339,16 @@ In 1958 the Nobel prize in physics was awarded jointly to Pavel Alekseyevich Che
 In 1958 the Nobel prize in physiology or medicine was given to George Wells Beadle and Edward Lawrie Tatum for their discovery that genes act by regulating definite chemical events and the other half to Joshua Lederberg for his discoveries concerning genetic recombination and the organization of the genetic material of ... ?*bacteria
 In 1959 the Nobel prize in chemistry was given to Jaroslav Heyrovsky for his discovery and development of the polarographic methods of ... ?*analysis
 In 1959 the Nobel prize in literature was given to Salvatore Quasimodo for his lyrical poetry, which with classical fire expresses the tragic experience of ... ?*life in our own times
-In 1959 the Nobel prize in physics was awarded jointly to Emilio Gino Segr� and Owen Chamberlain for their discovery of the ... ?*antiproton
+In 1959 the Nobel prize in physics was awarded jointly to Emilio Gino Segre and Owen Chamberlain for their discovery of the ... ?*antiproton
 In 1959 the Nobel prize in physiology or medicine was given to Severo Ochoa and Arthur Kornberg for their discovery of the mechanisms in the biological synthesis of ribonucleic acid and deoxiribonucleic ... ?*acid
 In 1960 the Nobel prize in chemistry was given to Willard Frank Libby for his method to use carbon-14 for age determination in archaeology, geology, geophysics, and other branches of ... ?*science
-In 1960 the Nobel prize in literature was given to Saint-John Perse  (pen-name of Alexis L�ger), for the soaring flight and the evocative imagery of his poetry which in a visionary fashion reflects the ... ?*conditions of our time
+In 1960 the Nobel prize in literature was given to Saint-John Perse  (pen-name of Alexis Leger), for the soaring flight and the evocative imagery of his poetry which in a visionary fashion reflects the ... ?*conditions of our time
 In 1960 the Nobel prize in physics was given to Donald A. Glaser for the invention of the bubble ... ?*chamber
 In 1960 the Nobel prize in physiology or medicine was given to Sir Frank Macfarlane Burnet and Sir Peter Brian Medawar for discovery of acquired immunological ... ?*tolerance
 In 1961 the Nobel prize in chemistry was given to Melvin Calvin for his research on the carbon dioxide assimilation in ... ?*plants
 In 1961 the Nobel prize in literature was given to Ivo Andri'c for the epic force with which he has traced themes and depicted human destinies drawn from the history of ... ?*his country
-In 1961 the Nobel prize in physics was divided equally between Robert Hofstadter for his pioneering studies of electron scattering in atomic nuclei and for his thereby achieved discoveries concerning the stucture of the nucleons Rudolf Ludwig M�ssbauer for his researches concerning the resonance absorption of gamma radiation and his discovery in this connection of the effect which ... ?*bears his name
-In 1961 the Nobel prize in physiology or medicine was given to Georg von B�k�sy for his discoveries of the physical mechanism of stimulation within the ... ?*cochlea
+In 1961 the Nobel prize in physics was divided equally between Robert Hofstadter for his pioneering studies of electron scattering in atomic nuclei and for his thereby achieved discoveries concerning the stucture of the nucleons Rudolf Ludwig Mossbauer for his researches concerning the resonance absorption of gamma radiation and his discovery in this connection of the effect which ... ?*bears his name
+In 1961 the Nobel prize in physiology or medicine was given to Georg von Bekesy for his discoveries of the physical mechanism of stimulation within the ... ?*cochlea
 In 1962 the Nobel prize in chemistry was divided equally between Max Ferdinand Perutz and Sir John Cowdery Kendrew for their studies of the structures of globular ... ?*proteins
 In 1962 the Nobel prize in literature was given to John Steinbeck for his realistic and imaginative writings, combining as they do sympathetic humour and keen ... ?*social perception
 In 1962 the Nobel prize in physics was given to Lev Davidovich Landau for his pioneering theories for condensed matter, especially liquid ... ?*helium
@@ -5364,7 +5364,7 @@ In 1964 the Nobel prize in physiology or medicine was given to Konrad Bloch and 
 In 1965 the Nobel prize in chemistry was given to Robert Burns Woodward for his outstanding achievements in the art of ... ?*organic synthesis
 In 1965 the Nobel prize in literature was given to Michail Aleksandrovich Sholokhov for the artistic power and integrity with which, in his epic of the Don, he has given expression to a historic phase in the life of ... ?*the Russian people
 In 1965 the Nobel prize in physics was awarded jointly to Sin-itiro Tomonaga, Julian Schwinger and Richard P. Feynman for their fundamental work in quantum electrodynamics, with deep-ploughing consequences for the physics of elementary ... ?*particles
-In 1965 the Nobel prize in physiology or medicine was given to Francois Jacob, Andr� Lwoff and Jacoues Monod for their discoveries concerning genetic control of enzyme and ... ?*virus synthesis
+In 1965 the Nobel prize in physiology or medicine was given to Francois Jacob, Andre Lwoff and Jacoues Monod for their discoveries concerning genetic control of enzyme and ... ?*virus synthesis
 In 1966 the Nobel prize in chemistry was given to Robert S. Mulliken for his fundamental work concerning chemical bonds and the electronic structure of molecules by the molecular orbital ... ?*method
 In 1966 the Nobel prize in literature was divided equally between Shmuel Yosef Agnon for his profoundly characteristic narrative art with motifs from the life of the Jewish people and Nelly Sachs for her outstanding lyrical and dramatic writing, which interprets Israel's destiny with ... ?*touching strength
 In 1966 the Nobel prize in physics was given to Alfred Kastler for the discovery and development of optical methods for studying hertzian resonances in ... ?*atoms
@@ -5380,17 +5380,17 @@ In 1968 the Nobel prize in physiology or medicine was given to Robert W. Holley,
 In 1969 the Nobel prize in chemistry was divided equally between Sir Derek H.R. Baron and Odd Hassel for their contributions to the development of the concept of conformation and its application in ... ?*chemistry
 In 1969 the Nobel prize in literature was given to Samuel Beckett for his writing, which - in new forms for the novel and drama - in the destitution of modern man acquires its ... ?*elevation
 In 1969 the Nobel prize in physics was given to Murray Gell-Mann for his contributions and discoveries concerning the classification of elementary particles and their ... ?*interactions
-In 1969 the Nobel prize in physiology or medicine was given to Max Delbr�ck, Alfred D. Hershey and Salvador E. Luria for their discoveries concerning the replication mechanism and the gentic structure of ... ?*viruses
+In 1969 the Nobel prize in physiology or medicine was given to Max Delbruck, Alfred D. Hershey and Salvador E. Luria for their discoveries concerning the replication mechanism and the gentic structure of ... ?*viruses
 In 1970 the Nobel prize in chemistry was given to Luis F. Leloir for his discovery of sugar nucleotides and their role in the biosynthesis of ... ?*carbohydrates
 In 1970 the Nobel prize in literature was given to Aleksandr Isaevich Solzhenitsyn for the ethical force with which he has pursued the indispensable traditions of ... ?*Russian literature
-In 1970 the Nobel prize in physics was divided equally between Hannes Alfven for fundamental work and discoveries in magneto-hydrodynamics with fruitful applications in different parts of plasma physics and Louis N�el for fundamental work and discoveries concerning antiferromagnetism and ferrimagnetism which have led to important applications in ... ?*solid state physics
+In 1970 the Nobel prize in physics was divided equally between Hannes Alfven for fundamental work and discoveries in magneto-hydrodynamics with fruitful applications in different parts of plasma physics and Louis Neel for fundamental work and discoveries concerning antiferromagnetism and ferrimagnetism which have led to important applications in ... ?*solid state physics
 In 1970 the Nobel prize in physiology or medicine was given to Sir Bernard Katz, Ulf von Euler and Julius Axelrod for their discoveries concerning the humoral transmittors in the nerve terminals and the mechanism for their storage, release and ... ?*inactivation
 In 1971 the Nobel prize in chemistry was given to Gerhard Herzberg for his contributions to the knowledge of electronic stucture and geometry of molecules, particularly ... ?*free radicals
 In 1971 the Nobel prize in literature was given to Pablo Neruda for a poetry that with the action of an elemental force brings alive a continent's destiny and ... ?*dreams
 In 1971 the Nobel prize in physics was given to Dennis Gabor for his invention and development of the holographic ... ?*method
 In 1971 the Nobel prize in physiology or medicine was given to Earl W.Jr. Sutherland for his discoveries concerning the mechanisms of the action of ... ?*hormones
 In 1972 the Nobel prize in chemistry was divided, one half being awarded to Christian B. Anfinsen for his work on ribonuclease, especially concerning the connection between the amino acid sequence and the biologically active confirmation and the other half jointly to Stanford Moore and William H. Stein for their contribution to the understanding of the connection between chemical structure and catalytic activity of the active centre of the ribonuclease ... ?*molecule
-In 1972 the Nobel prize in literature was given to Heinrich B�ll for his writing which through its combination of a broad perspective on his time and a sensitive skill in characterization has contributed to a renewal of ... ?*German literature
+In 1972 the Nobel prize in literature was given to Heinrich Boll for his writing which through its combination of a broad perspective on his time and a sensitive skill in characterization has contributed to a renewal of ... ?*German literature
 In 1972 the Nobel prize in physics was awarded jointly to: John Bardeen, Leon N. Cooper and J. Robert Schrieffer for their jointly developed theory of superconductivity, usually called the ... ?*BCS-theory
 In 1972 the Nobel prize in physiology or medicine was given to Gerald M. Edelman and Rodney R. Porter for their discoveries concerning the chemical structure of ... ?*antibodies
 In 1973 the Nobel prize in chemistry was divided equally between Ernst Ott Fischer and Sir Geoffrey Wilkinson for their pioneering work, performed independently, on the chemistry of the organometallic, so called sandwich ... ?*compounds
@@ -5430,9 +5430,9 @@ In 1981 the Nobel prize in literature was given to Elias Canetti for writings ma
 In 1981 the Nobel prize in physics was awarded by one half jointly to Nicolaas Bloembergen and Arthur L. Schawlow for their contribution to the development of laser spectroscopy and the other half to Kai M. Siegbahn for his contribution to the development of high- resolution electron ... ?*spectroscopy
 In 1981 the Nobel prize in physiology or medicine was divided between Roger W. Sperry for his discoveries concerning the functional specialization of the cerebral hemispheres. and the other half awarded jointly to David H. Hubel and Torstein N. Wiesel for their discoveries concerning information processing in the ... ?*visual system
 In 1982 the Nobel prize in chemistry was given to Sir Aaron Klug for his development of crystallographic electron microscopy and his structural elucidation of biologically important nuclei acid-protein ... ?*complexes
-In 1982 the Nobel prize in literature was given to Gabriel Garc�a M�rquez for his novels and short stories, in which the fantastic and the realistic are combined in a richly composed world of imagination, reflecting a continent's ... ?*life and conflicts
+In 1982 the Nobel prize in literature was given to Gabriel Garcia Marquez for his novels and short stories, in which the fantastic and the realistic are combined in a richly composed world of imagination, reflecting a continent's ... ?*life and conflicts
 In 1982 the Nobel prize in physics was given to Kenneth G. Wilson for his theory for critical phenomena in connection with phase ... ?*transitions
-In 1982 the Nobel prize in physiology or medicine was given to Sune K. Bergstr�m, Bengt I. Samuelsson and Sir John R. Vane for their discoveries concerning prostaglandins and related biologically ... ?*active substances
+In 1982 the Nobel prize in physiology or medicine was given to Sune K. Bergstrom, Bengt I. Samuelsson and Sir John R. Vane for their discoveries concerning prostaglandins and related biologically ... ?*active substances
 In 1983 the Nobel prize in chemistry was given to Henry Taube for his work on the mechanisms of electron transfer reactions, especially in ... ?*metal complexes
 In 1983 the Nobel prize in literature was given to Sir William Golding for his novels which, with the perspicuity of realistic narrative art and the diversity and universality of myth, illuminate the human condition in the ... ?*world of today
 In 1983 the Nobel prize in physics was divided equally between  Subramanyan Chandrasekhar for his theoretical studies of the physical processes of importance to the structure and evolution of the stars and William A. Fowler for his theoretical and experimental studies of the nuclear reactions of importance in the formation of the chemical elements in the ... ?*universe
@@ -5440,7 +5440,7 @@ In 1983 the Nobel prize in physiology or medicine was given to Barbara Clintock 
 In 1984 the Nobel prize in chemistry was given to Robert Bruce Merrifield for his development of methodology for chemical synthesis on a solid ... ?*matrix
 In 1984 the Nobel prize in literature was given to Jaroslav Seifert, for his poetry which endowed with freshness, sensuality and rich inventiveness provides a liberating image of the indomitable spirit and versatility of man ... ?*versatility of man
 In 1984 the Nobel prize in physics was awarded jointly to Carlo Rubbia and Simon van der Meer for their decisive contributions to the large project, which led to the discovery of the field particles W and Z, communicators of weak ... ?*interaction
-In 1984 the Nobel prize in physiology or medicine was given to Niels K. Jerne, Georges J.F.K�hler and C�sar Milstein for theories concerning the specificity in development and control of the immune system and the discovery of the principle for production of monoclonal ... ?*antibodies
+In 1984 the Nobel prize in physiology or medicine was given to Niels K. Jerne, Georges J.F. Kohler and Cesar Milstein for theories concerning the specificity in development and control of the immune system and the discovery of the principle for production of monoclonal ... ?*antibodies
 In 1985 the Nobel prize in chemistry was awarded jointly to Herbert A. Hauptman and Jerome Karle for their outstanding achievements in the development of direct methods for the determination of  ... ?*crystal structures
 In 1985 the Nobel prize in literature was given to Claude Simon, who in his novel combines the poet's and the painter's creativeness with a deepened awareness of time in the depiction of the ... ?*human condition
 In 1985 the Nobel prize in physics was given to Klaus von Klitzing for the discovery of the quantized ... ?*Hall effect
@@ -5451,14 +5451,14 @@ In 1986 the Nobel prize in physics was awarded by one half to Ernst Ruska for hi
 In 1986 the Nobel prize in physiology or medicine was given to Stanley Cohen and Rita Levi-Montalcini for their discoveries of ... ?*growth factors
 In 1987 the Nobel prize in chemistry was given to Donald J. Cram, Jean-Marie Lehn, and Charles J. Pedersen for their development and use of molecules with structure-specific interactions of high ... ?*selectivity
 In 1987 the Nobel prize in literature was given to Joseph Brodsky, for an all-embracing authorship, imbued with clarity of thought and ... ?*poetic intensity
-In 1987 the Nobel prize in physics was awarded jointly to J. Georg Bednorz and K. Alexander M�ller for their important breakthrough in the discovery of superconductivity in ... ?*ceramic materials
+In 1987 the Nobel prize in physics was awarded jointly to J. Georg Bednorz and K. Alexander Muller for their important breakthrough in the discovery of superconductivity in ... ?*ceramic materials
 In 1987 the Nobel prize in physiology or medicine was given to Susumu Tonegawa for his discovery of the genetic principle for generation of ... ?*antibody diversity
 In 1988 the Nobel prize in chemistry was awarded jointly to Johann Deisenhofer, Robert Huber and Hartmut Michel for the determination of the three-dimensional structure of a photosynthetic reaction ... ?*centre
 In 1988 the Nobel prize in literature was given to Naguib Mahfouz,  who through works rich in nuance-now clearsightedly realistic, now evocatively ambigous-has formed an Arabian narrative art that applies to ... ?*all mankind
 In 1988 the Nobel prize in physics was awarded jointly to Leon M Lederman, Melvin Schwarts and Jack Steinberger for the neutrino beam method and the demonstration of the doublet structure of the leptons through the discovery of the ... ?*muon neutrino
 In 1988 the Nobel prize in physiology or medicine was given to Sir James W. Black, Gertrude B. Elion and George H. Hitchings for their discoveries of important principles for ... ?*drug treatment
 In 1989 the Nobel prize in chemistry was given to Sidney Altman and Thomas R. Cech for their discovery of catalytic properties of ... ?*RNA
-In 1989 the Nobel prize in literature was given to Camilio Jos� Cela for a rich and intensive prose, which with restrained compassion forms a challenging vision of man's ... ?*vulnerability
+In 1989 the Nobel prize in literature was given to Camilio Jose Cela for a rich and intensive prose, which with restrained compassion forms a challenging vision of man's ... ?*vulnerability
 In 1989 the Nobel prize in physics was divided between Norman F. Ramsey for the invention of the separated oscillatory fields method and its use in the hydrogen maser and other atomic clocks. and the other half jointly to Hans G. Dehmelt and Wolfgang Paul for the development of the ion ... ?*trap technique
 In 1989 the Nobel prize in physiology or medicine was given to J. Michael Bishop and Harold E. Varmus for their discovery of the cellular origin of retroviral ... ?*oncogenes
 In 1990 the Nobel prize in chemistry was given to Elias James Corey for his development of the theory and methodology of ... ?*organic synthesis
@@ -5484,7 +5484,7 @@ In 1994 the Nobel prize in physiology or medicine was given to Alfred G. Gilman 
 In 1995 the Nobel prize in chemistry was awarded jointly to Paul Crutzen, Mario Molina and F. Sherwood Rowland for their work in atmospheric chemistry, particularly concerning the formation and decomposition of ... ?*ozone
 In 1995 the Nobel prize in literature was given to Seamus Heaney for works of lyrical beauty and ethical depth, which exalt everyday miracles and the... ?*living past
 In 1995 the Nobel prize in physics was awarded for pioneering experimental contributions to lepton physics, with one half to Martin L. Perl for the discovery of the tau lepton. and the other half to Frederick Reines for the detection of the ... ?*neutrino
-In 1995 the Nobel prize in physiology or medicine was given to Edward B. Lewis, Christiane N�sslein-Volhard and Eric F. Wieschaus for their discoveries concerning the genetic control of early ... ?*embryonic development
+In 1995 the Nobel prize in physiology or medicine was given to Edward B. Lewis, Christiane Nusslein-Volhard and Eric F. Wieschaus for their discoveries concerning the genetic control of early ... ?*embryonic development
 In 1996 the Nobel prize in chemistry was given to Robert F. Curl Jr., Sir Harold W. Kroto, and Richard E. Smalley for their discovery of ... ?*fullerenes
 In 1996 the Nobel prize in literature was given to  Wislawa Szymborska, for poetry that with ironic precision allows the historical and biological context to come to light in fragments of ... ?*human reality
 In 1996 the Nobel prize in physics was awarded jointly to David M. Lee, Douglas D. Osheroff and Robert C. Richardson for their discovery of superfluidity in ... ?*helium-3
@@ -5500,7 +5500,7 @@ In 1998 the Nobel prize in physiology or medicine was given to Robert Furchgott,
 In 1999 the Nobel prize in chemistry was given to Ahmed Zewail for his studies of the transition states of chemical reactions using femtosecond ... ?*spectroscopy
 In 1999 the Nobel prize in literature was given to Gunter Grass whose frolicsome black fables portray the forgotten face ... ?*of history
 In 1999 the Nobel prize in physics was awarded jointly to Gerardus Thooft and Martinus J.G. Veltman for elucidating the quantum structure of ... ?*electroweak interactions in physics
-In 1999 the Nobel prize in physiology or medicine was given to G�nter Blobel for the discovery that proteins have intrinsic signals that govern their transport and localization in the ... ?*cell
+In 1999 the Nobel prize in physiology or medicine was given to Gunter Blobel for the discovery that proteins have intrinsic signals that govern their transport and localization in the ... ?*cell
 In 2000 the Nobel prize in chemistry was given to Alan J. Heeger, Alan G. Macdiarmid and Hideki Shirikawa for the discovery and development of conductive ... ?*polymers
 In 2000 the Nobel prize in literature was given to Gao Xingjian for an oeuvre of universal validity, bitter insights and linguistic ingenuity, which has opened new paths for the ... ?*Chinese novel and drama
 In 2000 the Nobel prize in physics was given to Zhores I. Alferov, and Herbert Kroemer for developing semiconductor heterostructures used in high-speed- and opto-electronics and and one half to Jack St. Clair Kilby for his part in the invention of the ... ?*integrated circuit
@@ -7687,8 +7687,8 @@ Which is the most remote island in the southern atlantic ocean?*Bouvet Island
 Which is the only musical bird that can fly backwards?*hummingbird
 Which is the only sea below sea level?*Dead Sea
 Which is the smallest independent country?*Vatican City
-Which island country lies immediately to the East of R�union?*Mauritius
-Which island country lies immediately to the West of Mauritius?*R�union
+Which island country lies immediately to the East of Reunion?*Mauritius
+Which island country lies immediately to the West of Mauritius?*Reunion
 Which island country lies to the East of Mauritius?*Australia
 Which island country lies to the West of Australia?*Mauritius
 Which large city is on the Southeastern coast of Australia?*Sydney
