@@ -36,7 +36,7 @@ func emojiLoadFunc(bot *bruxism.Bot, service bruxism.Service, data []byte) error
 	return nil
 }
 
-var discordRegex = regexp.MustCompile("<:.*?:(.*?)>")
+var discordRegex = regexp.MustCompile("<(a?):.*?:(.*?)>")
 
 func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
 	if service.Name() != bruxism.DiscordServiceName {
@@ -59,12 +59,16 @@ func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism
 	if len(parts) == 1 {
 		submatches := discordRegex.FindStringSubmatch(parts[0])
 		if len(submatches) != 0 {
-			h, err := http.Get("https://cdn.discordapp.com/emojis/" + submatches[1] + ".png")
+			fileType := ".png"
+			if submatches[1] == "a" {
+				fileType = ".gif"
+			}
+			h, err := http.Get("https://cdn.discordapp.com/emojis/" + submatches[2] + fileType)
 			if err != nil {
 				return
 			}
 
-			service.SendFile(message.Channel(), "emoji.png", h.Body)
+			service.SendFile(message.Channel(), "emoji"+fileType, h.Body)
 			h.Body.Close()
 
 			return
