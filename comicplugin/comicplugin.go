@@ -72,7 +72,7 @@ func (p *comicPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message br
 	return help
 }
 
-var emojiRegexp = regexp.MustCompile("<:[a-zA-Z0-9]+:([0-9]+)>")
+var emojiRegexp = regexp.MustCompile("<a?:[a-zA-Z0-9]+:([0-9]+)>")
 
 func makeScriptFromMessages(service bruxism.Service, message bruxism.Message, messages []bruxism.Message) *comicgen.Script {
 	speakers := make(map[string]int)
