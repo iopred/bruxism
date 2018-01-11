@@ -402,7 +402,7 @@ func (p *MusicPlugin) join(cID string) (vc *voiceConnection, err error) {
 		return
 	}
 
-	if c.Type != "voice" {
+	if c.Type != discordgo.ChannelTypeGuildVoice {
 		err = fmt.Errorf("That's not a voice channel.")
 		return
 	}
