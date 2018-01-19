@@ -47,12 +47,12 @@ func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism
 		return
 	}
 
-	if !bruxism.MatchesCommand(service, "emoji", message) && !bruxism.MatchesCommand(service, "hugemoji", message) {
+	if !bruxism.MatchesCommand(service, "emoji", message) && !bruxism.MatchesCommand(service, "hugemoji", message) && !bruxism.MatchesCommand(service, "hugeemoji", message) {
 		return
 	}
 
 	base := "emoji/twitter"
-	if bruxism.MatchesCommand(service, "hugemoji", message) {
+	if bruxism.MatchesCommand(service, "hugemoji", message) || bruxism.MatchesCommand(service, "hugeemoji", message) {
 		base = "emoji/twitterhuge"
 	}
 	_, parts := bruxism.ParseCommand(service, message)
