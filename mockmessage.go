@@ -1,7 +1,7 @@
 package bruxism
 
 type MockMessage struct {
-	channel, username, userid, avatar, message, rawMessage string
+	id, channel, username, userid, avatar, message, rawMessage string
 }
 
 func NewMockMessage() *MockMessage {
@@ -39,6 +39,11 @@ func (m *MockMessage) SetRawMessage(message string) *MockMessage {
 	return m
 }
 
+func (m *MockMessage) SetMessageID(messageID string) *MockMessage {
+	m.id = messageID
+	return m
+}
+
 // Satisfy Message interface below
 func (m *MockMessage) Channel() string {
 	return m.channel
@@ -65,7 +70,7 @@ func (m *MockMessage) RawMessage() string {
 }
 
 func (m *MockMessage) MessageID() string {
-	return ""
+	return m.id
 }
 
 func (m *MockMessage) Type() MessageType {

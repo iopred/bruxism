@@ -1,17 +1,20 @@
 package bruxism
 
 import (
-	"io"
 	"errors"
+	"io"
 )
 
 // Service is a service interface, wraps a single service such as YouTube or Discord.
 type MockService struct {
 	name, username, userid string
+	messages               chan Message
 }
 
 func NewMockService() *MockService {
-	return &MockService{}
+	return &MockService{
+		messages: make(chan Message, 512),
+	}
 }
 
 func (m *MockService) SetName(name string) *MockService {
@@ -44,7 +47,11 @@ func (s *MockService) UserID() string {
 }
 
 func (s *MockService) Open() (<-chan Message, error) {
-	return nil, errors.New("Not implemented")
+	return s.messages, nil
+}
+
+func (s *MockService) NewMessage(message Message) {
+	s.messages <- message
 }
 
 func (s *MockService) SendFile(channel, name string, r io.Reader) error {
