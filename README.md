@@ -102,4 +102,4 @@ Some plugins upload images to imgur (such as chartplugin), it's suggested that y
 
 ## Special Thanks
 
-[Bruce Marriner](https://github.com/bwmarrin/discordgo) - For DiscordGo and the Music Plugin.
+[Skippy](https://github.com/bwmarrin/discordgo) - For DiscordGo and the Music Plugin.
