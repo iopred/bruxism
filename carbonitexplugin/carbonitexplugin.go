@@ -27,7 +27,7 @@ func (p *carbonitexPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 	for {
 		<-time.After(5 * time.Minute)
 
-		resp, err := http.PostForm("https://www.carbonitex.net/discord/data/botdata.php", url.Values{"key": {p.key}, "servercount": {fmt.Sprintf("%d", service.ChannelCount())}})
+		http.PostForm("https://www.carbonitex.net/discord/data/botdata.php", url.Values{"key": {p.key}, "servercount": {fmt.Sprintf("%d", service.ChannelCount())}})
 
 		<-time.After(55 * time.Minute)
 	}
