@@ -2,7 +2,6 @@ package carbonitexplugin
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -29,13 +28,6 @@ func (p *carbonitexPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 		<-time.After(5 * time.Minute)
 
 		resp, err := http.PostForm("https://www.carbonitex.net/discord/data/botdata.php", url.Values{"key": {p.key}, "servercount": {fmt.Sprintf("%d", service.ChannelCount())}})
-
-		if err == nil {
-			htmlData, err := ioutil.ReadAll(resp.Body)
-			if err == nil {
-				resp.Body.Close()
-			}
-		}
 
 		<-time.After(55 * time.Minute)
 	}
