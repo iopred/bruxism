@@ -188,19 +188,24 @@ func (d *Discord) Name() string {
 
 // Open opens the service and returns a channel which all messages will be sent on.
 func (d *Discord) Open() (<-chan Message, error) {
-	shards := d.Shards
-	if shards < 1 {
-		shards = 1
+gateway, err := discordgo.New(d.args...)
+	if err != nil {
+		return nil, err
 	}
 
-	d.Sessions = make([]*discordgo.Session, shards)
+	s, err := gateway.GatewayBot()
+	if err != nil {
+		return nil, err
+	}
 
-	for i := 0; i < shards; i++ {
+	d.Sessions = make([]*discordgo.Session, s.Shards)
+
+	for i := 0; i < s.Shards; i++ {
 		session, err := discordgo.New(d.args...)
 		if err != nil {
 			return nil, err
 		}
-		session.ShardCount = shards
+		session.ShardCount = s.Shards
 		session.ShardID = i
 		session.AddHandler(d.onMessageCreate)
 		session.AddHandler(d.onMessageUpdate)
