@@ -93,8 +93,6 @@ type Discord struct {
 	args        []interface{}
 	messageChan chan Message
 
-	Shards int
-
 	// The first session, used to send messages (and maintain backwards compatibility).
 	Session             *discordgo.Session
 	Sessions            []*discordgo.Session
