@@ -3,7 +3,6 @@ package carbonitexplugin
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
