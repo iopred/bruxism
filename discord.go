@@ -186,7 +186,7 @@ func (d *Discord) Name() string {
 
 // Open opens the service and returns a channel which all messages will be sent on.
 func (d *Discord) Open() (<-chan Message, error) {
-gateway, err := discordgo.New(d.args...)
+	gateway, err := discordgo.New(d.args...)
 	if err != nil {
 		return nil, err
 	}
