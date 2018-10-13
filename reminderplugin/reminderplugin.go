@@ -247,6 +247,8 @@ func (p *ReminderPlugin) Message(bot *bruxism.Bot, service bruxism.Service, mess
 		}
 	}
 
+	t = t.Add(500 * time.Millisecond)
+
 	err = p.AddReminder(&Reminder{
 		StartTime: now,
 		Time:      t,

@@ -23,5 +23,5 @@ install:
     - go get github.com/iopred/bruxism/topstreamersplugin
     - go get github.com/iopred/bruxism/triviaplugin
     - go get github.com/iopred/bruxism/youtubejoinplugin
-    - go get github.com/iopred/bruxism
+    - go get -v github.com/iopred/bruxism
     - go get -v .
