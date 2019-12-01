@@ -14,10 +14,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/dustin/go-humanize"
 	"github.com/iopred/bruxism"
 	"github.com/iopred/comicgen"
-	"github.com/iopred/discordgo"
 )
 
 type comicPlugin struct {

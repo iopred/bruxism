@@ -1,8 +1,8 @@
 package mysonplugin
 
 import (
+	"github.com/bwmarrin/discordgo"
 	"github.com/iopred/bruxism"
-	"github.com/iopred/discordgo"
 )
 
 func messageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) {
