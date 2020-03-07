@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/iopred/bruxism"
 )
 
@@ -59,8 +60,10 @@ func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism
 	if len(parts) == 1 {
 		submatches := discordRegex.FindStringSubmatch(parts[0])
 		if len(submatches) != 0 {
+			fileType := "png"
 			url := discordgo.EndpointEmoji(submatches[2])
 			if submatches[1] == "a" {
+				fileType := "gif"
 				url := discordgo.EndpointEmojiAnimated(submatches[2])
 			}
 			h, err := http.Get(url)
@@ -68,7 +71,7 @@ func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism
 				return
 			}
 
-			service.SendFile(message.Channel(), "emoji"+fileType, h.Body)
+			service.SendFile(message.Channel(), "emoji."+fileType, h.Body)
 			h.Body.Close()
 
 			return
