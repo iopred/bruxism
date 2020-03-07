@@ -63,8 +63,8 @@ func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism
 			fileType := "png"
 			url := discordgo.EndpointEmoji(submatches[2])
 			if submatches[1] == "a" {
-				fileType := "gif"
-				url := discordgo.EndpointEmojiAnimated(submatches[2])
+				fileType = "gif"
+				url = discordgo.EndpointEmojiAnimated(submatches[2])
 			}
 			h, err := http.Get(url)
 			if err != nil {
