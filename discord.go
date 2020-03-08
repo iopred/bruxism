@@ -6,7 +6,7 @@ import (
 	"log"
 	"regexp"
 
-	"github.com/iopred/discordgo"
+	"github.com/bwmarrin/discordgo"
 )
 
 // The number of guilds supported by one shard.
@@ -434,6 +434,16 @@ func (d *Discord) Guild(guildID string) (guild *discordgo.Guild, err error) {
 		guild, err = s.State.Guild(guildID)
 		if err == nil {
 			return guild, nil
+		}
+	}
+	return
+}
+
+func (d *Discord) Member(guildID string, userID string) (member *discordgo.Member, err error) {
+	for _, s := range d.Sessions {
+		member, err = s.State.Member(guildID, userID)
+		if err == nil {
+			return member, nil
 		}
 	}
 	return

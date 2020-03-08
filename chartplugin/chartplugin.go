@@ -9,13 +9,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/dustin/go-humanize"
+	"github.com/iopred/bruxism"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
-	"github.com/iopred/bruxism"
-	"github.com/iopred/discordgo"
 )
 
 type chartPlugin struct {

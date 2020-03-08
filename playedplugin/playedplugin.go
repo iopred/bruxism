@@ -10,9 +10,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/dustin/go-humanize"
 	"github.com/iopred/bruxism"
-	"github.com/iopred/discordgo"
 )
 
 type playedEntry struct {

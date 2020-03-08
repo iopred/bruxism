@@ -9,16 +9,15 @@ import (
 	"math"
 	"math/rand"
 	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/dustin/go-humanize"
 	"github.com/iopred/bruxism"
 	"github.com/iopred/comicgen"
-	"github.com/iopred/discordgo"
 )
 
 type comicPlugin struct {
@@ -26,8 +25,9 @@ type comicPlugin struct {
 
 	bruxism.SimplePlugin
 	log      map[string][]bruxism.Message
-	Comics   int
 	cooldown map[string]time.Time
+	Comics   int
+	Public   map[string]bool
 }
 
 // Load will load plugin state from a byte array.
@@ -39,6 +39,9 @@ func (p *comicPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byt
 	}
 
 	p.cooldown = map[string]time.Time{}
+	if p.Public == nil {
+		p.Public = map[string]bool{}
+	}
 
 	return nil
 }
@@ -50,7 +53,7 @@ func (p *comicPlugin) Save() ([]byte, error) {
 
 // Help returns a list of help strings that are printed when the user requests them.
 func (p *comicPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, detailed bool) []string {
-	help := bruxism.CommandHelp(service, "comic", "[1-10]", "Creates a comic from recent messages, or a number of messages if provided.")
+	help := bruxism.CommandHelp(service, "comic", "[1-10]", "Creates a comic from recent messages, or a number of messages if provided. eg: comic 3")
 
 	ticks := ""
 	if service.Name() == bruxism.DiscordServiceName {
@@ -60,6 +63,16 @@ func (p *comicPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message br
 		help = append(help, []string{
 			bruxism.CommandHelp(service, "customcomic", "[id|name:] <text> | [id|name:] <text>", fmt.Sprintf("Creates a custom comic. Available names: %s%s%s", ticks, strings.Join(comicgen.CharacterNames, ", "), ticks))[0],
 			bruxism.CommandHelp(service, "customcomicsimple", "[id:] <text> | [id:] <text>", "Creates a simple custom comic.")[0],
+		}...)
+
+		if service.Name() == bruxism.DiscordServiceName && service.IsChannelOwner(message) {
+			help = append(help, []string{
+				bruxism.CommandHelp(service, "comicpublic", "", "Makes comics in this server public.")[0],
+				bruxism.CommandHelp(service, "comicprivate", "", "Makes comics in this server private (default).")[0],
+			}...)
+		}
+
+		help = append(help, []string{
 			"Examples:",
 			bruxism.CommandHelp(service, "comic", "5", "Creates a comic from the last 5 messages")[0],
 			bruxism.CommandHelp(service, "customcomic", "A | B | C", "Creates a comic with 3 lines.")[0],
@@ -112,7 +125,7 @@ func makeScriptFromMessages(service bruxism.Service, message bruxism.Message, me
 	}
 }
 
-func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, script *comicgen.Script) {
+func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message, globalID string, script *comicgen.Script) {
 	p.Comics++
 	comic := comicgen.NewComicGen("arial", service.Name() != bruxism.DiscordServiceName)
 	image, err := comic.MakeComic(script)
@@ -122,8 +135,8 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 		go func() {
 			if service.Name() == bruxism.DiscordServiceName {
 				discord := service.(*bruxism.Discord)
-				p, err := discord.UserChannelPermissions(message.UserID(), message.Channel())
-				if err == nil && p&discordgo.PermissionAttachFiles != 0 {
+				pe, err := discord.UserChannelPermissions(message.UserID(), message.Channel())
+				if err == nil && pe&discordgo.PermissionAttachFiles != 0 {
 					b := &bytes.Buffer{}
 					err = png.Encode(b, image)
 					if err != nil {
@@ -131,7 +144,12 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 						return
 					}
 
-					if err := service.SendFile(message.Channel(), "comic.png", b); err == nil {
+					m, err := discord.Session.ChannelFileSend(message.Channel(), "comic.png", b)
+					if err == nil {
+						if p.Public[globalID] && len(m.Attachments) > 0 {
+							service.SendMessage("367871992503730176", m.Attachments[0].URL)
+						}
+						p.log[message.Channel()] = nil
 						return
 					}
 				}
@@ -157,7 +175,10 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 				service.SendMessage(message.Channel(), fmt.Sprintf("Here's your comic %s: %s", message.UserName(), url))
 			}
 
-			runtime.GC()
+			if p.Public[globalID] && service.Name() == bruxism.DiscordServiceName {
+				service.SendMessage("367871992503730176", url)
+			}
+			p.log[message.Channel()] = nil
 		}()
 	}
 }
@@ -188,7 +209,21 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		log = []bruxism.Message{}
 	}
 
-	if bruxism.MatchesCommand(service, "customcomic", message) || bruxism.MatchesCommand(service, "customcomicsimple", message) {
+	globalID := message.Channel()
+	if discord, ok := service.(*bruxism.Discord); ok {
+		channel, err := discord.Channel(globalID)
+		if err == nil {
+			globalID = channel.GuildID
+		}
+	}
+
+	if service.Name() == bruxism.DiscordServiceName && bruxism.MatchesCommand(service, "comicpublic", message) && service.IsChannelOwner(message) {
+		p.Public[globalID] = true
+		service.SendMessage(message.Channel(), "Comics are now public. Visit https://discord.gg/HWN9pwj to see them all.")
+	} else if service.Name() == bruxism.DiscordServiceName && bruxism.MatchesCommand(service, "comicprivate", message) && service.IsChannelOwner(message) {
+		delete(p.Public, globalID)
+		service.SendMessage(message.Channel(), "Comics are no longer public.")
+	} else if bruxism.MatchesCommand(service, "customcomic", message) || bruxism.MatchesCommand(service, "customcomicsimple", message) {
 		if p.checkCooldown(service, message) {
 			return
 		}
@@ -241,7 +276,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 			})
 		}
 
-		p.makeComic(bot, service, message, &comicgen.Script{
+		p.makeComic(bot, service, message, globalID, &comicgen.Script{
 			Messages: messages,
 			Author:   fmt.Sprintf(service.UserName()),
 			Type:     ty,
@@ -272,8 +307,8 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 			lines = len(log)
 		}
 
-		p.makeComic(bot, service, message, makeScriptFromMessages(service, message, log[len(log)-lines:]))
-	} else {
+		p.makeComic(bot, service, message, globalID, makeScriptFromMessages(service, message, log[len(log)-lines:]))
+	} else if !bruxism.MatchesCommand(service, "", message) {
 		// Don't append commands.
 		if bruxism.MatchesCommand(service, "", message) {
 			return
