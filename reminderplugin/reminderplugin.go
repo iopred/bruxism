@@ -287,9 +287,9 @@ func (p *ReminderPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 			reminder := p.Reminders[0]
 			if time.Now().After(reminder.Time) {
 				p.RUnlock()
-
-				p.SendReminder(service, reminder)
-
+				if time.Now().Before(reminder.Time.Add(48 * time.Hour)) {
+				  p.SendReminder(service, reminder)
+				}
 				p.Lock()
 				p.Reminders = p.Reminders[1:]
 				p.Unlock()

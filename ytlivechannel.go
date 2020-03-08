@@ -108,7 +108,7 @@ func (y *YTLiveChannel) poll(channel string) {
 		}
 		y.Unlock()
 		first = false
-		<-time.After(5 * time.Minute)
+		<-time.After(11 * time.Minute)
 	}
 
 }
