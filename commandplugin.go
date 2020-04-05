@@ -20,11 +20,11 @@ func NewCommandHelp(args, help string) CommandHelpFunc {
 	}
 }
 
-// MatchesCommandString returns true if a message matches a command.
+// MatchesCommandStringPrefix returns true if a message matches a command.
 // Commands will be matched ignoring case with a prefix if they are not private messages.
-func MatchesCommandString(service Service, commandString string, private bool, message string) bool {
+func MatchesCommandStringPrefix(prefix, commandString string, private bool, message string) bool {
 	lowerMessage := strings.ToLower(strings.TrimSpace(message))
-	lowerPrefix := strings.ToLower(service.CommandPrefix())
+	lowerPrefix := strings.ToLower(prefix)
 
 	if strings.HasPrefix(lowerMessage, lowerPrefix) {
 		lowerMessage = lowerMessage[len(lowerPrefix):]
@@ -36,6 +36,12 @@ func MatchesCommandString(service Service, commandString string, private bool, m
 	lowerCommand := strings.ToLower(commandString)
 
 	return lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ")
+}
+
+// MatchesCommandString returns true if a message matches a command.
+// Commands will be matched ignoring case with a prefix if they are not private messages.
+func MatchesCommandString(service Service, commandString string, private bool, message string) bool {
+	return MatchesCommandStringPrefix(service.CommandPrefix(), commandString, private, message)
 }
 
 // MatchesCommand returns true if a message matches a command.
