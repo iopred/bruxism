@@ -47,12 +47,12 @@ func MatchesCommand(service Service, commandString string, message Message) bool
 	return MatchesCommandString(service, commandString, service.IsPrivate(message), message.Message())
 }
 
-// ParseCommandString will strip all prefixes from a message string, and return that string, and a space separated tokenized version of that string.
-func ParseCommandString(service Service, message string) (string, []string) {
+// ParseCommandStringPrefix will strip all prefixes from a message string, and return that string, and a space separated tokenized version of that string.
+func ParseCommandStringPrefix(prefix, message string) (string, []string) {
 	message = strings.TrimSpace(message)
 
 	lowerMessage := strings.ToLower(message)
-	lowerPrefix := strings.ToLower(service.CommandPrefix())
+	lowerPrefix := strings.ToLower(prefix)
 
 	if strings.HasPrefix(lowerMessage, lowerPrefix) {
 		message = message[len(lowerPrefix):]
@@ -64,6 +64,11 @@ func ParseCommandString(service Service, message string) (string, []string) {
 		return strings.Join(rest, " "), rest
 	}
 	return "", []string{}
+}
+
+// ParseCommandString will strip all prefixes from a message string, and return that string, and a space separated tokenized version of that string.
+func ParseCommandString(service Service, message string) (string, []string) {
+	retrn ParseCommandStringPrefix(service.CommandPrefix(), message)
 }
 
 // ParseCommand parses a message.
