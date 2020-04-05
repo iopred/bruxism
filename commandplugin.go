@@ -68,7 +68,7 @@ func ParseCommandStringPrefix(prefix, message string) (string, []string) {
 
 // ParseCommandString will strip all prefixes from a message string, and return that string, and a space separated tokenized version of that string.
 func ParseCommandString(service Service, message string) (string, []string) {
-	retrn ParseCommandStringPrefix(service.CommandPrefix(), message)
+	return ParseCommandStringPrefix(service.CommandPrefix(), message)
 }
 
 // ParseCommand parses a message.
