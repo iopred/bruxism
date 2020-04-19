@@ -48,11 +48,11 @@ func MatchesCommand(service Service, commandString string, message Message) bool
 	prefix := service.CommandPrefix()
 	private := service.IsPrivate(message)
 
-	if !private {
-		if matches, ok := message.MatchesCommand(prefix, commandString); ok {
-			return matches
-		}
-	}
+	// if !private {
+	// 	if matches, ok := message.MatchesCommand(prefix, commandString); ok {
+	// 		return matches
+	// 	}
+	// }
 
 	return MatchesCommandStringPrefix(prefix, commandString, private, message.Message())
 }
@@ -78,9 +78,9 @@ func ParseCommandStringPrefix(prefix, message string) (string, []string) {
 
 // ParseCommand parses a message.
 func ParseCommand(service Service, message Message) (string, []string) {
-	if rest, parts, ok := message.ParseCommand(service.CommandPrefix()); ok {
-		return rest, parts
-	} 
+	// if rest, parts, ok := message.ParseCommand(service.CommandPrefix()); ok {
+	// 	return rest, parts
+	// } 
 	return ParseCommandStringPrefix(service.CommandPrefix(), message.Message())
 }
 
