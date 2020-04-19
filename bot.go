@@ -87,16 +87,20 @@ func (b *Bot) listen(service Service, messageChan <-chan Message) {
 
 // Open will open all the current services and begins listening.
 func (b *Bot) Open() {
+	log.Printf("Bot opening")
 	for _, service := range b.Services {
+		log.Printf("Opening service %s\n", service.Name())
 		if messageChan, err := service.Open(); err == nil {
 			for _, plugin := range service.Plugins {
 				plugin.Load(b, service.Service, b.getData(service, plugin))
 			}
 			go b.listen(service.Service, messageChan)
+			log.Printf("Opened service %s\n", service.Name())
 		} else {
 			log.Printf("Error creating service %s: %v\n", service.Name(), err)
 		}
 	}
+	log.Printf("Bot opened")
 }
 
 // Save will save the current plugin state for all plugins on all services.

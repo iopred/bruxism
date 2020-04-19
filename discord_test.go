@@ -21,6 +21,8 @@ func TestCommandMatches(t *testing.T) {
 		{"", true, "hello", "hello world ", "world"},
 		{"", true, "hello", " hello world ", "world"},
 		{"", false, "hello", " helloworld ", ""},
+		{"", true, "", " hello world ", ""},
+		{"", true, "", " hello world ", ""},
 		{"!", true, "hello", "!hello", ""},
 		{"!", true, "hello", " !hello", ""},
 		{"!", true, "hello", "!hello ", ""},
@@ -32,6 +34,8 @@ func TestCommandMatches(t *testing.T) {
 		{"!", false, "hello", " !helloworld ", ""},
 		{"!", false, "hello", " ! hello world ", ""},
 		{"!", false, "hello", "!", ""},
+		{"!", false, "", "hello there", ""},
+		{"!", false, "", "sup mang", ""},
 		{"@Septapus ", true, "hello", "@Septapus hello", ""},
 		{"@Septapus ", true, "hello", " @Septapus hello", ""},
 		{"@Septapus ", true, "hello", "@Septapus hello ", ""},
@@ -42,6 +46,8 @@ func TestCommandMatches(t *testing.T) {
 		{"@Septapus ", true, "hello", " @Septapus hello world ", "world"},
 		{"@Septapus ", false, "hello", " @Septapushello world ", ""},
 		{"@Septapus ", false, "hello", "@Septapus", ""},
+		{"@Septapus ", false, "", "hello there ", ""},
+		{"@Septapus ", false, "", "sup mang", ""},
 	}
 
 	for _, test := range tests {
@@ -53,7 +59,7 @@ func TestCommandMatches(t *testing.T) {
 			t.Errorf("Not ok with message `%v`. Prefix: %v. Command: %v", test.Message, test.Prefix, test.Command)
 		}
 		if matches != test.Matches {
-			t.Errorf("Incorrect matches with message `%v`: %v != %v. Prefix: %v. Command: %v", test.Message, matches, test.Matches, test.Prefix, test.Command)
+			t.Errorf("Incorrect matches with message `%v`: Have %v, Want %v. Prefix: %v. Command: %v", test.Message, matches, test.Matches, test.Prefix, test.Command)
 		}
 		if test.Argument != "" {
 			if str, _, ok := m.ParseCommand(test.Prefix); !ok || str != test.Argument {

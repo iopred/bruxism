@@ -143,23 +143,20 @@ func (m *DiscordMessage) getParsedCommand(prefix string) (parsedCommand *ParsedC
 	trimmedPrefix := strings.ToLower(strings.TrimSpace(prefix))
 	messageLower := strings.ToLower(strings.TrimSpace(m.Message()))
 	if !strings.HasPrefix(messageLower, trimmedPrefix) {
-		parsedCommand.Matches = false
 		return
 	}
+	parsedCommand.Matches = true
 
 	parts := strings.Fields(m.Message())
 	if len(parts) == 0 {
-		parsedCommand.Matches = false
 		return
 	}
 
-	if len(trimmedPrefix) != len(prefix) {
-		parsedCommand.Matches = len(parts) > 1
-		if (parsedCommand.Matches) {
+	if len(trimmedPrefix) != len(prefix) { 
+		if len(parts) > 1 {
 			parts = parts[1:]	
 		}
 	} else {
-		parsedCommand.Matches = strings.HasPrefix(strings.ToLower(parts[0]), prefix)
 		parts[0] = parts[0][len(prefix):]
 	}
 
@@ -173,7 +170,7 @@ func (m *DiscordMessage) getParsedCommand(prefix string) (parsedCommand *ParsedC
 
 func (m *DiscordMessage) MatchesCommand(prefix, command string) (bool, bool) {
 	parsedCommand := m.getParsedCommand(prefix)
-	return parsedCommand.Command == strings.ToLower(command), true
+	return parsedCommand.Matches && (command == "" || parsedCommand.Command == strings.ToLower(command)), true
 }
 
 func (m *DiscordMessage) ParseCommand(prefix string) (string, []string, bool) {
@@ -297,6 +294,7 @@ func (d *Discord) Open() (<-chan Message, error) {
 
 	d.Sessions = make([]*discordgo.Session, s.Shards)
 
+	log.Printf("%s opening with %d shards\n", d.Name(), s.Shards)
 	for i := 0; i < s.Shards; i++ {
 		session, err := discordgo.New(d.args...)
 		if err != nil {
@@ -304,9 +302,6 @@ func (d *Discord) Open() (<-chan Message, error) {
 		}
 		session.ShardCount = s.Shards
 		session.ShardID = i
-		session.AddHandler(d.onMessageCreate)
-		session.AddHandler(d.onMessageUpdate)
-		session.AddHandler(d.onMessageDelete)
 		session.State.TrackPresences = false
 
 		d.Sessions[i] = session
@@ -317,6 +312,14 @@ func (d *Discord) Open() (<-chan Message, error) {
 
 	for i := 0; i < len(d.Sessions); i++ {
 		d.Sessions[i].Open()
+		log.Printf("%s opening shard %d\n", d.Name(), i+1)
+	}
+
+	for i := 0; i < len(d.Sessions); i++ {
+		session := d.Sessions[i]
+		session.AddHandler(d.onMessageCreate)
+		session.AddHandler(d.onMessageUpdate)
+		session.AddHandler(d.onMessageDelete)
 	}
 
 	return d.messageChan, nil
