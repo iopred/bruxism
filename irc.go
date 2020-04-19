@@ -55,6 +55,14 @@ func (m *IRCMessage) Type() MessageType {
 	return MessageTypeCreate
 }
 
+func (m *IRCMessage) MatchesCommand(prefix, command string) (bool, bool) {
+	return false, false
+}
+
+func (m *IRCMessage) ParseCommand(prefix string) (string, []string, bool) {
+	return "", []string{}, false
+}
+
 // IRC is a Service provider for IRC.
 type IRC struct {
 	host        string

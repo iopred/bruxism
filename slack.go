@@ -57,6 +57,14 @@ func (m *SlackMessage) Type() MessageType {
 	return m.MessageType
 }
 
+func (m *SlackMessage) MatchesCommand(prefix, command string) (bool, bool) {
+	return false, false
+}
+
+func (m *SlackMessage) ParseCommand(prefix string) (string, []string, bool) {
+	return "", []string{}, false
+}
+
 // Slack is a Service provider for Slack.
 type Slack struct {
 	token       string

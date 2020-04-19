@@ -77,4 +77,12 @@ func (m *MockMessage) Type() MessageType {
 	return MessageTypeCreate
 }
 
+func (m *MockMessage) MatchesCommand(prefix, command string) (bool, bool) {
+	return false, false
+}
+
+func (m *MockMessage) ParseCommand(prefix string) (string, []string, bool) {
+	return "", []string{}, false
+}
+
 var _ Message = &MockMessage{}

@@ -5,6 +5,8 @@ import (
 	"io"
 	"log"
 	"regexp"
+	"strings"
+	"sync"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -15,13 +17,22 @@ const numGuildsPerShard = 2400
 // DiscordServiceName is the service name for the Discord service.
 const DiscordServiceName string = "Discord"
 
+type ParsedCommand struct {
+	Matches bool
+	Command string
+	Rest    string
+	Parts   []string
+}
+
 // DiscordMessage is a Message wrapper around discordgo.Message.
 type DiscordMessage struct {
+	sync.RWMutex
 	Discord          *Discord
 	DiscordgoMessage *discordgo.Message
 	MessageType      MessageType
 	Nick             *string
 	Content          *string
+	parsedCommands   map[string]*ParsedCommand
 }
 
 // Channel returns the channel id for this message.
@@ -68,6 +79,23 @@ func (m *DiscordMessage) Message() string {
 		c = m.Discord.replaceRoleNames(m.DiscordgoMessage, c)
 		c = m.Discord.replaceChannelNames(m.DiscordgoMessage, c)
 
+		if c == "" && len(m.DiscordgoMessage.Attachments) > 0 {
+			a := m.DiscordgoMessage.Attachments[0]
+
+			height := 100
+			width := height * a.Width/a.Height
+			if width > 200 {
+				width = 200
+				height = width * a.Height/a.Width
+			}
+
+			if a.ProxyURL != "" {
+				c = fmt.Sprintf("%s?width=%d&height=%d", a.ProxyURL, width, height)
+			} else if a.URL != "" {
+				c = a.URL
+			}
+		}
+
 		m.Content = &c
 	}
 	return *m.Content
@@ -86,6 +114,59 @@ func (m *DiscordMessage) MessageID() string {
 // Type returns the type of message.
 func (m *DiscordMessage) Type() MessageType {
 	return m.MessageType
+}
+
+func (m *DiscordMessage) getParsedCommand(prefix string) (parsedCommand *ParsedCommand) {
+	prefix = strings.ToLower(prefix)
+	
+	m.Lock()
+	defer m.Unlock()
+
+	if m.parsedCommands == nil {
+		m.parsedCommands = map[string]*ParsedCommand{}
+	} else {
+		parsedCommand = m.parsedCommands[prefix]
+		if parsedCommand != nil {
+			return parsedCommand
+		}
+	}
+
+	parsedCommand = &ParsedCommand{}
+	m.parsedCommands[prefix] = parsedCommand
+
+	parts := strings.Fields(m.Message())
+	if len(parts) == 0 {
+		parsedCommand.Matches = false
+		return
+	}
+
+	trimmedPrefix := strings.TrimSpace(prefix)
+	if len(trimmedPrefix) != len(prefix) {
+		parsedCommand.Matches = len(parts) > 1 && strings.ToLower(parts[0]) == strings.ToLower(trimmedPrefix)
+		if (parsedCommand.Matches) {
+			parts = parts[1:]	
+		}
+	} else {
+		parsedCommand.Matches = strings.HasPrefix(strings.ToLower(parts[0]), prefix)
+		parts[0] = parts[0][len(prefix):]
+	}
+
+	parsedCommand.Command = parts[0]
+	if len(parts) > 1 {
+		parsedCommand.Parts = parts[1:]
+		parsedCommand.Rest = strings.Join(parsedCommand.Parts, " ")
+	}
+	return
+}
+
+func (m *DiscordMessage) MatchesCommand(prefix, command string) (bool, bool) {
+	parsedCommand := m.getParsedCommand(prefix)
+	return parsedCommand.Command == strings.ToLower(command), true
+}
+
+func (m *DiscordMessage) ParseCommand(prefix string) (string, []string, bool) {
+	parsedCommand := m.getParsedCommand(prefix)
+	return parsedCommand.Rest, parsedCommand.Parts, true
 }
 
 // Discord is a Service provider for Discord.
@@ -148,26 +229,32 @@ func (d *Discord) replaceRoleNames(message *discordgo.Message, content string) s
 }
 
 func (d *Discord) onMessageCreate(s *discordgo.Session, message *discordgo.MessageCreate) {
-	if message.Content == "" || (message.Author != nil && message.Author.Bot) {
+	if (message.Author != nil && message.Author.Bot) {
 		return
 	}
 
-	d.messageChan <- &DiscordMessage{
+	dm := &DiscordMessage{
 		Discord:          d,
 		DiscordgoMessage: message.Message,
 		MessageType:      MessageTypeCreate,
 	}
+	if dm.Message() != "" {
+		d.messageChan <- dm
+	}
 }
 
 func (d *Discord) onMessageUpdate(s *discordgo.Session, message *discordgo.MessageUpdate) {
-	if message.Content == "" || (message.Author != nil && message.Author.Bot) {
+	if (message.Author != nil && message.Author.Bot) {
 		return
 	}
 
-	d.messageChan <- &DiscordMessage{
+	dm := &DiscordMessage{
 		Discord:          d,
 		DiscordgoMessage: message.Message,
 		MessageType:      MessageTypeUpdate,
+	}
+	if dm.Message() != "" {
+		d.messageChan <- dm
 	}
 }
 

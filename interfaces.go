@@ -27,6 +27,8 @@ type Message interface {
 	RawMessage() string
 	MessageID() string
 	Type() MessageType
+	MatchesCommand(prefix, command string) (bool, bool)
+	ParseCommand(prefix string) (string, []string, bool)
 }
 
 // ErrAlreadyJoined is an error dispatched on Join if the bot is already joined to the request.

@@ -20,6 +20,9 @@ import (
 	"github.com/iopred/comicgen"
 )
 
+var comicEmoji = "<:comic:701265673707454494>"
+var urinalEmoji = "<:urinal:701279094402318387>"
+
 type comicPlugin struct {
 	sync.Mutex
 
@@ -86,8 +89,9 @@ func (p *comicPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message br
 }
 
 var emojiRegexp = regexp.MustCompile("<a?:[a-zA-Z0-9]+:([0-9]+)>")
+var imageRegexp = regexp.MustCompile("^(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|jpeg|gif|png)($|\\?\\S*$)")
 
-func makeScriptFromMessages(service bruxism.Service, message bruxism.Message, messages []bruxism.Message) *comicgen.Script {
+func makeScriptFromMessages(service bruxism.Service, message bruxism.Message, messages []bruxism.Message, room string) *comicgen.Script {
 	speakers := make(map[string]int)
 	avatars := make(map[int]string)
 
@@ -110,11 +114,17 @@ func makeScriptFromMessages(service bruxism.Service, message bruxism.Message, me
 			}
 		}
 
+		imageUrl := ""
+		if imageRegexp.MatchString(messageMessage) {
+			imageUrl = messageMessage	
+		}
+
 		script = append(script, &comicgen.Message{
 			Speaker:      speaker,
 			Text:         messageMessage,
 			Author:       message.UserName(),
 			Replacements: replacements,
+			ImageUrl:	  imageUrl,
 		})
 	}
 	return &comicgen.Script{
@@ -122,6 +132,7 @@ func makeScriptFromMessages(service bruxism.Service, message bruxism.Message, me
 		Author:   fmt.Sprintf(service.UserName()),
 		Avatars:  avatars,
 		Type:     comicgen.ComicTypeChat,
+		Room:	  room,
 	}
 }
 
@@ -217,6 +228,17 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		}
 	}
 
+
+	emoji, ok := message.MatchesCommand("", comicEmoji)
+	if !ok {
+		emoji = false
+	}
+
+	urinal, ok := message.MatchesCommand("", urinalEmoji)
+	if !ok {
+		urinal = false
+	}
+
 	if service.Name() == bruxism.DiscordServiceName && bruxism.MatchesCommand(service, "comicpublic", message) && service.IsChannelOwner(message) {
 		p.Public[globalID] = true
 		service.SendMessage(message.Channel(), "Comics are now public. Visit https://discord.gg/HWN9pwj to see them all.")
@@ -281,7 +303,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 			Author:   fmt.Sprintf(service.UserName()),
 			Type:     ty,
 		})
-	} else if bruxism.MatchesCommand(service, "comic", message) {
+	} else if bruxism.MatchesCommand(service, "comic", message) || emoji || urinal {
 		if p.checkCooldown(service, message) {
 			return
 		}
@@ -294,9 +316,15 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		service.Typing(message.Channel())
 
 		lines := 0
-		linesString, parts := bruxism.ParseCommand(service, message)
+		
+		_, parts := bruxism.ParseCommand(service, message)
+
+		if emoji || urinal {
+			_ , parts, _ = message.ParseCommand("")
+		}
+
 		if len(parts) > 0 {
-			lines, _ = strconv.Atoi(linesString)
+			lines, _ = strconv.Atoi(parts[0])
 		}
 
 		if lines <= 0 {
@@ -307,13 +335,20 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 			lines = len(log)
 		}
 
-		p.makeComic(bot, service, message, globalID, makeScriptFromMessages(service, message, log[len(log)-lines:]))
-	} else if !bruxism.MatchesCommand(service, "", message) {
-		// Don't append commands.
-		if bruxism.MatchesCommand(service, "", message) {
-			return
+		room := ""
+		for _, u := range parts {
+			u = strings.ToLower(u)
+			if u == "urinal" || u == "toilet" {
+				urinal = true
+			}
 		}
 
+		if urinal {
+			room = "rooms/urinal.png"
+		}
+
+		p.makeComic(bot, service, message, globalID, makeScriptFromMessages(service, message, log[len(log)-lines:], room))
+	} else if !bruxism.MatchesCommand(service, "", message) {
 		switch message.Type() {
 		case bruxism.MessageTypeCreate:
 			if len(log) < 10 {

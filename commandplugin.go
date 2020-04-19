@@ -38,19 +38,23 @@ func MatchesCommandStringPrefix(prefix, commandString string, private bool, mess
 	return lowerMessage == lowerCommand || strings.HasPrefix(lowerMessage, lowerCommand+" ")
 }
 
-// MatchesCommandString returns true if a message matches a command.
-// Commands will be matched ignoring case with a prefix if they are not private messages.
-func MatchesCommandString(service Service, commandString string, private bool, message string) bool {
-	return MatchesCommandStringPrefix(service.CommandPrefix(), commandString, private, message)
-}
-
 // MatchesCommand returns true if a message matches a command.
 func MatchesCommand(service Service, commandString string, message Message) bool {
 	// Deleted messages can't trigger commands.
 	if message.Type() == MessageTypeDelete {
 		return false
 	}
-	return MatchesCommandString(service, commandString, service.IsPrivate(message), message.Message())
+
+	prefix := service.CommandPrefix()
+	private := service.IsPrivate(message)
+
+	if !private {
+		if matches, ok := message.MatchesCommand(prefix, commandString); ok {
+			return matches
+		}
+	}
+
+	return MatchesCommandStringPrefix(prefix, commandString, private, message.Message())
 }
 
 // ParseCommandStringPrefix will strip all prefixes from a message string, and return that string, and a space separated tokenized version of that string.
@@ -63,23 +67,21 @@ func ParseCommandStringPrefix(prefix, message string) (string, []string) {
 	if strings.HasPrefix(lowerMessage, lowerPrefix) {
 		message = message[len(lowerPrefix):]
 	}
-	rest := strings.Fields(message)
+	parts := strings.Fields(message)
 
-	if len(rest) > 1 {
-		rest = rest[1:]
-		return strings.Join(rest, " "), rest
+	if len(parts) > 1 {
+		parts = parts[1:]
+		return strings.Join(parts, " "), parts
 	}
 	return "", []string{}
 }
 
-// ParseCommandString will strip all prefixes from a message string, and return that string, and a space separated tokenized version of that string.
-func ParseCommandString(service Service, message string) (string, []string) {
-	return ParseCommandStringPrefix(service.CommandPrefix(), message)
-}
-
 // ParseCommand parses a message.
 func ParseCommand(service Service, message Message) (string, []string) {
-	return ParseCommandString(service, message.Message())
+	if rest, parts, ok := message.ParseCommand(service.CommandPrefix()); ok {
+		return rest, parts
+	} 
+	return ParseCommandStringPrefix(service.CommandPrefix(), message.Message())
 }
 
 // CommandHelp is a helper message that creates help text for a command.

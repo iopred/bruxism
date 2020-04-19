@@ -90,6 +90,14 @@ func (m *LiveChatMessage) Type() MessageType {
 	return MessageTypeCreate
 }
 
+func (m *LiveChatMessage) MatchesCommand(prefix, command string) (bool, bool) {
+	return false, false
+}
+
+func (m *LiveChatMessage) ParseCommand(prefix string) (string, []string, bool) {
+	return "", []string{}, false
+}
+
 // YouTube is a Service provider for YouTube.
 type YouTube struct {
 	url                bool
@@ -227,7 +235,7 @@ func (yt *YouTube) generateOauthURLAndExit() {
 	// for the scopes specified above.
 	url := yt.config.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 	clipboard.WriteAll(url)
-	log.Fatalln("Visit the following URL to generate an auth code, then rerun with -auth=<code> (It has also been copied to your clipboard):\n%s", url)
+	log.Fatalf("Visit the following URL to generate an auth code, then rerun with -auth=<code> (It has also been copied to your clipboard):\n%s", url)
 }
 
 func (yt *YouTube) createConfig() error {
