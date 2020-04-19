@@ -585,3 +585,14 @@ func (d *Discord) NicknameForID(userID, userName, channelID string) string {
 	}
 	return userName
 }
+
+func (d *Discord) UpdateStatus(idle int, game string) {
+	for _, s := range d.Sessions {
+		s.UpdateStatus(idle, game)
+	}
+}
+func (d *Discord) UpdateStreamingStatus(idle int, game string, url string) {
+	for _, s := range d.Sessions {
+		s.UpdateStreamingStatus(idle, game, url)
+	}
+}
