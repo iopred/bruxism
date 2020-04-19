@@ -139,6 +139,13 @@ func (m *DiscordMessage) getParsedCommand(prefix string) (parsedCommand *ParsedC
 
 	parsedCommand = &ParsedCommand{}
 	m.parsedCommands[prefix] = parsedCommand
+	
+	trimmedPrefix := strings.ToLower(strings.TrimSpace(prefix))
+	messageLower := strings.ToLower(strings.TrimSpace(m.Message()))
+	if !strings.HasPrefix(messageLower, trimmedPrefix) {
+		parsedCommand.Matches = false
+		return
+	}
 
 	parts := strings.Fields(m.Message())
 	if len(parts) == 0 {
@@ -146,9 +153,8 @@ func (m *DiscordMessage) getParsedCommand(prefix string) (parsedCommand *ParsedC
 		return
 	}
 
-	trimmedPrefix := strings.TrimSpace(prefix)
 	if len(trimmedPrefix) != len(prefix) {
-		parsedCommand.Matches = len(parts) > 1 && strings.ToLower(parts[0]) == strings.ToLower(trimmedPrefix)
+		parsedCommand.Matches = len(parts) > 1
 		if (parsedCommand.Matches) {
 			parts = parts[1:]	
 		}
@@ -305,6 +311,7 @@ func (d *Discord) Open() (<-chan Message, error) {
 
 		d.Sessions[i] = session
 	}
+
 
 	d.Session = d.Sessions[0]
 
