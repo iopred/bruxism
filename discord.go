@@ -82,11 +82,13 @@ func (m *DiscordMessage) Message() string {
 		if c == "" && len(m.DiscordgoMessage.Attachments) > 0 {
 			a := m.DiscordgoMessage.Attachments[0]
 
-			height := 100
-			width := height * a.Width/a.Height
-			if width > 200 {
-				width = 200
-				height = width * a.Height/a.Width
+			if a.Width != 0 && a.Height != 0 {
+				height := 100
+				width := height * a.Width/a.Height
+				if width > 200 {
+					width = 200
+					height = width * a.Height/a.Width
+				}
 			}
 
 			if a.ProxyURL != "" {
