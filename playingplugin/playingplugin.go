@@ -32,11 +32,16 @@ func (p *playingPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []b
 		}
 	}
 
-	if p.Game != "" {
-		service.(*bruxism.Discord).UpdateStreamingStatus(0, p.Game, p.URL)
-	} else {
-		service.(*bruxism.Discord).UpdateStatus(0, p.Game)
-	}
+	go func() {
+		for {
+			if p.Game != "" {
+				service.(*bruxism.Discord).UpdateStreamingStatus(0, p.Game, p.URL)
+			} else {
+				service.(*bruxism.Discord).UpdateStatus(0, p.Game)
+			}
+			time.Sleep(5 * time.Minute)
+		}
+	}()
 
 	return nil
 }

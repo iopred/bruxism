@@ -295,28 +295,29 @@ func (d *Discord) Open() (<-chan Message, error) {
 	d.Sessions = make([]*discordgo.Session, s.Shards)
 
 	log.Printf("%s opening with %d shards\n", d.Name(), s.Shards)
+	wg := sync.WaitGroup{}
 	for i := 0; i < s.Shards; i++ {
+		log.Printf("%s opening shard %d\n", d.Name(), i+1)
 		session, err := discordgo.New(d.args...)
 		if err != nil {
 			return nil, err
 		}
+		if d.Session == nil {
+			d.Session = session
+		}
+		d.Sessions[i] = session
 		session.ShardCount = s.Shards
 		session.ShardID = i
 		session.State.TrackPresences = false
-
-		d.Sessions[i] = session
+		wg.Add(1)
+		go func(session *discordgo.Session) {
+			defer wg.Done()
+			session.Open()
+		}(d.Sessions[i])
 	}
+	wg.Wait()
 
-
-	d.Session = d.Sessions[0]
-
-	for i := 0; i < len(d.Sessions); i++ {
-		d.Sessions[i].Open()
-		log.Printf("%s opening shard %d\n", d.Name(), i+1)
-	}
-
-	for i := 0; i < len(d.Sessions); i++ {
-		session := d.Sessions[i]
+	for _, session := range d.Sessions {
 		session.AddHandler(d.onMessageCreate)
 		session.AddHandler(d.onMessageUpdate)
 		session.AddHandler(d.onMessageDelete)
