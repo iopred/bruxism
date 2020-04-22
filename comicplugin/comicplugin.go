@@ -29,7 +29,7 @@ type comicPlugin struct {
 	bruxism.SimplePlugin
 	log      map[string][]bruxism.Message
 	cooldown map[string]time.Time
-	count	 map[string]int
+	Count	 map[string]int
 	Comics   int
 	Public   map[string]bool
 }
@@ -45,6 +45,9 @@ func (p *comicPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byt
 	p.cooldown = map[string]time.Time{}
 	if p.Public == nil {
 		p.Public = map[string]bool{}
+	}
+	if p.Count == nil {
+		p.Count = map[string]int{}
 	}
 
 	return nil
@@ -170,7 +173,7 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 							service.SendMessage("367871992503730176", m.Attachments[0].URL)
 						}
 						p.log[message.Channel()] = nil
-						p.count[message.Channel()] = 0
+						p.Count[message.Channel()] = 0
 						return
 					}
 				}
@@ -200,7 +203,7 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 				service.SendMessage("367871992503730176", url)
 			}
 			p.log[message.Channel()] = nil
-			p.count[message.Channel()] = 0
+			p.Count[message.Channel()] = 0
 		}()
 	}
 }
@@ -230,7 +233,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 	if !ok {
 		log = []bruxism.Message{}
 	}
-	count := p.count[message.Channel()]
+	count := p.Count[message.Channel()]
 
 	globalID := message.Channel()
 	if discord, ok := service.(*bruxism.Discord); ok {
@@ -355,7 +358,6 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 			}
 			if discord, ok := service.(*bruxism.Discord); ok {
 				ms, err := discord.Session.ChannelMessages(message.Channel(), lines, message.MessageID(), "", "")
-				fmt.Println(len(ms), ms)
 				if err != nil {
 					service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was an error creating the comic.", message.UserName()))
 					return
@@ -388,7 +390,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		switch message.Type() {
 		case bruxism.MessageTypeCreate:
 			if service.Name() == bruxism.DiscordServiceName {
-				p.count[message.Channel()]++
+				p.Count[message.Channel()]++
 				return
 			}
 			if len(log) < 10 {
@@ -408,7 +410,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 			}
 		case bruxism.MessageTypeDelete:
 			if service.Name() == bruxism.DiscordServiceName {
-				p.count[message.Channel()]--
+				p.Count[message.Channel()]--
 				return
 			}
 			for i, m := range log {
@@ -436,6 +438,6 @@ func (p *comicPlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message b
 func New() bruxism.Plugin {
 	return &comicPlugin{
 		log: make(map[string][]bruxism.Message),
-		count: make(map[string]int),
+		Count: make(map[string]int),
 	}
 }
