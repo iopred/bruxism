@@ -356,6 +356,9 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 			if lines > count {
 				lines = count
 			}
+			if lines > 10 {
+				lines = 10
+			}
 			if discord, ok := service.(*bruxism.Discord); ok {
 				ms, err := discord.Session.ChannelMessages(message.Channel(), lines, message.MessageID(), "", "")
 				if err != nil {
