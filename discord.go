@@ -79,27 +79,8 @@ func (m *DiscordMessage) Message() string {
 		c = m.Discord.replaceRoleNames(m.DiscordgoMessage, c)
 		c = m.Discord.replaceChannelNames(m.DiscordgoMessage, c)
 
-		if c == "" && len(m.DiscordgoMessage.Attachments) > 0 {
-			a := m.DiscordgoMessage.Attachments[0]
-
-
-
-			if a.ProxyURL != "" {
-				if a.Width != 0 && a.Height != 0 {
-					height := 100
-					width := height * a.Width/a.Height
-					if width > 200 {
-						width = 200
-						height = width * a.Height/a.Width
-					}
-					c = fmt.Sprintf("%s?width=%d&height=%d", a.ProxyURL, width, height)
-				} else {
-					c = a.ProxyURL
-				}
-				
-			} else if a.URL != "" {
-				c = a.URL
-			}
+		if c == "" {
+			c = m.AttachmentURL()
 		}
 
 		m.Content = &c
@@ -120,6 +101,28 @@ func (m *DiscordMessage) MessageID() string {
 // Type returns the type of message.
 func (m *DiscordMessage) Type() MessageType {
 	return m.MessageType
+}
+
+func (m *DiscordMessage) AttachmentURL() string {
+	if len(m.DiscordgoMessage.Attachments) == 0 {
+		return ""
+	}
+	a := m.DiscordgoMessage.Attachments[0]
+	if a.ProxyURL != "" {
+		if a.Width != 0 && a.Height != 0 {
+			height := 100
+			width := height * a.Width/a.Height
+			if width > 200 {
+				width = 200
+				height = width * a.Height/a.Width
+			}
+			return fmt.Sprintf("%s?width=%d&height=%d", a.ProxyURL, width, height)
+		}
+		return a.ProxyURL
+	} else if a.URL != "" {
+		return a.URL
+	}
+	return ""
 }
 
 func (m *DiscordMessage) getParsedCommand(prefix string) (parsedCommand *ParsedCommand) {
