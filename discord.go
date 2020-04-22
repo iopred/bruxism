@@ -315,7 +315,10 @@ func (d *Discord) Open() (<-chan Message, error) {
 		wg.Add(1)
 		go func(session *discordgo.Session) {
 			defer wg.Done()
-			session.Open()
+			err := session.Open()
+			if err != nil {
+				log.Printf("error opening shard %s", err)
+			}
 		}(d.Sessions[i])
 	}
 	wg.Wait()
