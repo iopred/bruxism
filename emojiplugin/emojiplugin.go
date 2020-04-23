@@ -3,6 +3,7 @@ package emojiplugin
 import (
 	"fmt"
 	"net/http"
+	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -11,7 +12,19 @@ import (
 	"github.com/iopred/bruxism"
 )
 
-func emojiFile(base, s string) string {
+var emoji map[string]bool = map[string]bool{}
+
+func init() {
+	f, err := ioutil.ReadDir("emoji/twitter")
+	if err != nil {
+		return
+	}
+	for _, file := range f {
+		emoji[file.Name()] = true
+	}
+}
+
+func emojiFile(s string) string {
 	found := ""
 	filename := ""
 	for _, r := range s {
@@ -20,11 +33,8 @@ func emojiFile(base, s string) string {
 		} else {
 			filename = fmt.Sprintf("%x", r)
 		}
-
-		if _, err := os.Stat(fmt.Sprintf("%s/%s.png", base, filename)); err == nil {
+		if emoji[fmt.Sprintf("%s.png", filename)] {
 			found = filename
-		} else if found != "" {
-			return found
 		}
 	}
 	return found
@@ -79,15 +89,13 @@ func emojiMessageFunc(bot *bruxism.Bot, service bruxism.Service, message bruxism
 		}
 
 		s := strings.TrimSpace(parts[0])
-		for i := range s {
-			filename := emojiFile(base, s[i:])
-			if filename != "" {
-				if f, err := os.Open(fmt.Sprintf("%s/%s.png", base, filename)); err == nil {
-					defer f.Close()
-					service.SendFile(message.Channel(), "emoji.png", f)
+		filename := emojiFile(s)
+		if filename != "" {
+			if f, err := os.Open(fmt.Sprintf("%s/%s.png", base, filename)); err == nil {
+				defer f.Close()
+				service.SendFile(message.Channel(), "emoji.png", f)
 
-					return
-				}
+				return
 			}
 		}
 	}

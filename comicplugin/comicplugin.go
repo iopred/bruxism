@@ -365,9 +365,12 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 					service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, there was an error creating the comic.", message.UserName()))
 					return
 				}
-				messages = make([]bruxism.Message, len(ms))
-				for i := 0; i < len(ms); i++ {
-					messages[len(ms) - i - 1] = &bruxism.DiscordMessage{
+				if len(ms) < lines {
+					lines = len(ms)
+				}
+				messages = make([]bruxism.Message, lines)
+				for i := 0; i < lines; i++ {
+					messages[lines - i - 1] = &bruxism.DiscordMessage{
 						Discord:          discord,
 						DiscordgoMessage: ms[i],
 						MessageType:      bruxism.MessageTypeDelete,
@@ -389,10 +392,17 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		}
 
 		p.makeComic(bot, service, message, globalID, makeScriptFromMessages(service, message, messages, room))
-	} else if !bruxism.MatchesCommand(service, "", message) {
+	} else {
+		messageHistory := false
+		if service.Name() == bruxism.DiscordServiceName {
+			pe, err := service.(*bruxism.Discord).UserChannelPermissions(message.UserID(), message.Channel())
+			if err == nil && pe&discordgo.PermissionReadMessageHistory != 0 {
+				// messageHistory = true
+			}
+		}
 		switch message.Type() {
 		case bruxism.MessageTypeCreate:
-			if service.Name() == bruxism.DiscordServiceName {
+			if messageHistory {
 				p.Count[message.Channel()]++
 				return
 			}
@@ -402,7 +412,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 				log = append(log[1:], message)
 			}
 		case bruxism.MessageTypeUpdate:
-			if service.Name() == bruxism.DiscordServiceName {
+			if messageHistory{
 				return
 			}
 			for i, m := range log {
@@ -412,7 +422,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 				}
 			}
 		case bruxism.MessageTypeDelete:
-			if service.Name() == bruxism.DiscordServiceName {
+			if messageHistory {
 				p.Count[message.Channel()]--
 				return
 			}
