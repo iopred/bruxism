@@ -601,6 +601,7 @@ func (d *Discord) NicknameForID(userID, userName, channelID string) string {
 					if m.Nick != "" {
 						return m.Nick
 					}
+					return m.User.Username
 					break
 				}
 			}

@@ -44,8 +44,12 @@ func NewBot() *Bot {
 	}
 }
 
+func (b *Bot) PluginFile(service Service, plugin Plugin) string {
+	return service.Name() + "/" + plugin.Name()
+}
+
 func (b *Bot) getData(service Service, plugin Plugin) []byte {
-	if b, err := ioutil.ReadFile(service.Name() + "/" + plugin.Name()); err == nil {
+	if b, err := ioutil.ReadFile(b.PluginFile(service, plugin)); err == nil {
 		return b
 	}
 	return nil
@@ -92,7 +96,10 @@ func (b *Bot) Open() {
 		log.Printf("Opening service %s\n", service.Name())
 		if messageChan, err := service.Open(); err == nil {
 			for _, plugin := range service.Plugins {
-				plugin.Load(b, service.Service, b.getData(service, plugin))
+				err := plugin.Load(b, service.Service, b.getData(service, plugin))
+				if err != nil {
+					log.Printf("Error loading plugin %s/%s: %v\n", service.Name(), plugin.Name(), err)
+				}
 			}
 			go b.listen(service.Service, messageChan)
 			log.Printf("Opened service %s\n", service.Name())
