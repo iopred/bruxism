@@ -397,7 +397,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		if service.Name() == bruxism.DiscordServiceName {
 			pe, err := service.(*bruxism.Discord).UserChannelPermissions(message.UserID(), message.Channel())
 			if err == nil && pe&discordgo.PermissionReadMessageHistory != 0 {
-				// messageHistory = true
+				messageHistory = true
 			}
 		}
 		switch message.Type() {
