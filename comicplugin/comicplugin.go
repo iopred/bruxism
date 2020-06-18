@@ -29,7 +29,6 @@ type comicPlugin struct {
 	bruxism.SimplePlugin
 	log      map[string][]bruxism.Message
 	cooldown map[string]time.Time
-	Count	 map[string]int
 	Comics   int
 	Public   map[string]bool
 }
@@ -45,9 +44,6 @@ func (p *comicPlugin) Load(bot *bruxism.Bot, service bruxism.Service, data []byt
 	p.cooldown = map[string]time.Time{}
 	if p.Public == nil {
 		p.Public = map[string]bool{}
-	}
-	if p.Count == nil {
-		p.Count = map[string]int{}
 	}
 
 	return nil
@@ -173,7 +169,6 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 							service.SendMessage("367871992503730176", m.Attachments[0].URL)
 						}
 						p.log[message.Channel()] = nil
-						p.Count[message.Channel()] = 0
 						return
 					}
 				}
@@ -203,7 +198,6 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 				service.SendMessage("367871992503730176", url)
 			}
 			p.log[message.Channel()] = nil
-			p.Count[message.Channel()] = 0
 		}()
 	}
 }
@@ -233,7 +227,6 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 	if !ok {
 		log = []bruxism.Message{}
 	}
-	count := p.Count[message.Channel()]
 
 	globalID := message.Channel()
 	if discord, ok := service.(*bruxism.Discord); ok {
@@ -251,6 +244,14 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 	urinal, ok := message.MatchesCommand("", urinalEmoji)
 	if !ok {
 		urinal = false
+	}
+	
+	messageHistory := false
+	if service.Name() == bruxism.DiscordServiceName {
+		pe, err := service.(*bruxism.Discord).UserChannelPermissions(message.UserID(), message.Channel())
+		if err == nil && pe&discordgo.PermissionReadMessageHistory != 0 {
+			messageHistory = true
+		}
 	}
 
 	if service.Name() == bruxism.DiscordServiceName && bruxism.MatchesCommand(service, "comicpublic", message) && service.IsChannelOwner(message) {
@@ -320,7 +321,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 			Type:     ty,
 		})
 	} else if bruxism.MatchesCommand(service, "comic", message) || emoji || urinal {
-		if len(log) == 0 && count == 0{
+		if !messageHistory && len(log) == 0 {
 			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, I don't have enough messages to make a comic yet.", message.UserName()))
 			return
 		}
@@ -347,15 +348,12 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		}
 
 		var messages []bruxism.Message
-		if len(log) != 0 {
+		if !messageHistory && len(log) != 0 {
 			if lines > len(log) {
 				lines = len(log)
 			}
 			messages = log[len(log)-lines:]
-		} else if count != 0 {
-			if lines > count {
-				lines = count
-			}
+		} else {
 			if lines > 10 {
 				lines = 10
 			}
@@ -373,7 +371,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 					messages[lines - i - 1] = &bruxism.DiscordMessage{
 						Discord:          discord,
 						DiscordgoMessage: ms[i],
-						MessageType:      bruxism.MessageTypeDelete,
+						MessageType:      bruxism.MessageTypeCreate,
 					}
 				}
 			} 
@@ -393,28 +391,17 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 
 		p.makeComic(bot, service, message, globalID, makeScriptFromMessages(service, message, messages, room))
 	} else {
-		messageHistory := false
-		if service.Name() == bruxism.DiscordServiceName {
-			pe, err := service.(*bruxism.Discord).UserChannelPermissions(message.UserID(), message.Channel())
-			if err == nil && pe&discordgo.PermissionReadMessageHistory != 0 {
-				messageHistory = true
-			}
+		if messageHistory {
+			return
 		}
 		switch message.Type() {
 		case bruxism.MessageTypeCreate:
-			if messageHistory {
-				p.Count[message.Channel()]++
-				return
-			}
 			if len(log) < 10 {
 				log = append(log, message)
 			} else {
 				log = append(log[1:], message)
 			}
 		case bruxism.MessageTypeUpdate:
-			if messageHistory{
-				return
-			}
 			for i, m := range log {
 				if m.MessageID() == message.MessageID() {
 					log[i] = message
@@ -422,10 +409,6 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 				}
 			}
 		case bruxism.MessageTypeDelete:
-			if messageHistory {
-				p.Count[message.Channel()]--
-				return
-			}
 			for i, m := range log {
 				if m.MessageID() == message.MessageID() {
 					log = append(log[:i], log[i+1:]...)
@@ -451,6 +434,5 @@ func (p *comicPlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message b
 func New() bruxism.Plugin {
 	return &comicPlugin{
 		log: make(map[string][]bruxism.Message),
-		Count: make(map[string]int),
 	}
 }
