@@ -325,7 +325,7 @@ func (p *ReminderPlugin) Save() ([]byte, error) {
 
 // Stats will return the stats for a plugin.
 func (p *ReminderPlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) []string {
-	return []string{fmt.Sprintf("Reminders: \t%d\n", p.TotalReminders)}
+	return []string{fmt.Sprintf("Reminders: \t%s\n", humanize.Comma(int64(p.TotalReminders)))}
 }
 
 // Name returns the name of the plugin.

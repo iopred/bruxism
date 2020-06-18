@@ -444,7 +444,7 @@ func (p *comicPlugin) Name() string {
 
 // Stats will return the stats for a plugin.
 func (p *comicPlugin) Stats(bot *bruxism.Bot, service bruxism.Service, message bruxism.Message) []string {
-	return []string{fmt.Sprintf("Comics created: \t%d\n", p.Comics)}
+	return []string{fmt.Sprintf("Comics created: \t%s\n", humanize.Comma(int64(p.Comics)))}
 }
 
 // New will create a new comic plugin.
