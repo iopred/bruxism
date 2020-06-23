@@ -125,6 +125,19 @@ func (m *DiscordMessage) AttachmentURL() string {
 	return ""
 }
 
+func (m *DiscordMessage) AttachmentURLLarge() string {
+	if len(m.DiscordgoMessage.Attachments) == 0 {
+		return ""
+	}
+	a := m.DiscordgoMessage.Attachments[0]
+	if a.ProxyURL != "" {
+		return a.ProxyURL
+	} else if a.URL != "" {
+		return a.URL
+	}
+	return ""
+}
+
 func (m *DiscordMessage) getParsedCommand(prefix string) (parsedCommand *ParsedCommand) {
 	prefix = strings.ToLower(prefix)
 	
