@@ -45,10 +45,10 @@ func StatsCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mes
 	fmt.Fprintf(w, "Go: \t%s\n", runtime.Version())
 	fmt.Fprintf(w, "Uptime: \t%s\n", getDurationString(time.Now().Sub(statsStartTime)))
 	fmt.Fprintf(w, "Memory used: \t%s / %s (%s garbage collected)\n", humanize.Bytes(stats.Alloc), humanize.Bytes(stats.Sys), humanize.Bytes(stats.TotalAlloc))
-	fmt.Fprintf(w, "Concurrent tasks: \t%d\n",  humanize.Comma(int64(runtime.NumGoroutine())))
+	fmt.Fprintf(w, "Concurrent tasks: \t%s\n",  humanize.Comma(int64(runtime.NumGoroutine())))
 	if service.Name() == bruxism.DiscordServiceName {
 		discord := service.(*bruxism.Discord)
-		fmt.Fprintf(w, "Connected servers: \t%d\n",  humanize.Comma(int64(service.ChannelCount())))
+		fmt.Fprintf(w, "Connected servers: \t%s\n",  humanize.Comma(int64(service.ChannelCount())))
 		if len(discord.Sessions) > 1 {
 			shards := 0
 			for _, s := range discord.Sessions {
@@ -70,7 +70,7 @@ func StatsCommand(bot *bruxism.Bot, service bruxism.Service, message bruxism.Mes
 			}
 		}
 	} else {
-		fmt.Fprintf(w, "Connected channels: \t%d\n",  humanize.Comma(int64(service.ChannelCount())))
+		fmt.Fprintf(w, "Connected channels: \t%s\n",  humanize.Comma(int64(service.ChannelCount())))
 	}
 
 	plugins := bot.Services[service.Name()].Plugins
