@@ -170,7 +170,7 @@ func (p *chartPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 	go func() {
 		if service.Name() == bruxism.DiscordServiceName {
 			discord := service.(*bruxism.Discord)
-			p, err := discord.UserChannelPermissions(message.UserID(), message.Channel())
+			p, err := discord.UserChannelPermissions(service.UserID(), message.Channel())
 			if err == nil && p&discordgo.PermissionAttachFiles == discordgo.PermissionAttachFiles {
 				service.SendFile(message.Channel(), "chart.png", b)
 				return

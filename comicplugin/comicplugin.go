@@ -154,7 +154,7 @@ func (p *comicPlugin) makeComic(bot *bruxism.Bot, service bruxism.Service, messa
 		go func() {
 			if service.Name() == bruxism.DiscordServiceName {
 				discord := service.(*bruxism.Discord)
-				pe, err := discord.UserChannelPermissions(message.UserID(), message.Channel())
+				pe, err := discord.UserChannelPermissions(service.UserID(), message.Channel())
 				if err == nil && pe&discordgo.PermissionAttachFiles != 0 {
 					b := &bytes.Buffer{}
 					err = png.Encode(b, image)
@@ -248,7 +248,7 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 	
 	messageHistory := false
 	if service.Name() == bruxism.DiscordServiceName {
-		pe, err := service.(*bruxism.Discord).UserChannelPermissions(message.UserID(), message.Channel())
+		pe, err := service.(*bruxism.Discord).UserChannelPermissions(service.UserID(), message.Channel())
 		if err == nil && pe&discordgo.PermissionReadMessageHistory != 0 {
 			messageHistory = true
 		}
