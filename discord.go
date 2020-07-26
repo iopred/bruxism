@@ -325,6 +325,13 @@ func (d *Discord) Open() (<-chan Message, error) {
 		session.ShardCount = s.Shards
 		session.ShardID = i
 		session.State.TrackPresences = false
+		session.Identify.Intents = discordgo.MakeIntent(
+			discordgo.IntentsGuildMembers |
+		    discordgo.IntentsGuildPresences |
+		    discordgo.IntentsGuildMessages |
+		    discordgo.IntentsGuildMessageReactions |
+		    discordgo.IntentsDirectMessages |
+		    discordgo.IntentsDirectMessageReactions)
 		wg.Add(1)
 		go func(session *discordgo.Session) {
 			defer wg.Done()
