@@ -2,7 +2,7 @@ module github.com/iopred/bruxism
 
 require (
 	github.com/atotto/clipboard v0.1.2
-	github.com/bwmarrin/discordgo v0.20.0
+	github.com/bwmarrin/discordgo v0.22.0
 	github.com/dustin/go-humanize v1.0.0
 	github.com/fluffle/goirc v1.0.2
 	github.com/nlopes/slack v0.6.0
