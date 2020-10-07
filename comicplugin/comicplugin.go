@@ -64,7 +64,7 @@ func (p *comicPlugin) Help(bot *bruxism.Bot, service bruxism.Service, message br
 	}
 	if detailed {
 		help = append(help, []string{
-			bruxism.CommandHelp(service, "customcomic", "[id|name:] <text> | [id|name:] <text>", fmt.Sprintf("Creates a custom comic. Available names: %s%s%s", ticks, strings.Join(comicgen.CharacterNames, ", "), ticks))[0],
+			bruxism.CommandHelp(service, "customcomic", "[id|name:] <text> | [id|name:] <text>", fmt.Sprintf("Creates a custom comic. Available names: %s%s%s", ticks, comicgen.CharacterNames(), ticks))[0],
 			bruxism.CommandHelp(service, "customcomicsimple", "[id:] <text> | [id:] <text>", "Creates a simple custom comic.")[0],
 		}...)
 
@@ -92,19 +92,10 @@ var emojiRegexp = regexp.MustCompile("<a?:[a-zA-Z0-9]+:([0-9]+)>")
 var imageRegexp = regexp.MustCompile("^(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|jpeg|gif|png)($|\\?\\S*$)")
 
 func makeScriptFromMessages(service bruxism.Service, message bruxism.Message, messages []bruxism.Message, room string) *comicgen.Script {
-	speakers := make(map[string]int)
-	avatars := make(map[int]string)
-
+	avatars := make(map[string]string)
 	script := []*comicgen.Message{}
-
 	for _, message := range messages {
-		speaker, ok := speakers[message.UserName()]
-		if !ok {
-			speaker = len(speakers)
-			speakers[message.UserName()] = speaker
-			avatars[speaker] = message.UserAvatar()
-		}
-
+		avatars[message.UserName()] = message.UserAvatar()
 		replacements := map[string]string{}
 		messageMessage := message.Message()
 		matches := emojiRegexp.FindAllStringSubmatch(messageMessage, -1)
@@ -128,7 +119,6 @@ func makeScriptFromMessages(service bruxism.Service, message bruxism.Message, me
 		}
 
 		script = append(script, &comicgen.Message{
-			Speaker:      speaker,
 			Text:         messageMessage,
 			Author:       message.UserName(),
 			Replacements: replacements,
@@ -286,30 +276,23 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		if len(splits) > 10 {
 			splits = splits[:10]
 		}
+		authorIndex := 0
 		for _, line := range splits {
 			line := strings.Trim(line, " ")
 
 			text := ""
-			speaker := 0
 			author := ""
 			if strings.Index(line, ":") != -1 {
 				lineSplit := strings.Split(line, ":")
-
-				author = strings.Trim(lineSplit[0], " ")
-
-				var err error
-				speaker, err = strconv.Atoi(author)
-				if err != nil {
-					speaker = -1
-				}
-
+				author = "_" + strings.Trim(lineSplit[0], " ")
 				text = strings.Trim(strings.Join(lineSplit[1:], ":"), " ")
 			} else {
+				authorIndex++
+				author = strconv.Itoa(authorIndex)
 				text = line
 			}
 
 			messages = append(messages, &comicgen.Message{
-				Speaker: speaker,
 				Text:    text,
 				Author:  author,
 			})
