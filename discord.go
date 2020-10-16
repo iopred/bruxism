@@ -1,6 +1,7 @@
 package bruxism
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -324,7 +325,6 @@ func (d *Discord) Open() (<-chan Message, error) {
 		d.Sessions[i] = session
 		session.ShardCount = s.Shards
 		session.ShardID = i
-		session.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAll)
 		session.State.TrackPresences = false
 		wg.Add(1)
 		go func(session *discordgo.Session) {
@@ -504,43 +504,19 @@ func (d *Discord) IsChannelOwner(message Message) bool {
 
 // IsModerator returns whether or not the sender of a message is a moderator.
 func (d *Discord) IsModerator(message Message) bool {
-	p, err := d.UserChannelPermissions(message.UserID(), message.Channel())
+	isChannelOwner := d.IsChannelOwner(message)
+
+	p, err := d.MessagePermissions(message)
 	if err == nil {
-		if p&discordgo.PermissionAdministrator == discordgo.PermissionAdministrator || p&discordgo.PermissionManageChannels == discordgo.PermissionManageChannels || p&discordgo.PermissionManageServer == discordgo.PermissionManageServer {
-			return true
-		}
+		return isChannelOwner
 	}
 
-	return d.IsChannelOwner(message)
+	return isChannelOwner || p&discordgo.PermissionAdministrator == discordgo.PermissionAdministrator || p&discordgo.PermissionManageChannels == discordgo.PermissionManageChannels || p&discordgo.PermissionManageServer == discordgo.PermissionManageServer
 }
 
 // ChannelCount returns the number of channels the bot is in.
 func (d *Discord) ChannelCount() int {
 	return len(d.Guilds())
-}
-
-// SupportsMessageHistory returns if the service supports message history.
-func (d *Discord) SupportsMessageHistory() bool {
-	return true
-}
-
-// MessageHistory returns the message history for a channel.
-func (d *Discord) MessageHistory(channel string) []Message {
-	c, err := d.Channel(channel)
-	if err != nil {
-		return nil
-	}
-
-	messages := make([]Message, len(c.Messages))
-	for i := 0; i < len(c.Messages); i++ {
-		messages[i] = &DiscordMessage{
-			Discord:          d,
-			DiscordgoMessage: c.Messages[i],
-			MessageType:      MessageTypeCreate,
-		}
-	}
-
-	return messages
 }
 
 func (d *Discord) Channel(channelID string) (channel *discordgo.Channel, err error) {
@@ -581,6 +557,20 @@ func (d *Discord) Guilds() []*discordgo.Guild {
 	return guilds
 }
 
+func (d *Discord) MessagePermissions(message Message) (apermissions int, err error) {
+	m, ok := message.(*DiscordMessage)
+	if !ok {
+		return 0, errors.New("invalid message")
+	}
+	for _, s := range d.Sessions {
+		apermissions, err = s.State.MessagePermissions(m.DiscordgoMessage)
+		if err == nil {
+			return apermissions, nil
+		}
+	}
+	return d.UserChannelPermissions(message.UserID(), message.Channel())
+}
+
 func (d *Discord) UserChannelPermissions(userID, channelID string) (apermissions int, err error) {
 	for _, s := range d.Sessions {
 		apermissions, err = s.State.UserChannelPermissions(userID, channelID)
@@ -588,7 +578,21 @@ func (d *Discord) UserChannelPermissions(userID, channelID string) (apermissions
 			return apermissions, nil
 		}
 	}
-	return
+	return 0, errors.New("could not find user permissions")
+}
+
+func (d *Discord) MessageColor(message Message) int {
+	m, ok := message.(*DiscordMessage)
+	if !ok {
+		return 0
+	}
+	for _, s := range d.Sessions {
+		color := s.State.MessageColor(m.DiscordgoMessage)
+		if color != 0 {
+			return color
+		}
+	}
+	return 0	
 }
 
 func (d *Discord) UserColor(userID, channelID string) int {

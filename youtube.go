@@ -726,16 +726,6 @@ func (yt *YouTube) GetTopLivestreams(count int) ([]*youtube.Video, error) {
 	return videoList, nil
 }
 
-// SupportsMessageHistory returns if the service supports message history.
-func (yt *YouTube) SupportsMessageHistory() bool {
-	return false
-}
-
-// MessageHistory returns the message history for a channel.
-func (yt *YouTube) MessageHistory(channel string) []Message {
-	return nil
-}
-
 // GetLiveVideos gets a list of live videos for a channel
 func (yt *YouTube) GetLiveVideos(channelID string) ([]*youtube.Video, error) {
 	if yt.Service == nil {

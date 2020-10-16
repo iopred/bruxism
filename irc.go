@@ -222,13 +222,3 @@ func (i *IRC) IsModerator(message Message) bool {
 func (i *IRC) ChannelCount() int {
 	return len(i.channels)
 }
-
-// SupportsMessageHistory returns if the service supports message history.
-func (i *IRC) SupportsMessageHistory() bool {
-	return false
-}
-
-// MessageHistory returns the message history for a channel.
-func (i *IRC) MessageHistory(channel string) []Message {
-	return nil
-}

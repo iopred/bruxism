@@ -132,12 +132,4 @@ func (s *MockService) ChannelCount() int {
 	return 1
 }
 
-func (s *MockService) SupportsMessageHistory() bool {
-	return false
-}
-
-func (s *MockService) MessageHistory(chanel string) []Message {
-	return nil
-}
-
 var _ Service = &MockService{}

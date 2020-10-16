@@ -234,13 +234,3 @@ func (s *Slack) ChannelCount() int {
 	}
 	return len(c)
 }
-
-// SupportsMessageHistory returns if the service supports message history.
-func (s *Slack) SupportsMessageHistory() bool {
-	return false
-}
-
-// MessageHistory returns the message history for a channel.
-func (s *Slack) MessageHistory(channel string) []Message {
-	return nil
-}

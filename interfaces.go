@@ -58,8 +58,6 @@ type Service interface {
 	SupportsMultiline() bool
 	CommandPrefix() string
 	ChannelCount() int
-	SupportsMessageHistory() bool
-	MessageHistory(chanel string) []Message
 }
 
 // LoadFunc is the function signature for a load handler.
