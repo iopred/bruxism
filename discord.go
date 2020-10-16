@@ -43,7 +43,6 @@ func (m *DiscordMessage) Channel() string {
 
 // UserName returns the user name for this message.
 func (m *DiscordMessage) UserName() string {
-	me := m.DiscordgoMessage
 	if m.Nick == nil {
 		n := m.Discord.Nickname(m)
 		m.Nick = &n
