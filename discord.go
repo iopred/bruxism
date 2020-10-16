@@ -43,7 +43,12 @@ func (m *DiscordMessage) Channel() string {
 
 // UserName returns the user name for this message.
 func (m *DiscordMessage) UserName() string {
-	return m.Discord.Nickname(m)
+	me := m.DiscordgoMessage
+	if m.Nick == nil {
+		n := m.Discord.Nickname(m)
+		m.Nick = &n
+	}
+	return *m.Nick
 }
 
 // UserID returns the user id for this message.
@@ -604,7 +609,10 @@ func (d *Discord) Nickname(message Message) string {
 	if m.DiscordgoMessage.Member != nil && m.DiscordgoMessage.Member.Nick != "" {
 		return m.DiscordgoMessage.Member.Nick
 	}
-	return d.NicknameForID(message.UserID(), m.DiscordgoMessage.User.Username, message.Channel())
+	if m.DiscordgoMessage.Author == nil {
+		return ""
+	}
+	return d.NicknameForID(message.UserID(), m.DiscordgoMessage.Author.Username, message.Channel())
 }
 
 func (d *Discord) NicknameForID(userID, userName, channelID string) string {
