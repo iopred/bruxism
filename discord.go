@@ -502,7 +502,7 @@ func (d *Discord) IsModerator(message Message) bool {
 	isChannelOwner := d.IsChannelOwner(message)
 
 	p, err := d.MessagePermissions(message)
-	if err == nil {
+	if err != nil {
 		return isChannelOwner
 	}
 
