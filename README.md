@@ -35,7 +35,7 @@ Also supports direct invites on Discord and support for announcing streamers goi
 
 ### Setup
 
-You must first generate a YouTube Oauth token in the [Google Developer Console](https://console.developers.google.com/).
+You must first generate a YouTube OAuth token in the [Google Developer Console](https://console.developers.google.com/).
 
 Go to Credentials and download the JSON config file and save it in `$GOPATH/bin` as `youtubeoauth2config.json`
 
@@ -50,7 +50,7 @@ Now the bot can be run:
 `./bruxism -youtubechannelids <youtube channel id1,youtube channel id2>`
 
 #### Important!
-The account you choose during the oauth flow is the account that the bot will use to send messages.
+The account you choose during the OAuth flow is the account that the bot will use to send messages.
 
 If you are trying to test the bot, make sure the account you are sending messages with is **different** from the bot account.
 
@@ -84,10 +84,10 @@ Some plugins upload images to imgur (such as chartplugin), it's suggested that y
 ## Arguments:
 
 * `youtubeurl` - Outputs a new OAuth URL for YouTube and then exits.
-* `youtubeauth` - Exchanges the provided auth code for an oauth2 token.
+* `youtubeauth` - Exchanges the provided auth code for an OAuth2 token.
 * `youtubeconfig` - The filename for your YouTube OAuth client JSON. (Download JSON in Google Developers Console -> Credentials).
-* `youtubetoken` - The filename to store the oauth2 token.
-* `youtubelivechannelids` - Comma separated list of channel ids to poll.
+* `youtubetoken` - The filename to store the OAuth2 token.
+* `youtubelivechannelids` - Comma-separated list of channel ids to poll.
 * `discordtoken` - Sets the Discord token.
 * `discordemail` - Sets the Discord account email.
 * `discordpassword` - Sets the Discord account password.
@@ -95,10 +95,10 @@ Some plugins upload images to imgur (such as chartplugin), it's suggested that y
 * `ircserver` - Sets the IRC server.
 * `ircusername` - Sets the IRC user name.
 * `ircpassword` - Sets the IRC password.
-* `ircchannels` - Comma separated list of IRC channels.
+* `ircchannels` - Comma-separated list of IRC channels.
 * `imgurid` - Sets the Imgur client id, used for uploading images to imgur.
 * `imguralbum` - Sets an optional the Imgur album id, used for uploading images to imgur.
-* `mashablekey` - Sets the mashable oauth key.
+* `mashablekey` - Sets the mashable OAuth key.
 
 ## Special Thanks
 
