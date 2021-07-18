@@ -101,10 +101,7 @@ func (p *playedPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 	discord.Session.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		for _, g := range r.Guilds {
 			for _, pu := range g.Presences {
-				e := ""
-				if pu.Game != nil {
-					e = pu.Game.Name
-				}
+				e := gameNameFromActivities(pu.Activities)
 				p.Update(pu.User.ID, e)
 			}
 		}
@@ -116,31 +113,31 @@ func (p *playedPlugin) Run(bot *bruxism.Bot, service bruxism.Service) {
 		}
 
 		for _, pu := range g.Presences {
-			e := ""
-			if pu.Game != nil {
-				e = pu.Game.Name
-			}
+			e := gameNameFromActivities(pu.Activities)
 			p.Update(pu.User.ID, e)
 		}
 	})
 
 	discord.Session.AddHandler(func(s *discordgo.Session, pr *discordgo.PresencesReplace) {
 		for _, pu := range *pr {
-			e := ""
-			if pu.Game != nil {
-				e = pu.Game.Name
-			}
+			e := gameNameFromActivities(pu.Activities)
 			p.Update(pu.User.ID, e)
 		}
 	})
 
 	discord.Session.AddHandler(func(s *discordgo.Session, pu *discordgo.PresenceUpdate) {
-		e := ""
-		if pu.Game != nil {
-			e = pu.Game.Name
-		}
+		e := gameNameFromActivities(pu.Activities)
 		p.Update(pu.User.ID, e)
 	})
+}
+
+func gameNameFromActivities(activities []*discordgo.Activity) string {
+	for _, activity := range activities {
+		if activity.Type == discordgo.ActivityTypeGame {
+			return activity.Name
+		}
+	}
+	return ""
 }
 
 // Help returns a list of help strings that are printed when the user requests them.
