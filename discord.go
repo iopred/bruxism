@@ -107,10 +107,10 @@ func (m *DiscordMessage) AttachmentURL() string {
 	if a.ProxyURL != "" {
 		if a.Width != 0 && a.Height != 0 {
 			height := 100
-			width := height * a.Width/a.Height
+			width := height * a.Width / a.Height
 			if width > 200 {
 				width = 200
-				height = width * a.Height/a.Width
+				height = width * a.Height / a.Width
 			}
 			return fmt.Sprintf("%s?width=%d&height=%d", a.ProxyURL, width, height)
 		}
@@ -136,7 +136,7 @@ func (m *DiscordMessage) AttachmentURLLarge() string {
 
 func (m *DiscordMessage) getParsedCommand(prefix string) (parsedCommand *ParsedCommand) {
 	prefix = strings.ToLower(prefix)
-	
+
 	m.Lock()
 	defer m.Unlock()
 
@@ -151,7 +151,7 @@ func (m *DiscordMessage) getParsedCommand(prefix string) (parsedCommand *ParsedC
 
 	parsedCommand = &ParsedCommand{}
 	m.parsedCommands[prefix] = parsedCommand
-	
+
 	trimmedPrefix := strings.ToLower(strings.TrimSpace(prefix))
 	messageLower := strings.ToLower(strings.TrimSpace(m.Message()))
 	if !strings.HasPrefix(messageLower, trimmedPrefix) {
@@ -164,9 +164,9 @@ func (m *DiscordMessage) getParsedCommand(prefix string) (parsedCommand *ParsedC
 		return
 	}
 
-	if len(trimmedPrefix) != len(prefix) { 
+	if len(trimmedPrefix) != len(prefix) {
 		if len(parts) > 1 {
-			parts = parts[1:]	
+			parts = parts[1:]
 		}
 	} else {
 		parts[0] = parts[0][len(prefix):]
@@ -250,7 +250,7 @@ func (d *Discord) replaceRoleNames(message *discordgo.Message, content string) s
 }
 
 func (d *Discord) onMessageCreate(s *discordgo.Session, message *discordgo.MessageCreate) {
-	if (message.Author != nil && message.Author.Bot) {
+	if message.Author != nil && message.Author.Bot {
 		return
 	}
 
@@ -265,7 +265,7 @@ func (d *Discord) onMessageCreate(s *discordgo.Session, message *discordgo.Messa
 }
 
 func (d *Discord) onMessageUpdate(s *discordgo.Session, message *discordgo.MessageUpdate) {
-	if (message.Author != nil && message.Author.Bot) {
+	if message.Author != nil && message.Author.Bot {
 		return
 	}
 
@@ -552,7 +552,7 @@ func (d *Discord) Guilds() []*discordgo.Guild {
 	return guilds
 }
 
-func (d *Discord) MessagePermissions(message Message) (apermissions int, err error) {
+func (d *Discord) MessagePermissions(message Message) (apermissions int64, err error) {
 	m, ok := message.(*DiscordMessage)
 	if !ok {
 		return 0, errors.New("invalid message")
@@ -566,7 +566,7 @@ func (d *Discord) MessagePermissions(message Message) (apermissions int, err err
 	return d.UserChannelPermissions(message.UserID(), message.Channel())
 }
 
-func (d *Discord) UserChannelPermissions(userID, channelID string) (apermissions int, err error) {
+func (d *Discord) UserChannelPermissions(userID, channelID string) (apermissions int64, err error) {
 	for _, s := range d.Sessions {
 		apermissions, err = s.State.UserChannelPermissions(userID, channelID)
 		if err == nil {
@@ -587,7 +587,7 @@ func (d *Discord) MessageColor(message Message) int {
 			return color
 		}
 	}
-	return 0	
+	return 0
 }
 
 func (d *Discord) UserColor(userID, channelID string) int {
@@ -625,7 +625,6 @@ func (d *Discord) NicknameForID(userID, userName, channelID string) string {
 						return m.Nick
 					}
 					return m.User.Username
-					break
 				}
 			}
 		}
@@ -635,7 +634,7 @@ func (d *Discord) NicknameForID(userID, userName, channelID string) string {
 
 func (d *Discord) UpdateStatus(idle int, game string) {
 	for _, s := range d.Sessions {
-		s.UpdateStatus(idle, game)
+		s.UpdateGameStatus(idle, game)
 	}
 }
 func (d *Discord) UpdateStreamingStatus(idle int, game string, url string) {
