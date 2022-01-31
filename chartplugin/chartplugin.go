@@ -115,14 +115,9 @@ func (p *chartPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, mes
 		return
 	}
 
-	pl, err := plot.New()
-	if err != nil {
-		service.SendMessage(message.Channel(), fmt.Sprintf("Error making chart, sorry! eg: %s", p.randomChart(service)))
-		return
-	}
-
 	service.Typing(message.Channel())
 
+	pl := plot.New()
 	pl.Y.Label.Text = axes[0]
 	pl.X.Label.Text = axes[1]
 

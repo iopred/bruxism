@@ -70,7 +70,7 @@ func (p *streamerPlugin) messageFunc(bot *bruxism.Bot, service bruxism.Service, 
 }
 
 func (p *streamerPlugin) streamer(search string, bold bool) (string, error) {
-	channelList, err := p.youTube.Service.Channels.List("id,snippet,statistics").ForUsername(search).Do()
+	channelList, err := p.youTube.Service.Channels.List([]string{"id", "snippet", "statistics"}).ForUsername(search).Do()
 
 	if err != nil {
 		return "", nil
@@ -78,7 +78,7 @@ func (p *streamerPlugin) streamer(search string, bold bool) (string, error) {
 
 	// If a straight username lookup failed, do a search.
 	if len(channelList.Items) == 0 {
-		list, err := p.youTube.Service.Search.List("id").Q(search).Type("channel").Do()
+		list, err := p.youTube.Service.Search.List([]string{"id"}).Q(search).Type("channel").Do()
 
 		if err != nil {
 			return "", err
@@ -88,7 +88,7 @@ func (p *streamerPlugin) streamer(search string, bold bool) (string, error) {
 			return "No users found with that name.", nil
 		}
 
-		channelList, err = p.youTube.Service.Channels.List("id,snippet,statistics").Id(list.Items[0].Id.ChannelId).Do()
+		channelList, err = p.youTube.Service.Channels.List([]string{"id", "snippet", "statistics"}).Id(list.Items[0].Id.ChannelId).Do()
 
 		if err != nil {
 			return "", nil

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/iopred/bruxism"
-	"github.com/renstrom/fuzzysearch/fuzzy"
+	"github.com/lithammer/fuzzysearch/fuzzy"
 )
 
 // MTGSet is a struct containing all the information on a set of MTG.

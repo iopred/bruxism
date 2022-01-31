@@ -118,7 +118,7 @@ func (y *YTLiveChannel) getLiveVideos(channel string) (map[string]*youtube.Video
 		return nil, errors.New("Service not available.")
 	}
 
-	search, err := y.service.Search.List("id").ChannelId(channel).EventType("live").Type("video").Do()
+	search, err := y.service.Search.List([]string{"id"}).ChannelId(channel).EventType("live").Type("video").Do()
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func (y *YTLiveChannel) getLiveVideos(channel string) (map[string]*youtube.Video
 		if next >= len(ids) {
 			next = len(ids)
 		}
-		videoList, err := y.service.Videos.List("id,snippet,liveStreamingDetails").MaxResults(50).Id(strings.Join(ids[i:next], ",")).Do()
+		videoList, err := y.service.Videos.List([]string{"id", "snippet", "liveStreamingDetails"}).MaxResults(50).Id(strings.Join(ids[i:next], ",")).Do()
 		if err != nil {
 			return nil, err
 		}
