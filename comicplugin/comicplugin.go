@@ -3,6 +3,7 @@ package comicplugin
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image/png"
 	"log"
@@ -19,6 +20,8 @@ import (
 	"github.com/iopred/bruxism"
 	"github.com/iopred/comicgen"
 )
+
+const MAX_CHATLOG_SIZE = 100
 
 var comicEmoji = "<:comic:701265673707454494>"
 var urinalEmoji = "<:urinal:701279094402318387>"
@@ -259,43 +262,16 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 
 		service.Typing(message.Channel())
 
-		str, _ := bruxism.ParseCommand(service, message)
+		messages, err := p.MessagesFromChatlog(service, message)
 
-		messages := []*comicgen.Message{}
-
-		splits := strings.Split(str, "|")
-		if len(splits) == 0 || (len(splits) == 1 && len(splits[0]) == 0) {
-			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, you didn't add any text.", message.UserName()))
+		if err != nil {
+			service.SendMessage(message.Channel(), fmt.Sprintf("Sorry %s, that didn't work because: %s", message.UserName(), err.Error()))
 			return
 		}
-		
-		if p.checkCooldown(service, message) {
+
+		// Check for cooldown.
+		if messages == nil {
 			return
-		}
-		
-		if len(splits) > 10 {
-			splits = splits[:10]
-		}
-		authorIndex := 0
-		for _, line := range splits {
-			line := strings.Trim(line, " ")
-
-			text := ""
-			author := ""
-			if strings.Index(line, ":") != -1 {
-				lineSplit := strings.Split(line, ":")
-				author = "_" + strings.Trim(lineSplit[0], " ")
-				text = strings.Trim(strings.Join(lineSplit[1:], ":"), " ")
-			} else {
-				authorIndex++
-				author = strconv.Itoa(authorIndex)
-				text = line
-			}
-
-			messages = append(messages, &comicgen.Message{
-				Text:    text,
-				Author:  author,
-			})
 		}
 
 		p.makeComic(bot, service, message, globalID, &comicgen.Script{
@@ -401,6 +377,49 @@ func (p *comicPlugin) Message(bot *bruxism.Bot, service bruxism.Service, message
 		}
 		p.log[message.Channel()] = log
 	}
+}
+
+func (p *comicPlugin) MessagesFromChatlog(service bruxism.Service, message bruxism.Message) ([]*comicgen.Message, error) {
+	str, _ := bruxism.ParseCommand(service, message)
+
+	splits := strings.Split(str, "|")
+	if len(splits) == 0 || (len(splits) == 1 && len(splits[0]) == 0) {
+		return nil, errors.New("you didn't add any text.")
+	}
+	
+	if p.checkCooldown(service, message) {
+		return nil, nil
+	}
+	
+	if len(splits) > MAX_CHATLOG_SIZE {
+		splits = splits[:MAX_CHATLOG_SIZE]
+	}
+
+	messages := []*comicgen.Message{}
+
+	authorIndex := 0
+	for _, line := range splits {
+		line := strings.Trim(line, " ")
+
+		text := ""
+		author := ""
+		if strings.Index(line, ":") != -1 {
+			lineSplit := strings.Split(line, ":")
+			author = strings.Trim(lineSplit[0], " ")
+			text = strings.Trim(strings.Join(lineSplit[1:], ":"), " ")
+		} else {
+			authorIndex++
+			author = strconv.Itoa(authorIndex)
+			text = line
+		}
+
+		messages = append(messages, &comicgen.Message{
+			Text:    text,
+			Author:  author,
+		})
+	}
+
+	return messages, nil
 }
 
 // Name returns the name of the plugin.
