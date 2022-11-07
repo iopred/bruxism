@@ -192,7 +192,7 @@ func (m *DiscordMessage) ParseCommand(prefix string) (string, []string, bool) {
 
 // Discord is a Service provider for Discord.
 type Discord struct {
-	args        []interface{}
+	token       string
 	messageChan chan Message
 
 	// The first session, used to send messages (and maintain backwards compatibility).
@@ -203,9 +203,13 @@ type Discord struct {
 }
 
 // NewDiscord creates a new discord service.
-func NewDiscord(args ...interface{}) *Discord {
+// If the token is for a bot, it must be prefixed with "Bot "
+// 		e.g. "Bot ..."
+// Or if it is an OAuth2 token, it must be prefixed with "Bearer "
+//		e.g. "Bearer ..."
+func NewDiscord(token string) *Discord {
 	return &Discord{
-		args:        args,
+		token:       token,
 		messageChan: make(chan Message, 200),
 	}
 }
@@ -294,7 +298,7 @@ func (d *Discord) Name() string {
 
 // Open opens the service and returns a channel which all messages will be sent on.
 func (d *Discord) Open() (<-chan Message, error) {
-	gateway, err := discordgo.New(d.args...)
+	gateway, err := discordgo.New(d.token)
 	if err != nil {
 		return nil, err
 	}
@@ -310,7 +314,7 @@ func (d *Discord) Open() (<-chan Message, error) {
 	wg := sync.WaitGroup{}
 	for i := 0; i < s.Shards; i++ {
 		log.Printf("%s opening shard %d\n", d.Name(), i+1)
-		session, err := discordgo.New(d.args...)
+		session, err := discordgo.New(d.token)
 		if err != nil {
 			return nil, err
 		}
