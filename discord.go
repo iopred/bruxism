@@ -294,7 +294,7 @@ func (d *Discord) Name() string {
 
 // Open opens the service and returns a channel which all messages will be sent on.
 func (d *Discord) Open() (<-chan Message, error) {
-	gateway, err := discordgo.New(d.args...)
+	gateway, err := discordgo.New(d.args[0].(string))
 	if err != nil {
 		return nil, err
 	}
@@ -310,7 +310,7 @@ func (d *Discord) Open() (<-chan Message, error) {
 	wg := sync.WaitGroup{}
 	for i := 0; i < s.Shards; i++ {
 		log.Printf("%s opening shard %d\n", d.Name(), i+1)
-		session, err := discordgo.New(d.args...)
+		session, err := discordgo.New(d.args[0].(string))
 		if err != nil {
 			return nil, err
 		}
@@ -552,7 +552,7 @@ func (d *Discord) Guilds() []*discordgo.Guild {
 	return guilds
 }
 
-func (d *Discord) MessagePermissions(message Message) (apermissions int, err error) {
+func (d *Discord) MessagePermissions(message Message) (apermissions int64, err error) {
 	m, ok := message.(*DiscordMessage)
 	if !ok {
 		return 0, errors.New("invalid message")
@@ -566,7 +566,7 @@ func (d *Discord) MessagePermissions(message Message) (apermissions int, err err
 	return d.UserChannelPermissions(message.UserID(), message.Channel())
 }
 
-func (d *Discord) UserChannelPermissions(userID, channelID string) (apermissions int, err error) {
+func (d *Discord) UserChannelPermissions(userID, channelID string) (apermissions int64, err error) {
 	for _, s := range d.Sessions {
 		apermissions, err = s.State.UserChannelPermissions(userID, channelID)
 		if err == nil {
@@ -635,7 +635,7 @@ func (d *Discord) NicknameForID(userID, userName, channelID string) string {
 
 func (d *Discord) UpdateStatus(idle int, game string) {
 	for _, s := range d.Sessions {
-		s.UpdateStatus(idle, game)
+		s.UpdateGameStatus(idle, game)
 	}
 }
 func (d *Discord) UpdateStreamingStatus(idle int, game string, url string) {
