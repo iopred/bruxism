@@ -192,7 +192,7 @@ func (m *DiscordMessage) ParseCommand(prefix string) (string, []string, bool) {
 
 // Discord is a Service provider for Discord.
 type Discord struct {
-	token       string
+	args        []interface{}
 	messageChan chan Message
 
 	// The first session, used to send messages (and maintain backwards compatibility).
@@ -203,13 +203,9 @@ type Discord struct {
 }
 
 // NewDiscord creates a new discord service.
-// If the token is for a bot, it must be prefixed with "Bot "
-// 		e.g. "Bot ..."
-// Or if it is an OAuth2 token, it must be prefixed with "Bearer "
-//		e.g. "Bearer ..."
-func NewDiscord(token string) *Discord {
+func NewDiscord(args ...interface{}) *Discord {
 	return &Discord{
-		token:       token,
+		args:        args,
 		messageChan: make(chan Message, 200),
 	}
 }
@@ -298,7 +294,7 @@ func (d *Discord) Name() string {
 
 // Open opens the service and returns a channel which all messages will be sent on.
 func (d *Discord) Open() (<-chan Message, error) {
-	gateway, err := discordgo.New(d.token)
+	gateway, err := discordgo.New(d.args...)
 	if err != nil {
 		return nil, err
 	}
@@ -314,7 +310,7 @@ func (d *Discord) Open() (<-chan Message, error) {
 	wg := sync.WaitGroup{}
 	for i := 0; i < s.Shards; i++ {
 		log.Printf("%s opening shard %d\n", d.Name(), i+1)
-		session, err := discordgo.New(d.token)
+		session, err := discordgo.New(d.args...)
 		if err != nil {
 			return nil, err
 		}
@@ -556,7 +552,7 @@ func (d *Discord) Guilds() []*discordgo.Guild {
 	return guilds
 }
 
-func (d *Discord) MessagePermissions(message Message) (apermissions int64, err error) {
+func (d *Discord) MessagePermissions(message Message) (apermissions int, err error) {
 	m, ok := message.(*DiscordMessage)
 	if !ok {
 		return 0, errors.New("invalid message")
@@ -570,7 +566,7 @@ func (d *Discord) MessagePermissions(message Message) (apermissions int64, err e
 	return d.UserChannelPermissions(message.UserID(), message.Channel())
 }
 
-func (d *Discord) UserChannelPermissions(userID, channelID string) (apermissions int64, err error) {
+func (d *Discord) UserChannelPermissions(userID, channelID string) (apermissions int, err error) {
 	for _, s := range d.Sessions {
 		apermissions, err = s.State.UserChannelPermissions(userID, channelID)
 		if err == nil {
@@ -629,6 +625,7 @@ func (d *Discord) NicknameForID(userID, userName, channelID string) string {
 						return m.Nick
 					}
 					return m.User.Username
+					break
 				}
 			}
 		}
@@ -638,7 +635,7 @@ func (d *Discord) NicknameForID(userID, userName, channelID string) string {
 
 func (d *Discord) UpdateStatus(idle int, game string) {
 	for _, s := range d.Sessions {
-		s.UpdateGameStatus(idle, game)
+		s.UpdateStatus(idle, game)
 	}
 }
 func (d *Discord) UpdateStreamingStatus(idle int, game string, url string) {

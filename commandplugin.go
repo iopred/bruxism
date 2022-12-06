@@ -80,7 +80,7 @@ func ParseCommandStringPrefix(prefix, message string) (string, []string) {
 func ParseCommand(service Service, message Message) (string, []string) {
 	if rest, parts, ok := message.ParseCommand(service.CommandPrefix()); ok {
 		return rest, parts
-	} 
+	}
 	return ParseCommandStringPrefix(service.CommandPrefix(), message.Message())
 }
 

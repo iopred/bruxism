@@ -188,7 +188,7 @@ func (yt *YouTube) joinVideo(video *youtube.Video, messageChan chan Message) err
 				return
 			}
 
-			list := yt.Service.LiveChatMessages.List(chat, []string{"id", "snippet", "authorDetails"}).MaxResults(200)
+			list := yt.Service.LiveChatMessages.List(chat, "id,snippet,authorDetails").MaxResults(200)
 			if pageToken != "" {
 				list.PageToken(pageToken)
 			}
@@ -303,7 +303,7 @@ func (yt *YouTube) handleRequests() {
 			// Start a goroutine to rate limit sends.
 			go func() {
 				for {
-					if _, err := yt.Service.LiveChatMessages.Insert([]string{"snippet"}, <-channelInsertChan).Do(); err != nil {
+					if _, err := yt.Service.LiveChatMessages.Insert("snippet", <-channelInsertChan).Do(); err != nil {
 						log.Println(err)
 					}
 
@@ -325,9 +325,9 @@ func (yt *YouTube) handleRequests() {
 
 				insertLiveChatMessageLimited(request)
 			case *youtube.LiveChatBan:
-				yt.Service.LiveChatBans.Insert([]string{"snippet"}, request).Do()
+				yt.Service.LiveChatBans.Insert("snippet", request).Do()
 			case *youtube.LiveChatModerator:
-				yt.Service.LiveChatModerators.Insert([]string{"snippet"}, request).Do()
+				yt.Service.LiveChatModerators.Insert("snippet", request).Do()
 			}
 		case request := <-yt.DeleteChan:
 			switch request := request.(type) {
@@ -579,7 +579,7 @@ func (v videoList) Less(i, j int) bool {
 
 // GetMe gets the channel for the bot.
 func (yt *YouTube) GetMe() (*youtube.Channel, error) {
-	channelList, err := yt.Service.Channels.List([]string{"id", "snippet"}).Mine(true).Do()
+	channelList, err := yt.Service.Channels.List("id,snippet").Mine(true).Do()
 
 	if err != nil {
 		return nil, err
@@ -656,7 +656,7 @@ func (yt *YouTube) GetTopLivestreamIDs(count int) ([]string, error) {
 	pageToken := ""
 
 	for {
-		list := yt.Service.PlaylistItems.List([]string{"id", "contentDetails"}).MaxResults(50).PlaylistId("PLiCvVJzBupKmEehQ3hnNbbfBjLUyvGlqx")
+		list := yt.Service.PlaylistItems.List("id,contentDetails").MaxResults(50).PlaylistId("PLiCvVJzBupKmEehQ3hnNbbfBjLUyvGlqx")
 		if pageToken != "" {
 			list.PageToken(pageToken)
 		}
@@ -690,7 +690,7 @@ func (yt *YouTube) GetVideosByIDList(ids []string) ([]*youtube.Video, error) {
 		if next >= len(ids) {
 			next = len(ids)
 		}
-		list := yt.Service.Videos.List([]string{"id", "snippet", "liveStreamingDetails"}).MaxResults(50).Id(strings.Join(ids[i:next], ","))
+		list := yt.Service.Videos.List("id,snippet,liveStreamingDetails").MaxResults(50).Id(strings.Join(ids[i:next], ","))
 
 		videoListResponse, err := list.Do()
 
@@ -732,7 +732,7 @@ func (yt *YouTube) GetLiveVideos(channelID string) ([]*youtube.Video, error) {
 		return nil, errors.New("Service not available.")
 	}
 
-	s, err := yt.Service.Search.List([]string{"id"}).ChannelId(channelID).EventType("live").Type("video").Do()
+	s, err := yt.Service.Search.List("id").ChannelId(channelID).EventType("live").Type("video").Do()
 	if err != nil {
 		return nil, err
 	}

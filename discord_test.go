@@ -6,10 +6,10 @@ import (
 
 func TestCommandMatches(t *testing.T) {
 	tests := []struct {
-		Prefix string
-		Matches bool
-		Command string
-		Message string
+		Prefix   string
+		Matches  bool
+		Command  string
+		Message  string
 		Argument string
 	}{
 		{"", true, "hello", "hello", ""},
@@ -96,7 +96,7 @@ func TestCommandParse(t *testing.T) {
 		if rest != "world how are you doing" {
 			t.Errorf("Command rest incorrect: %v", rest)
 		}
-		if len(parts) != 5  {
+		if len(parts) != 5 {
 			t.Errorf("Parts length incorrect: %v", len(parts))
 		}
 	} else {
